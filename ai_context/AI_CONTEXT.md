@@ -87,6 +87,7 @@ Full breakdown in [`docs/competitive-analysis.md`](../docs/competitive-analysis.
 `landing/index.html` is a single self-contained HTML file deployed via GitHub Pages (`.github/workflows/deploy.yml` and `static.yml`). Current state:
 
 - **Visual style** — wio.io-inspired with warm pastel section rotation (cream → white → peach → mint → navy → cream → lavender). Inter + Fraunces from Google Fonts. No external JS libraries.
+- **Brand assets** — `landing/favicon.svg` (vector "D" initial in emerald + cinnamon diamond accent, echoes the navbar wordmark). `theme-color` meta set to emerald `#1F4E3F` for mobile browser chrome tinting.
 - **Device mockups** — silver MacBook Pro frames (matching the user's reference photo) used across hero, document list, and Kanban sections. Realistic iPhone 15 Pro frame for the ERI signing flow. All animations smoothly looped with `calcMode="spline"` + eased `keySplines`.
 - **Imkoniyatlar (Features) bento section** — 6 bento cards. Two charts are richly animated:
   - **Tashkiliy tuzilma** — 4-level org tree (Departament → Boshqarma → Bo'lim → Sho'ba) with a walking active path that highlights each node in sequence, ending in an amber pulse-ring on the destination Sho'ba.
