@@ -221,6 +221,7 @@ Backup restoration is tested monthly against a staging environment as part of th
 | Architecture decision records | Architects | `docs/adr/` |
 | Technical specification (legacy) | Reference only | `docs/Plyma_Technical_Spec_v1.0.docx` |
 | Marketing landing page (Uzbek) | Marketing, sales, web | [`landing/index.html`](./landing/index.html) |
+| Project state snapshot (current status, gaps, brand voice) | All contributors | [`ai_context/AI_CONTEXT.md`](./ai_context/AI_CONTEXT.md) |
 | Session history (AI-assisted work log) | Internal, contributors | [`ai_context/HISTORY.md`](./ai_context/HISTORY.md) |
 
 ---
