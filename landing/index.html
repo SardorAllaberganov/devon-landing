@@ -50,7 +50,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .section--ink .eyebrow,.section--emerald .eyebrow{color:var(--cinnamon)}
 .section--ink .eyebrow-dot,.section--emerald .eyebrow-dot{background:var(--cinnamon)}
 h1,h2,h3,h4{font-weight:800;letter-spacing:-0.03em;line-height:1.02;color:inherit}
-h1{font-size:clamp(54px,8vw,112px);letter-spacing:-0.045em;font-weight:900}
+h1{font-size:clamp(40px,7.5vw,112px);letter-spacing:-0.045em;font-weight:900;overflow-wrap:break-word;word-break:normal;hyphens:auto}
 .section-title{font-size:clamp(36px,5vw,72px);letter-spacing:-0.035em;line-height:1.04;margin-bottom:28px;font-weight:800}
 .subhead{font-size:clamp(17px,1.4vw,21px);font-weight:400;color:var(--body);line-height:1.55;max-width:640px}
 .section--ink .subhead,.section--emerald .subhead{color:rgba(251,249,244,0.7)}
@@ -104,11 +104,14 @@ h1{font-size:clamp(54px,8vw,112px);letter-spacing:-0.045em;font-weight:900}
 @keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-12px) rotate(0.4deg)}}
 .chip strong{font-weight:600;display:block;font-size:13px;color:var(--ink);letter-spacing:-0.01em}
 .chip small{font-size:11.5px;color:var(--muted);font-weight:500}
-.chip-1{top:18%;left:6%;animation-delay:0s}
-.chip-2{top:30%;right:5%;animation-delay:1s;animation-duration:9s}
-.chip-3{bottom:24%;left:8%;animation-delay:2.5s;animation-duration:7.5s}
-.chip-4{bottom:18%;right:7%;animation-delay:1.5s;animation-duration:10s}
-.chip-5{top:54%;left:4%;animation-delay:3s;animation-duration:8.5s}
+/* Anchor chips to the gutter beside the centered hero-inner (max-width 980px).
+   Each chip sits in the space between viewport edge and the centered content,
+   guaranteed never to overlap the headline. */
+.chip-1{top:18%;right:calc(50% + 510px);animation-delay:0s}
+.chip-2{top:30%;left:calc(50% + 510px);animation-delay:1s;animation-duration:9s}
+.chip-3{bottom:22%;right:calc(50% + 510px);animation-delay:2.5s;animation-duration:7.5s}
+.chip-4{bottom:18%;left:calc(50% + 510px);animation-delay:1.5s;animation-duration:10s}
+.chip-5{top:54%;right:calc(50% + 530px);animation-delay:3s;animation-duration:8.5s}
 .chip-status{display:flex;align-items:center;gap:10px}
 .chip-status .pip{width:8px;height:8px;border-radius:50%;background:var(--signal);box-shadow:0 0 0 3px rgba(61,123,102,0.16)}
 .chip-stack{display:flex;align-items:center;gap:10px}
@@ -255,34 +258,145 @@ footer{background:var(--ink);color:var(--cream);padding:0 0 36px;border-top:1px 
 .reveal-stagger.in > *:nth-child(7){transition-delay:0.53s}
 .reveal-stagger.in > *:nth-child(8){transition-delay:0.61s}
 
+/* ═════ MOBILE MENU (hamburger + overlay) ═════ */
+.nav-toggle{display:none;flex-direction:column;justify-content:center;gap:5px;width:40px;height:40px;background:transparent;border:none;cursor:pointer;padding:0;margin-left:4px}
+.nav-toggle span{display:block;width:22px;height:2px;background:var(--ink);border-radius:1px;transition:transform 0.28s var(--ease),opacity 0.2s ease;transform-origin:center;margin:0 auto}
+.nav-toggle[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-toggle[aria-expanded="true"] span:nth-child(2){opacity:0}
+.nav-toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+.mobile-menu{position:fixed;top:72px;left:0;right:0;bottom:0;background:var(--cream);z-index:99;opacity:0;visibility:hidden;transition:opacity 0.32s var(--ease),visibility 0.32s var(--ease);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.mobile-menu.open{opacity:1;visibility:visible}
+.mobile-menu-inner{padding:32px 24px 64px;display:flex;flex-direction:column;gap:4px;max-width:480px;margin:0 auto}
+.mm-link{font-size:22px;font-weight:600;color:var(--ink);letter-spacing:-0.02em;padding:14px 4px;border-bottom:1px solid var(--line);transition:color 0.2s ease}
+.mm-link:hover,.mm-link:focus-visible{color:var(--emerald)}
+.mm-secondary{font-size:17px;font-weight:500;color:var(--body);border-bottom:none;padding:14px 4px}
+.mm-cta{display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:var(--cream);background:var(--ink);padding:16px 28px;border-radius:999px;margin-top:8px;transition:background 0.2s var(--ease)}
+.mm-cta:hover,.mm-cta:focus-visible{background:var(--emerald)}
+body.menu-open{overflow:hidden}
+
+/* ═════ RESPONSIVE BREAKPOINTS ═════ */
+/* Hide floating hero chips on viewports too narrow to fit them in the gutter
+   (980px centered content + ~200px chip each side + breathing room) */
+@media(max-width:1400px){
+  .chip{display:none}
+}
+
 @media(max-width:1100px){
   .pillars-grid{grid-template-columns:1fr 1fr;gap:20px}
   .pillar.p1{grid-column:span 2}
   .arch-grid-wrap{grid-template-columns:1fr;gap:48px}
   .bento-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:auto}
   .b-wide,.b-half,.b-thirds{grid-column:span 1}
-  .chip{display:none}
-  .chip-2,.chip-3{display:block}
   .footer-top{grid-template-columns:1fr 1fr 1fr}
   .footer-brand{grid-column:span 3}
 }
-@media(max-width:768px){
-  .container{padding:0 24px}
+
+@media(max-width:820px){
   .nav-links{display:none}
-  .section{padding:80px 0}
-  .hero{padding:140px 0 80px}
+  .nav-right .signin{display:none}
+  .nav-toggle{display:flex}
+}
+
+@media(max-width:768px){
+  .container{padding:0 20px}
+  .section{padding:72px 0}
+  .hero{padding:120px 0 64px}
+  .hero h1{font-size:clamp(36px,8vw,52px) !important;letter-spacing:-0.03em}
+  .hero .subhead{font-size:16px !important}
+  .hero-eyebrow{font-size:11px;padding:8px 14px;margin-bottom:28px}
+  .hero .cta-row{margin-top:32px;flex-direction:column;align-items:stretch}
+  .hero .cta-row .btn,.hero .cta-row a{width:100%;justify-content:center;text-align:center}
+  .hero-meta{margin-top:28px;gap:18px;font-size:12.5px;flex-direction:column;align-items:center}
+  .hero-bg .hero-grid-lines{background-size:32px 32px}
+  .pillars{padding:80px 0}
   .pillars-grid{grid-template-columns:1fr}
+  .pillar{min-height:auto;padding:28px}
   .pillar.p1{grid-column:auto}
-  .ind-grid{grid-template-columns:1fr}
-  .stats-grid{grid-template-columns:1fr 1fr;gap:24px}
-  .stat-cell{border-left:none;border-top:1px solid rgba(251,249,244,0.12);padding:24px 0}
+  .pillar h3{font-size:24px}
+  .pillar p{font-size:14.5px}
+  .pillars-header{flex-direction:column;align-items:flex-start;gap:24px;margin-bottom:48px}
+  .bento{padding:72px 0}
+  .bento-grid{grid-template-columns:1fr;gap:16px}
+  .bento-card{min-height:auto;padding:24px}
+  .bento-card h4{font-size:19px}
+  .bento-header{margin-bottom:40px}
+  .stats{padding:64px 0}
+  .stats-grid{grid-template-columns:1fr 1fr;gap:0}
+  .stat-cell{border-left:none;border-top:1px solid rgba(251,249,244,0.12);padding:24px 16px}
   .stat-cell:nth-child(-n+2){border-top:none}
-  .flow-bottom{grid-template-columns:1fr}
-  .footer-top{grid-template-columns:1fr 1fr;gap:36px}
+  .stat-cell:nth-child(odd){border-right:1px solid rgba(251,249,244,0.12)}
+  .stat-cell .num{font-size:clamp(40px,11vw,56px)}
+  .arch{padding:80px 0}
+  .arch-grid-wrap{gap:40px;margin-top:48px}
+  .arch-cubes{grid-template-columns:repeat(2,1fr);gap:12px}
+  .arch-cube{padding:14px}
+  .flow-section{padding:72px 0}
+  .flow-art{margin:48px auto 40px}
+  .flow-bottom{grid-template-columns:1fr;gap:24px}
+  .flow-bottom .fb .big{font-size:32px}
+  .industries{padding:72px 0}
+  .ind-grid{grid-template-columns:1fr;gap:16px}
+  .ind-card{padding:28px}
+  .ind-card h3{font-size:22px}
+  .quote-section{padding:80px 0}
+  .quote-text{font-size:22px !important;line-height:1.3}
+  .quote-mark{font-size:64px}
+  .final{padding:80px 0}
+  .final h2{font-size:clamp(32px,9vw,48px) !important}
+  .final-form{flex-direction:column;gap:8px;padding:8px;border-radius:18px;max-width:none}
+  .final-form input{text-align:center;width:100%}
+  .final-form button{width:100%;padding:14px}
+  .final-trust{flex-direction:column;gap:8px;margin-top:24px}
+  .logos{padding:40px 0}
+  .logos-row{grid-template-columns:repeat(3,1fr);gap:24px}
+  .footer-mega{padding:72px 0 48px}
+  .footer-mega h3{font-size:clamp(32px,7vw,44px)}
+  .footer-top{grid-template-columns:1fr 1fr;gap:36px 24px;padding:48px 0}
   .footer-brand{grid-column:span 2}
-  .arch-cubes{grid-template-columns:repeat(2,1fr)}
-  .logos-row{grid-template-columns:repeat(3,1fr)}
+  .footer-brand p{max-width:none}
+  .footer-bottom{flex-direction:column;align-items:flex-start;gap:16px}
+  .footer-bottom .links{flex-wrap:wrap;gap:16px}
   .chip{display:none}
+  /* Generic table-overflow guard for inner content */
+  .b-visual{overflow:hidden}
+}
+
+@media(max-width:480px){
+  .container{padding:0 16px}
+  .nav-right .nav-cta{padding:8px 14px;font-size:13px}
+  .nav-logo{font-size:18px}
+  .section{padding:56px 0}
+  .hero{padding:104px 0 48px}
+  .hero h1{font-size:clamp(28px,9vw,40px) !important;line-height:1.1;margin-bottom:20px}
+  .hero .subhead{font-size:15px !important;line-height:1.5}
+  .hero-eyebrow{margin-bottom:20px;font-size:10.5px;letter-spacing:0.05em;padding:7px 12px}
+  .hero-meta{gap:14px;font-size:12px;margin-top:24px}
+  .hero .cta-row{margin-top:24px;gap:10px}
+  .btn,.nav-cta,.mm-cta{font-size:14px}
+  .pillars-header h2,.bento-header h2,.ind-header h2{font-size:clamp(28px,7vw,36px) !important;line-height:1.15}
+  .pillar h3{font-size:22px}
+  .bento-card h4{font-size:18px;line-height:1.25}
+  .bento-card p{font-size:13.5px}
+  .bento-card{padding:20px;border-radius:18px}
+  .arch-cubes{grid-template-columns:repeat(2,1fr);gap:10px}
+  .arch-cube{padding:12px;border-radius:14px}
+  .arch-cube .ac-name{font-size:11.5px}
+  .stats-grid{grid-template-columns:1fr}
+  .stat-cell{border-top:1px solid rgba(251,249,244,0.12)!important;border-right:none!important;padding:24px 0;text-align:left}
+  .stat-cell:first-child{border-top:none!important}
+  .stat-cell .num{font-size:48px}
+  .stat-cell .lbl{max-width:none}
+  .footer-top{grid-template-columns:1fr;gap:32px}
+  .footer-brand{grid-column:auto}
+  .ind-card{padding:24px;border-radius:18px}
+  .ind-card .ind-icon{width:52px;height:52px;border-radius:14px}
+  .ind-card h3{font-size:20px}
+  .quote-text{font-size:20px !important}
+  .final h2{font-size:clamp(28px,10vw,40px) !important}
+  .logos-row{grid-template-columns:repeat(2,1fr);gap:18px}
+  .mobile-menu-inner{padding:24px 16px 56px}
+  .mm-link{font-size:19px}
 }
 
 @media(prefers-reduced-motion:reduce){
@@ -308,9 +422,26 @@ footer{background:var(--ink);color:var(--cream);padding:0 0 36px;border-top:1px 
     <div class="nav-right">
       <a href="#" class="signin">Kirish</a>
       <a href="#demo" class="nav-cta">Demo so'rash</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Menyuni ochish" aria-expanded="false" aria-controls="mobileMenu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </header>
+
+<!-- Mobile menu overlay — sibling of header so it isn't trapped by the navbar's backdrop-filter stacking context -->
+<div class="mobile-menu" id="mobileMenu" role="dialog" aria-modal="true" aria-hidden="true">
+  <nav class="mobile-menu-inner" aria-label="Mobil navigatsiya">
+    <a href="#mahsulot" class="mm-link">Mahsulot</a>
+    <a href="#modullar" class="mm-link">Modullar</a>
+    <a href="#yechimlar" class="mm-link">Yechimlar</a>
+    <a href="#imkoniyatlar" class="mm-link">Imkoniyatlar</a>
+    <a href="#resurslar" class="mm-link">Resurslar</a>
+    <a href="#aloqa" class="mm-link">Aloqa</a>
+    <a href="#" class="mm-link mm-secondary">Kirish</a>
+    <a href="#demo" class="mm-cta">Demo so'rash</a>
+  </nav>
+</div>
 
 <main>
 
@@ -350,7 +481,7 @@ footer{background:var(--ink);color:var(--cream);padding:0 0 36px;border-top:1px 
 
   <div class="container">
     <div class="hero-inner reveal-stagger">
-      <span class="hero-eyebrow"><span class="badge-dot"></span>On-premise · O'zbekiston uchun yaratilgan</span>
+      <span class="hero-eyebrow"><span class="badge-dot"></span>Mahalliy yechim · O'zbekiston uchun yaratilgan</span>
       <h1>Hujjat aylanmasi <span class="serif-accent">qayta tug'ildi.</span></h1>
       <p class="subhead">Tashkilotingiz ichki jarayoni — hujjat, kelishuv, imzo va vazifa — bir platformada. Ma'lumotlaringiz o'z serveringizda qoladi.</p>
       <div class="cta-row">
@@ -683,58 +814,110 @@ footer{background:var(--ink);color:var(--cream);padding:0 0 36px;border-top:1px 
         <h4>To'rt daraja. O'zbekiston uchun.</h4>
         <p>Departament → Boshqarma → Bo'lim → Sho'ba — to'rt darajali ierarxiya.</p>
         <div class="b-visual">
-          <svg width="100%" height="180" viewBox="0 0 280 180" fill="none" preserveAspectRatio="xMidYMid meet">
-            <!-- Connection lines (drawn in animated) -->
-            <line x1="140" y1="40" x2="140" y2="58" stroke="#E8E3D6" stroke-width="1.6" stroke-dasharray="20" stroke-dashoffset="20">
-              <animate attributeName="stroke-dashoffset" values="20;20;0;0;20" keyTimes="0;0.05;0.18;0.92;1" dur="8s" repeatCount="indefinite"/>
-            </line>
-            <line x1="60" y1="58" x2="220" y2="58" stroke="#E8E3D6" stroke-width="1.6" stroke-dasharray="160" stroke-dashoffset="160">
-              <animate attributeName="stroke-dashoffset" values="160;160;0;0;160" keyTimes="0;0.18;0.32;0.92;1" dur="8s" repeatCount="indefinite"/>
-            </line>
-            <line x1="60" y1="58" x2="60" y2="78" stroke="#E8E3D6" stroke-width="1.6"/>
-            <line x1="140" y1="58" x2="140" y2="78" stroke="#E8E3D6" stroke-width="1.6"/>
-            <line x1="220" y1="58" x2="220" y2="78" stroke="#E8E3D6" stroke-width="1.6"/>
-            <line x1="140" y1="100" x2="140" y2="120" stroke="#E8E3D6" stroke-width="1.6"/>
-            <line x1="100" y1="120" x2="180" y2="120" stroke="#E8E3D6" stroke-width="1.6" stroke-dasharray="80" stroke-dashoffset="80">
-              <animate attributeName="stroke-dashoffset" values="80;80;0;0;80" keyTimes="0;0.45;0.6;0.92;1" dur="8s" repeatCount="indefinite"/>
-            </line>
-            <line x1="100" y1="120" x2="100" y2="140" stroke="#E8E3D6" stroke-width="1.6"/>
-            <line x1="180" y1="120" x2="180" y2="140" stroke="#E8E3D6" stroke-width="1.6"/>
+          <svg width="100%" height="220" viewBox="0 0 280 220" fill="none" preserveAspectRatio="xMidYMid meet">
+            <!-- Static base connector lines (always visible, faint) -->
+            <line x1="140" y1="38" x2="140" y2="50" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="48" y1="50" x2="232" y2="50" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="48" y1="50" x2="48" y2="62" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="140" y1="50" x2="140" y2="62" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="232" y1="50" x2="232" y2="62" stroke="#E8E3D6" stroke-width="1.4"/>
 
-            <!-- L1: Departament (root) -->
-            <rect x="116" y="22" width="48" height="20" rx="6" fill="#1F4E3F"/>
-            <text x="140" y="35" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#FBF9F4" font-weight="700">DEPARTAMENT</text>
+            <line x1="140" y1="92" x2="140" y2="104" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="78" y1="104" x2="202" y2="104" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="78" y1="104" x2="78" y2="116" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="140" y1="104" x2="140" y2="116" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="202" y1="104" x2="202" y2="116" stroke="#E8E3D6" stroke-width="1.4"/>
 
-            <!-- L2: Boshqarma (3 children) -->
-            <rect x="36" y="78" width="48" height="22" rx="6" fill="#FBF9F4" stroke="#1F4E3F" stroke-width="1.6"/>
-            <text x="60" y="91" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#1F4E3F" font-weight="700">BOSHQAR.</text>
-            <text x="60" y="100" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#9DA0A8" font-weight="500">№1</text>
+            <line x1="140" y1="146" x2="140" y2="158" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="88" y1="158" x2="192" y2="158" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="88" y1="158" x2="88" y2="170" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="140" y1="158" x2="140" y2="170" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="192" y1="158" x2="192" y2="170" stroke="#E8E3D6" stroke-width="1.4"/>
 
-            <rect x="116" y="78" width="48" height="22" rx="6" fill="#BC6E2B">
-              <animate attributeName="fill" values="#BC6E2B;#BC6E2B;#1F4E3F;#1F4E3F;#BC6E2B" keyTimes="0;0.32;0.45;0.92;1" dur="8s" repeatCount="indefinite"/>
+            <!-- Animated active-path strokes (drill from root to leaf) -->
+            <line x1="140" y1="38" x2="140" y2="62" stroke="#1F4E3F" stroke-width="2" stroke-linecap="round" stroke-dasharray="24" stroke-dashoffset="24">
+              <animate attributeName="stroke-dashoffset" values="24;24;0;0;24;24" keyTimes="0;0.05;0.16;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+            </line>
+            <line x1="140" y1="92" x2="140" y2="116" stroke="#1F4E3F" stroke-width="2" stroke-linecap="round" stroke-dasharray="24" stroke-dashoffset="24">
+              <animate attributeName="stroke-dashoffset" values="24;24;24;0;0;24;24" keyTimes="0;0.18;0.30;0.42;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+            </line>
+            <line x1="140" y1="146" x2="140" y2="170" stroke="#1F4E3F" stroke-width="2" stroke-linecap="round" stroke-dasharray="24" stroke-dashoffset="24">
+              <animate attributeName="stroke-dashoffset" values="24;24;24;24;0;0;24;24" keyTimes="0;0.42;0.50;0.55;0.65;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+            </line>
+
+            <!-- L1: DEPARTAMENT (root, always green) -->
+            <rect x="100" y="10" width="80" height="28" rx="7" fill="#1F4E3F"/>
+            <text x="140" y="28" text-anchor="middle" font-family="Inter,sans-serif" font-size="9.5" fill="#FBF9F4" font-weight="800" letter-spacing="0.4">DEPARTAMENT</text>
+
+            <!-- L2: BOSHQARMA (3 nodes; center = active branch) -->
+            <rect x="14" y="62" width="68" height="30" rx="6" fill="#FBF9F4" stroke="#1F4E3F" stroke-width="1.3"/>
+            <text x="48" y="76" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" fill="#1F4E3F" font-weight="700">BOSHQARMA</text>
+            <text x="48" y="87" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#9DA0A8" font-weight="500">№1</text>
+
+            <rect x="106" y="62" width="68" height="30" rx="6" fill="#FBF9F4" stroke="#1F4E3F" stroke-width="1.3">
+              <animate attributeName="fill" values="#FBF9F4;#FBF9F4;#1F4E3F;#1F4E3F;#FBF9F4;#FBF9F4" keyTimes="0;0.16;0.22;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
             </rect>
-            <text x="140" y="91" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#FBF9F4" font-weight="700">BOSHQAR.</text>
-            <text x="140" y="100" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#FBF9F4" opacity="0.8" font-weight="500">№2 (faol)</text>
-
-            <rect x="196" y="78" width="48" height="22" rx="6" fill="#FBF9F4" stroke="#1F4E3F" stroke-width="1.6"/>
-            <text x="220" y="91" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#1F4E3F" font-weight="700">BOSHQAR.</text>
-            <text x="220" y="100" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#9DA0A8" font-weight="500">№3</text>
-
-            <!-- L3: Bo'lim (2 children under center boshqarma) -->
-            <rect x="78" y="138" width="44" height="20" rx="5" fill="#E5EEEA">
-              <animate attributeName="fill" values="#E5EEEA;#E5EEEA;#1F4E3F;#1F4E3F;#E5EEEA" keyTimes="0;0.6;0.7;0.92;1" dur="8s" repeatCount="indefinite"/>
-            </rect>
-            <text x="100" y="151" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#1F4E3F" font-weight="700">
-              <animate attributeName="fill" values="#1F4E3F;#1F4E3F;#FBF9F4;#FBF9F4;#1F4E3F" keyTimes="0;0.6;0.7;0.92;1" dur="8s" repeatCount="indefinite"/>
-              BO'LIM
+            <text x="140" y="76" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" font-weight="700">
+              <animate attributeName="fill" values="#1F4E3F;#1F4E3F;#FBF9F4;#FBF9F4;#1F4E3F;#1F4E3F" keyTimes="0;0.16;0.22;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              BOSHQARMA
+            </text>
+            <text x="140" y="87" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" font-weight="500">
+              <animate attributeName="fill" values="#9DA0A8;#9DA0A8;#FBF9F4;#FBF9F4;#9DA0A8;#9DA0A8" keyTimes="0;0.16;0.22;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              №2 · faol
             </text>
 
-            <rect x="158" y="138" width="44" height="20" rx="5" fill="#E5EEEA"/>
-            <text x="180" y="151" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#1F4E3F" font-weight="700">BO'LIM</text>
+            <rect x="198" y="62" width="68" height="30" rx="6" fill="#FBF9F4" stroke="#1F4E3F" stroke-width="1.3"/>
+            <text x="232" y="76" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" fill="#1F4E3F" font-weight="700">BOSHQARMA</text>
+            <text x="232" y="87" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#9DA0A8" font-weight="500">№3</text>
 
-            <!-- Active highlight (orange dot/badge that follows the active path) -->
-            <circle cx="140" cy="32" r="3" fill="#FBF9F4" opacity="0">
-              <animate attributeName="opacity" values="1;1;0;0;1" keyTimes="0;0.08;0.12;0.95;1" dur="8s" repeatCount="indefinite"/>
+            <!-- L3: BO'LIM (3 nodes under active BOSHQARMA; center = active branch) -->
+            <rect x="50" y="116" width="56" height="30" rx="6" fill="#E5EEEA" stroke="#3D7B66" stroke-width="0.8"/>
+            <text x="78" y="130" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" fill="#1F4E3F" font-weight="700">BO'LIM</text>
+            <text x="78" y="141" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8" font-weight="500">#1</text>
+
+            <rect x="112" y="116" width="56" height="30" rx="6" fill="#E5EEEA" stroke="#3D7B66" stroke-width="0.8">
+              <animate attributeName="fill" values="#E5EEEA;#E5EEEA;#E5EEEA;#1F4E3F;#1F4E3F;#E5EEEA;#E5EEEA" keyTimes="0;0.30;0.40;0.46;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              <animate attributeName="stroke" values="#3D7B66;#3D7B66;#3D7B66;#1F4E3F;#1F4E3F;#3D7B66;#3D7B66" keyTimes="0;0.30;0.40;0.46;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+            </rect>
+            <text x="140" y="130" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" font-weight="700">
+              <animate attributeName="fill" values="#1F4E3F;#1F4E3F;#1F4E3F;#FBF9F4;#FBF9F4;#1F4E3F;#1F4E3F" keyTimes="0;0.30;0.40;0.46;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              BO'LIM
+            </text>
+            <text x="140" y="141" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.5" font-weight="500">
+              <animate attributeName="fill" values="#9DA0A8;#9DA0A8;#9DA0A8;#FBF9F4;#FBF9F4;#9DA0A8;#9DA0A8" keyTimes="0;0.30;0.40;0.46;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              #2 · faol
+            </text>
+
+            <rect x="174" y="116" width="56" height="30" rx="6" fill="#E5EEEA" stroke="#3D7B66" stroke-width="0.8"/>
+            <text x="202" y="130" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" fill="#1F4E3F" font-weight="700">BO'LIM</text>
+            <text x="202" y="141" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8" font-weight="500">#3</text>
+
+            <!-- L4: SHO'BA (3 leaves under active BO'LIM; center = final destination) -->
+            <rect x="60" y="170" width="56" height="28" rx="6" fill="#FBF9F4" stroke="#E8E3D6" stroke-width="1"/>
+            <text x="88" y="184" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#5A5E6A" font-weight="700">SHO'BA</text>
+            <text x="88" y="194" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="#9DA0A8">12 xodim</text>
+
+            <rect x="112" y="170" width="56" height="28" rx="6" fill="#FBF9F4" stroke="#E8E3D6" stroke-width="1">
+              <animate attributeName="fill" values="#FBF9F4;#FBF9F4;#FBF9F4;#FBF9F4;#BC6E2B;#BC6E2B;#FBF9F4;#FBF9F4" keyTimes="0;0.46;0.55;0.62;0.68;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              <animate attributeName="stroke" values="#E8E3D6;#E8E3D6;#E8E3D6;#E8E3D6;#BC6E2B;#BC6E2B;#E8E3D6;#E8E3D6" keyTimes="0;0.46;0.55;0.62;0.68;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+            </rect>
+            <text x="140" y="184" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="700">
+              <animate attributeName="fill" values="#5A5E6A;#5A5E6A;#5A5E6A;#5A5E6A;#FBF9F4;#FBF9F4;#5A5E6A;#5A5E6A" keyTimes="0;0.46;0.55;0.62;0.68;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              SHO'BA
+            </text>
+            <text x="140" y="194" text-anchor="middle" font-family="Inter,sans-serif" font-size="6">
+              <animate attributeName="fill" values="#9DA0A8;#9DA0A8;#9DA0A8;#9DA0A8;#FBF9F4;#FBF9F4;#9DA0A8;#9DA0A8" keyTimes="0;0.46;0.55;0.62;0.68;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              8 xodim
+            </text>
+
+            <rect x="164" y="170" width="56" height="28" rx="6" fill="#FBF9F4" stroke="#E8E3D6" stroke-width="1"/>
+            <text x="192" y="184" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#5A5E6A" font-weight="700">SHO'BA</text>
+            <text x="192" y="194" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="#9DA0A8">15 xodim</text>
+
+            <!-- Pulse ring on final destination Sho'ba (the "arrival" moment) -->
+            <circle cx="140" cy="184" r="0" fill="none" stroke="#BC6E2B" stroke-width="1.4" opacity="0">
+              <animate attributeName="r" values="0;0;0;0;16;32;32;0" keyTimes="0;0.46;0.55;0.62;0.68;0.82;0.86;1" dur="10s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;0;0;0;0.6;0;0;0" keyTimes="0;0.46;0.55;0.62;0.68;0.82;0.86;1" dur="10s" repeatCount="indefinite"/>
             </circle>
           </svg>
         </div>
@@ -746,53 +929,182 @@ footer{background:var(--ink);color:var(--cream);padding:0 0 36px;border-top:1px 
         <p>Kanban doska — Yangi, Jarayonda, Ko'rib chiqilmoqda, Bajarildi. Drag-and-drop, prioritetlar, muddatlar.</p>
         <div class="b-visual" style="min-height:180px">
           <svg width="100%" height="180" viewBox="0 0 480 180" fill="none" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <filter id="kanCardShadow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#1A1D24" flood-opacity="0.14"/>
+              </filter>
+            </defs>
+
+            <!-- ═══ COL 1 — YANGI ═══ -->
             <g>
-              <rect x="0" y="0" width="110" height="180" rx="10" fill="#FBF9F4"/>
-              <text x="14" y="18" font-family="Inter,sans-serif" font-size="9" fill="#1A1D24" font-weight="700" letter-spacing="0.5">YANGI</text>
-              <rect x="14" y="28" width="82" height="32" rx="6" fill="#fff" stroke="#E8E3D6"/>
-              <rect x="20" y="34" width="32" height="9" rx="4.5" fill="#FFEDE0"/>
-              <text x="36" y="41" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="#BC6E2B" font-weight="700">YUQORI</text>
-              <text x="20" y="55" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Hisobot</text>
-              <rect x="14" y="66" width="82" height="32" rx="6" fill="#fff" stroke="#E8E3D6"/>
-              <rect x="20" y="72" width="32" height="9" rx="4.5" fill="#E5EEEA"/>
-              <text x="36" y="79" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="#1F4E3F" font-weight="700">ODDIY</text>
-              <text x="20" y="93" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Yo'riqnoma</text>
+              <rect x="0" y="0" width="112" height="180" rx="10" fill="#FBF9F4"/>
+              <text x="12" y="18" font-family="Inter,sans-serif" font-size="9" fill="#1A1D24" font-weight="700" letter-spacing="0.5">YANGI</text>
+              <rect x="86" y="9" width="22" height="14" rx="7" fill="#fff" stroke="#E8E3D6"/>
+              <text x="97" y="19" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#5A5E6A" font-weight="700">3</text>
+              <!-- Card 1: HIGH -->
+              <rect x="10" y="32" width="92" height="44" rx="6" fill="#fff" stroke="#E8E3D6"/>
+              <rect x="16" y="38" width="36" height="10" rx="5" fill="#FFEDE0"/>
+              <text x="34" y="45" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#BC6E2B" font-weight="700">YUQORI</text>
+              <text x="16" y="58" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Q2 hisobot</text>
+              <text x="16" y="69" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">15 May</text>
+              <circle cx="92" cy="66" r="7" fill="#FFEDE0"/>
+              <text x="92" y="68.5" text-anchor="middle" font-family="Inter,sans-serif" font-size="5.5" fill="#1F4E3F" font-weight="800">A.K.</text>
+              <!-- Card 2: ODDIY -->
+              <rect x="10" y="82" width="92" height="38" rx="6" fill="#fff" stroke="#E8E3D6"/>
+              <rect x="16" y="88" width="36" height="10" rx="5" fill="#E5EEEA"/>
+              <text x="34" y="95" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#1F4E3F" font-weight="700">ODDIY</text>
+              <text x="16" y="108" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Yo'riqnoma</text>
+              <text x="16" y="117" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">20 May · M.T.</text>
+              <!-- Card 3 ghost (where the loop's fresh card fades in) -->
+              <rect x="10" y="126" width="92" height="36" rx="6" fill="#fff" stroke="#E8E3D6" opacity="0.5"/>
+              <rect x="16" y="132" width="36" height="10" rx="5" fill="#F4E6D4" opacity="0.6"/>
+              <text x="34" y="139" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#BC6E2B" font-weight="700" opacity="0.6">O'RTA</text>
+              <text x="16" y="152" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600" opacity="0.6">Reja</text>
             </g>
+
+            <!-- ═══ COL 2 — JARAYONDA ═══ -->
             <g transform="translate(122 0)">
-              <rect x="0" y="0" width="110" height="180" rx="10" fill="#F4F1E6"/>
-              <text x="14" y="18" font-family="Inter,sans-serif" font-size="9" fill="#1A1D24" font-weight="700" letter-spacing="0.5">JARAYONDA</text>
-              <rect x="14" y="28" width="82" height="38" rx="6" fill="#fff" stroke="#1F4E3F" stroke-width="1.6"/>
-              <rect x="20" y="34" width="32" height="9" rx="4.5" fill="#FFEDE0"/>
-              <text x="36" y="41" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="#BC6E2B" font-weight="700">YUQORI</text>
-              <text x="20" y="55" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Q1 tahlil</text>
-              <rect x="20" y="58" width="50" height="3" rx="1.5" fill="#1F4E3F"/>
+              <rect x="0" y="0" width="112" height="180" rx="10" fill="#F4F1E6"/>
+              <text x="12" y="18" font-family="Inter,sans-serif" font-size="9" fill="#1A1D24" font-weight="700" letter-spacing="0.5">JARAYONDA</text>
+              <rect x="86" y="9" width="22" height="14" rx="7" fill="#fff" stroke="#E8E3D6"/>
+              <text x="97" y="19" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#1F4E3F" font-weight="700">4</text>
+              <!-- Card with progress bar -->
+              <rect x="10" y="32" width="92" height="50" rx="6" fill="#fff" stroke="#1F4E3F" stroke-width="1.4"/>
+              <rect x="16" y="38" width="36" height="10" rx="5" fill="#FFEDE0"/>
+              <text x="34" y="45" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#BC6E2B" font-weight="700">YUQORI</text>
+              <text x="16" y="58" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Q1 tahlil</text>
+              <rect x="16" y="62" width="80" height="3" rx="1.5" fill="#E8E3D6"/>
+              <rect x="16" y="62" width="48" height="3" rx="1.5" fill="#1F4E3F">
+                <animate attributeName="width" values="42;58;42" dur="6s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1"/>
+              </rect>
+              <text x="16" y="74" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">60% · Z.R.</text>
+              <!-- Card 2 -->
+              <rect x="10" y="88" width="92" height="38" rx="6" fill="#fff" stroke="#E8E3D6"/>
+              <rect x="16" y="94" width="36" height="10" rx="5" fill="#F4E6D4"/>
+              <text x="34" y="101" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#BC6E2B" font-weight="700">O'RTA</text>
+              <text x="16" y="114" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Bazani yangilash</text>
+              <text x="16" y="123" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">18 May · S.N.</text>
             </g>
+
+            <!-- ═══ COL 3 — KO'RIB CHIQILMOQDA ═══ -->
             <g transform="translate(244 0)">
-              <rect x="0" y="0" width="110" height="180" rx="10" fill="#EEF2F8"/>
-              <text x="14" y="18" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="700" letter-spacing="0.5">KO'RIB CHIQ.</text>
-              <rect x="14" y="28" width="82" height="32" rx="6" fill="#fff" stroke="#E8E3D6"/>
-              <rect x="20" y="34" width="32" height="9" rx="4.5" fill="#FFEDE0"/>
-              <text x="36" y="41" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="#BC6E2B" font-weight="700">YUQORI</text>
-              <text x="20" y="55" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Shartnoma</text>
+              <rect x="0" y="0" width="112" height="180" rx="10" fill="#EEF2F8"/>
+              <text x="12" y="18" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="700" letter-spacing="0.5">KO'RIB CHIQ.</text>
+              <rect x="86" y="9" width="22" height="14" rx="7" fill="#fff" stroke="#E8E3D6"/>
+              <text x="97" y="19" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#1F4E3F" font-weight="700">2</text>
+              <!-- Card -->
+              <rect x="10" y="32" width="92" height="42" rx="6" fill="#fff" stroke="#E8E3D6"/>
+              <rect x="16" y="38" width="36" height="10" rx="5" fill="#FFEDE0"/>
+              <text x="34" y="45" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#BC6E2B" font-weight="700">YUQORI</text>
+              <text x="16" y="58" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Shartnoma</text>
+              <text x="16" y="68" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">9 May · A.K.</text>
             </g>
+
+            <!-- ═══ COL 4 — BAJARILDI ═══ -->
             <g transform="translate(366 0)">
-              <rect x="0" y="0" width="110" height="180" rx="10" fill="#E5EEEA"/>
-              <text x="14" y="18" font-family="Inter,sans-serif" font-size="9" fill="#1A1D24" font-weight="700" letter-spacing="0.5">BAJARILDI</text>
-              <rect x="14" y="28" width="82" height="32" rx="6" fill="#fff" stroke="#E8E3D6"/>
-              <circle cx="22" cy="38" r="4" fill="#1F4E3F"/>
-              <path d="M19 38 L21 40 L25 36" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-              <text x="32" y="41" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Mart</text>
-              <rect x="14" y="66" width="82" height="32" rx="6" fill="#fff" stroke="#E8E3D6"/>
-              <circle cx="22" cy="76" r="4" fill="#1F4E3F"/>
-              <path d="M19 76 L21 78 L25 74" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-              <text x="32" y="79" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Arxiv</text>
+              <rect x="0" y="0" width="114" height="180" rx="10" fill="#E5EEEA"/>
+              <text x="12" y="18" font-family="Inter,sans-serif" font-size="9" fill="#1A1D24" font-weight="700" letter-spacing="0.5">BAJARILDI</text>
+              <rect x="86" y="9" width="24" height="14" rx="7" fill="#1F4E3F"/>
+              <text x="98" y="19" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#FBF9F4" font-weight="700">6</text>
+              <!-- Card 1 done -->
+              <rect x="10" y="32" width="94" height="38" rx="6" fill="#fff" stroke="#E8E3D6"/>
+              <circle cx="21" cy="44" r="5.5" fill="#1F4E3F"/>
+              <path d="M17.5 44 L20 46.5 L25 41" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <text x="32" y="47" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Mart hisobot</text>
+              <text x="32" y="58" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">8 May · M.N.</text>
+              <!-- Card 2 done -->
+              <rect x="10" y="76" width="94" height="38" rx="6" fill="#fff" stroke="#E8E3D6"/>
+              <circle cx="21" cy="88" r="5.5" fill="#1F4E3F"/>
+              <path d="M17.5 88 L20 90.5 L25 85" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <text x="32" y="91" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Lavozim</text>
+              <text x="32" y="102" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">7 May · D.X.</text>
             </g>
+
+            <!-- ═══ COLUMN ARRIVAL HIGHLIGHTS (subtle green flash when card lands) ═══ -->
+            <!-- Col 2 (Jarayonda) flash — fires around keyTime 0.20-0.32 -->
+            <rect x="122" y="0" width="112" height="180" rx="10" fill="#1F4E3F" opacity="0">
+              <animate attributeName="opacity"
+                values="0; 0; 0.07; 0.07; 0; 0; 0; 0; 0; 0"
+                keyTimes="0; 0.18; 0.22; 0.30; 0.34; 0.42; 0.54; 0.84; 0.92; 1"
+                dur="14s" repeatCount="indefinite"/>
+            </rect>
+            <!-- Col 3 (Ko'rib chiq.) flash — fires around keyTime 0.42-0.54 -->
+            <rect x="244" y="0" width="112" height="180" rx="10" fill="#3D6FB5" opacity="0">
+              <animate attributeName="opacity"
+                values="0; 0; 0; 0; 0.07; 0.07; 0; 0; 0; 0"
+                keyTimes="0; 0.30; 0.40; 0.42; 0.44; 0.52; 0.56; 0.84; 0.92; 1"
+                dur="14s" repeatCount="indefinite"/>
+            </rect>
+            <!-- Col 4 (Bajarildi) flash — fires around keyTime 0.64-0.84 (longest dwell) -->
+            <rect x="366" y="0" width="114" height="180" rx="10" fill="#1F4E3F" opacity="0">
+              <animate attributeName="opacity"
+                values="0; 0; 0; 0; 0; 0.10; 0.10; 0.10; 0; 0"
+                keyTimes="0; 0.52; 0.60; 0.62; 0.64; 0.66; 0.78; 0.84; 0.88; 1"
+                dur="14s" repeatCount="indefinite"/>
+            </rect>
+
+            <!-- ═══ DROP SLOT (dashed outline showing where card will land) ═══ -->
+            <!-- In Col 2 -->
+            <rect x="132" y="32" width="92" height="36" rx="6" fill="none" stroke="#BC6E2B" stroke-width="1.2" stroke-dasharray="3 3" opacity="0">
+              <animate attributeName="opacity"
+                values="0; 0; 0.55; 0; 0; 0; 0; 0; 0"
+                keyTimes="0; 0.10; 0.16; 0.22; 0.32; 0.54; 0.84; 0.92; 1"
+                dur="14s" repeatCount="indefinite"/>
+            </rect>
+            <!-- In Col 3 -->
+            <rect x="254" y="32" width="92" height="36" rx="6" fill="none" stroke="#BC6E2B" stroke-width="1.2" stroke-dasharray="3 3" opacity="0">
+              <animate attributeName="opacity"
+                values="0; 0; 0; 0; 0.55; 0; 0; 0; 0"
+                keyTimes="0; 0.22; 0.32; 0.36; 0.40; 0.44; 0.84; 0.92; 1"
+                dur="14s" repeatCount="indefinite"/>
+            </rect>
+            <!-- In Col 4 -->
+            <rect x="376" y="32" width="94" height="36" rx="6" fill="none" stroke="#1F4E3F" stroke-width="1.2" stroke-dasharray="3 3" opacity="0">
+              <animate attributeName="opacity"
+                values="0; 0; 0; 0; 0; 0; 0.55; 0; 0; 0"
+                keyTimes="0; 0.42; 0.52; 0.54; 0.58; 0.60; 0.62; 0.66; 0.84; 1"
+                dur="14s" repeatCount="indefinite"/>
+            </rect>
+
+            <!-- ═══ MOVING CARD — Col1 → Col2 → Col3 → Col4, fade reset (no snap) ═══ -->
+            <g filter="url(#kanCardShadow)">
+              <!-- Position: dwells at each column, eases between -->
+              <animateTransform attributeName="transform" type="translate"
+                values="10 126; 10 126; 132 32; 132 32; 254 32; 254 32; 376 32; 376 32; 10 126; 10 126"
+                keyTimes="0; 0.06; 0.20; 0.32; 0.42; 0.54; 0.64; 0.86; 0.92; 1"
+                dur="14s" repeatCount="indefinite"
+                calcMode="spline"
+                keySplines="0 0 0 0; 0.42 0 0.18 1; 0 0 0 0; 0.42 0 0.18 1; 0 0 0 0; 0.42 0 0.18 1; 0 0 0 0; 0 0 0 0; 0 0 0 0"/>
+              <!-- Opacity: fade in at start, stay visible through travel, fade out at Col4, stay hidden during teleport back, fade in again -->
+              <animate attributeName="opacity"
+                values="0; 1; 1; 1; 1; 1; 1; 1; 0; 0; 1"
+                keyTimes="0; 0.04; 0.06; 0.20; 0.32; 0.42; 0.54; 0.84; 0.88; 0.92; 1"
+                dur="14s" repeatCount="indefinite"/>
+              <rect x="0" y="0" width="92" height="36" rx="6" fill="#fff" stroke="#BC6E2B" stroke-width="1.6"/>
+              <rect x="6" y="5" width="36" height="10" rx="5" fill="#F4E6D4"/>
+              <text x="24" y="12" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#BC6E2B" font-weight="700">O'RTA</text>
+              <rect x="46" y="5" width="22" height="10" rx="5" fill="#EEF2F8"/>
+              <text x="57" y="12" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#3D6FB5" font-weight="700">IT</text>
+              <text x="6" y="25" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">IT audit</text>
+              <text x="6" y="33" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">25 May · B.T.</text>
+              <!-- Tiny avatar on the moving card -->
+              <circle cx="84" cy="9" r="5" fill="#FFEDE0"/>
+              <text x="84" y="11" text-anchor="middle" font-family="Inter,sans-serif" font-size="4.6" fill="#BC6E2B" font-weight="800">Б.Т.</text>
+            </g>
+
+            <!-- ═══ CURSOR following the active card ═══ -->
             <g>
-              <animateTransform attributeName="transform" type="translate" values="14 50;14 50;136 28;136 28;258 28;258 28;14 50" keyTimes="0;0.1;0.3;0.45;0.6;0.85;1" dur="14s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 0 0;0.4 0 0.2 1;0 0 0 0;0.4 0 0.2 1;0 0 0 0;0.4 0 0.2 1"/>
-              <rect x="0" y="0" width="82" height="32" rx="6" fill="#fff" stroke="#BC6E2B" stroke-width="1.6"/>
-              <rect x="6" y="6" width="32" height="9" rx="4.5" fill="#F4E6D4"/>
-              <text x="22" y="13" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="#BC6E2B" font-weight="700">O'RTA</text>
-              <text x="6" y="27" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">IT audit</text>
+              <animateTransform attributeName="transform" type="translate"
+                values="80 158; 80 158; 202 60; 202 60; 324 60; 324 60; 446 60; 446 60; 80 158; 80 158"
+                keyTimes="0; 0.06; 0.20; 0.32; 0.42; 0.54; 0.64; 0.86; 0.92; 1"
+                dur="14s" repeatCount="indefinite"
+                calcMode="spline"
+                keySplines="0 0 0 0; 0.42 0 0.18 1; 0 0 0 0; 0.42 0 0.18 1; 0 0 0 0; 0.42 0 0.18 1; 0 0 0 0; 0 0 0 0; 0 0 0 0"/>
+              <animate attributeName="opacity"
+                values="0; 1; 1; 1; 1; 1; 1; 1; 0; 0; 1"
+                keyTimes="0; 0.04; 0.06; 0.20; 0.32; 0.42; 0.54; 0.84; 0.88; 0.92; 1"
+                dur="14s" repeatCount="indefinite"/>
+              <path d="M0 0 L0 10 L3 8 L5 12 L7 11 L4 7 L9 7 Z" fill="#1A1D24" stroke="#FBF9F4" stroke-width="0.8"/>
             </g>
           </svg>
         </div>
@@ -1162,6 +1474,38 @@ footer{background:var(--ink);color:var(--cream);padding:0 0 36px;border-top:1px 
   }
   window.addEventListener('scroll',onScroll,{passive:true});
   onScroll();
+
+  // ═════ Mobile menu toggle ═════
+  const toggle=document.getElementById('navToggle');
+  const menu=document.getElementById('mobileMenu');
+  function closeMenu(){
+    if(!toggle||!menu)return;
+    toggle.setAttribute('aria-expanded','false');
+    menu.setAttribute('aria-hidden','true');
+    menu.classList.remove('open');
+    document.body.classList.remove('menu-open');
+  }
+  function openMenu(){
+    if(!toggle||!menu)return;
+    toggle.setAttribute('aria-expanded','true');
+    menu.setAttribute('aria-hidden','false');
+    menu.classList.add('open');
+    document.body.classList.add('menu-open');
+  }
+  if(toggle&&menu){
+    toggle.addEventListener('click',()=>{
+      const expanded=toggle.getAttribute('aria-expanded')==='true';
+      if(expanded)closeMenu();else openMenu();
+    });
+    // Close on any link click
+    menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeMenu));
+    // Close on Escape
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
+    // Close when viewport grows past breakpoint (so menu state doesn't get stuck)
+    const mq=window.matchMedia('(min-width: 821px)');
+    const onMQ=()=>{if(mq.matches)closeMenu();};
+    if(mq.addEventListener)mq.addEventListener('change',onMQ);else mq.addListener(onMQ);
+  }
 
   const revealEls=document.querySelectorAll('.reveal, .reveal-stagger');
   const io=new IntersectionObserver((entries)=>{
