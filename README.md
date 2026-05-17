@@ -220,6 +220,8 @@ Backup restoration is tested monthly against a staging environment as part of th
 | BPMN business process diagrams | Business analysts | `docs/bpmn/` |
 | Architecture decision records | Architects | `docs/adr/` |
 | Technical specification (legacy) | Reference only | `docs/Plyma_Technical_Spec_v1.0.docx` |
+| Marketing landing page (Uzbek) | Marketing, sales, web | [`landing/index.html`](./landing/index.html) |
+| Session history (AI-assisted work log) | Internal, contributors | [`ai_context/HISTORY.md`](./ai_context/HISTORY.md) |
 
 ---
 
