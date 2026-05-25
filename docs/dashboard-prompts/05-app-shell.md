@@ -356,10 +356,14 @@ export default function AppShell({ children }: Props) {
         </div>
       </div>
 
-      {/* Main column */}
+      {/* Main column — content fills full viewport (minus sidebar + padding).
+          Do NOT add max-w-* / mx-auto here. Devon is a data-dense admin surface;
+          tables, kanban, audit logs benefit from horizontal room. If a specific
+          page needs constrained width (single-column form), use max-w-* on the
+          inner form container, not on <main>. See ai_context/LESSONS.md. */}
       <div className="flex-1 min-w-0 flex flex-col">
         <TopBar />
-        <main className="flex-1 px-4 md:px-6 py-6 max-w-[1280px] w-full mx-auto">
+        <main className="flex-1 px-4 md:px-6 py-6">
           {children}
         </main>
       </div>
@@ -456,7 +460,7 @@ export function useMediaQuery(query: string): boolean {
 
 ## Acceptance checks
 
-- [ ] **Desktop (≥1024px)**: sidebar visible on the left, 240px wide, content area to the right with `max-w-1280` centred when wider. No hamburger visible.
+- [ ] **Desktop (≥1024px)**: sidebar visible on the left, 240px wide, content area fills the full remaining viewport width (no max-w clamp — see [`ai_context/LESSONS.md`](../../ai_context/LESSONS.md)). No hamburger visible.
 - [ ] **Tablet (768–1023px)**: sidebar hidden, hamburger in top bar opens it as a `Sheet`. Search visible.
 - [ ] **Mobile (<768px)**: hamburger + compact DEVON wordmark in top bar; search hidden, notifications + user menu still visible. Tapping hamburger slides the sidebar in from the left, covering the screen. Tapping any nav item or the close button closes the drawer.
 - [ ] **Mobile 360px**: top bar fits without overflow. Avatar shows initials only (no first-name span). All tap targets ≥ 44pt.
