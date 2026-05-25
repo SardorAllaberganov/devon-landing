@@ -9,6 +9,8 @@ import PageHeader from '@/components/common/PageHeader';
 import DashboardHome from '@/features/dashboard-home/DashboardHome';
 import EmployeeListPage from '@/features/employees/list/EmployeeListPage';
 import EmployeeWizardPage from '@/features/employees/wizard/EmployeeWizardPage';
+import EmployeeProfilePage from '@/features/employees/profile/EmployeeProfilePage';
+import EmployeeTransferPage from '@/features/employees/assignments/EmployeeTransferPage';
 import UnitsPage from '@/features/units/UnitsPage';
 
 function Protected({ children }: { children: ReactElement }) {
@@ -72,8 +74,16 @@ export default function Router() {
         path="/employees/:uuid"
         element={
           <Protected>
-            <Placeholder titleKey="dashboard:sidebar.nav-employees" />
+            <EmployeeProfilePage />
           </Protected>
+        }
+      />
+      <Route
+        path="/employees/:uuid/transfer"
+        element={
+          <ProtectedNoShell>
+            <EmployeeTransferPage />
+          </ProtectedNoShell>
         }
       />
       <Route

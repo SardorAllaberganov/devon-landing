@@ -294,6 +294,126 @@
           "no-units": "Faol bo'linmalar topilmadi",
           "no-positions-for-unit": "Bu bo'linma turiga mos lavozim yo'q"
         }
+      },
+      "profile": {
+        "not-found": "Xodim topilmadi",
+        "back": "Xodimlar ro'yxati",
+        "pinfl-label": "JSHShIR",
+        "transfer": "Boshqa bo'linmaga ko'chirish",
+        "tabs": {
+          "info": "Ma'lumotlar",
+          "units": "Bo'linmalar",
+          "certs": "ERI kalitlari",
+          "history": "Tarix"
+        },
+        "info": {
+          "heading": "Shaxsiy ma'lumotlar",
+          "edit": "Tahrirlash",
+          "edit-sheet-title": "Ma'lumotlarni tahrirlash",
+          "edit-sheet-body": "Asosiy va aloqa ma'lumotlarini yangilang. JSHShIR yaratishdan keyin o'zgarmaydi.",
+          "save": "Saqlash",
+          "cancel": "Bekor qilish",
+          "save-success": "Ma'lumotlar saqlandi",
+          "fields": {
+            "full-name": "FIO",
+            "gender": "Jinsi",
+            "birth-date": "Tug'ilgan sanasi",
+            "pinfl": "JSHShIR",
+            "passport": "Passport",
+            "work-phone": "Ish telefoni",
+            "extension": "Ichki raqam",
+            "mobile-phone": "Mobil telefon",
+            "corporate-email": "Korporativ pochta",
+            "personal-email": "Shaxsiy pochta",
+            "hire-date": "Ishga qabul sanasi",
+            "termination-date": "Ishdan bo'shatilgan sana",
+            "employment-type": "Ish turi",
+            "status": "Holat"
+          },
+          "gender": {
+            "M": "Erkak",
+            "F": "Ayol"
+          },
+          "employment": {
+            "FULL_TIME": "To'liq stavka",
+            "PART_TIME": "Yarim stavka",
+            "CONTRACT": "Shartnoma asosida",
+            "INTERN": "Stajyor"
+          },
+          "empty-value": "—"
+        },
+        "terminate": {
+          "cta": "Ishdan bo'shatish",
+          "title": "Xodimni ishdan bo'shatish",
+          "body": "{{name}}ni ishdan bo'shatishni tasdiqlaysizmi? Barcha faol ERI kalitlari avtomatik bekor qilinadi va ushbu amalni qaytarib bo'lmaydi.",
+          "confirm": "Ha, bo'shatish",
+          "cancel": "Bekor qilish",
+          "success": "{{name}} ishdan bo'shatildi"
+        },
+        "units": {
+          "heading": "Biriktirmalar tarixi",
+          "add": "Yangi biriktirma",
+          "empty": "Hozircha biriktirmalar yo'q",
+          "current": "hozirgacha",
+          "primary": "Asosiy",
+          "workload": "{{pct}}% ish yuki",
+          "types": {
+            "PRIMARY": "Asosiy",
+            "COMBINATION": "Kombinatsiya",
+            "ACTING": "i.o.",
+            "TEMPORARY": "Vaqtinchalik"
+          }
+        },
+        "certs": {
+          "heading": "ERI kalitlari",
+          "empty": "Hozircha ERI kalitlari mavjud emas",
+          "upload-cta": "Yangi yuklash",
+          "valid-window": "{{from}} – {{to}}",
+          "serial-label": "Seriya raqami"
+        },
+        "history": {
+          "heading": "Audit jurnali",
+          "empty": "Ushbu xodim bo'yicha hozircha hech narsa qayd etilmagan"
+        }
+      },
+      "transfer": {
+        "title": "Bo'linmaga ko'chirish",
+        "subtitle": "{{name}} uchun yangi biriktirma",
+        "back": "Profilga qaytish",
+        "current-label": "Joriy bo'linma: {{name}}",
+        "current-position-label": "Joriy lavozim: {{name}}",
+        "new-unit": "Yangi bo'linma",
+        "new-unit-placeholder": "Bo'linmani tanlang",
+        "new-position": "Yangi lavozim",
+        "new-position-placeholder": "Lavozimni tanlang",
+        "new-position-disabled": "Avval bo'linmani tanlang",
+        "start-date": "Ko'chirish sanasi",
+        "workload": "Ish yuki",
+        "workload-pct": "{{pct}}%",
+        "workload-hint": "Faol biriktirmalar yig'indisi 150% dan oshmasligi kerak",
+        "workload-current": "Hozirgi yig'indi: {{used}}% / {{cap}}%",
+        "type": "Biriktirma turi",
+        "reason": "Sabab yoki buyruq raqami",
+        "reason-placeholder": "Masalan: 25.05.2026 sonli buyruq",
+        "close-old": "Eski biriktirmani yopish",
+        "close-old-hint": "Asosiy biriktirma yangi bo'linmaga ko'chiriladi",
+        "combine-note": "Kombinatsiya — eski biriktirma davom etadi",
+        "primary-demote-note": "Mavjud asosiy biriktirma avtomatik ravishda qo'shimchaga aylantiriladi",
+        "submit": "Ko'chirishni saqlash",
+        "cancel": "Bekor qilish",
+        "types": {
+          "PRIMARY": "Asosiy",
+          "COMBINATION": "Kombinatsiya",
+          "ACTING": "Vazifani bajaruvchi",
+          "TEMPORARY": "Vaqtinchalik"
+        },
+        "errors": {
+          "workload-exceeded": "Jami ish yuki 150% dan oshib ketadi. Eski biriktirmani yoping yoki foizni kamaytiring.",
+          "no-unit": "Yangi bo'linmani tanlang",
+          "no-position": "Yangi lavozimni tanlang",
+          "same-unit": "Yangi bo'linma joriy bo'linmadan farq qilishi kerak"
+        },
+        "success": "{{name}} muvaffaqiyatli ko'chirildi"
       }
     },
     "units": {
