@@ -4,6 +4,131 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-05-26 — `/doc_sync` checkpoint (post step 11 + profile tab-bar polish)
+
+Ran `/doc_sync` after step 11 + the tab-bar visual polish on `EmployeeProfilePage`. The AI_CONTEXT.md Status block, Next pointer, and open-question entry were all updated in-flight during step 11 itself (snapshot reads current: Steps 01–11 landed, Build state 2882 modules / 112.85 KB CSS / 809.81 KB JS / 237.32 KB gzip after the tab-polish bumps, Next → step 12 with the certs-tab `/certificates?upload=1&employee=<uuid>` CTA pre-wired). HISTORY.md already carries the full step 11 entry; this checkpoint adds the post-merge tab-bar polish entry below. No `docs/*` updates needed — per the previous doc_sync (2026-05-26), the `docs/product_states.md` / `docs/models.md` / `docs/product_requirements_document.md` / `docs/mermaid_schemas/` paths in the `/doc_sync` template carry over from a different project and don't exist in Devon's tree. Devon's product canon (`product-specification.md` / `business-processes.md` / `use-cases.md` / `glossary.md` / `competitive-analysis.md`) describes v1.0 product semantics — none changed in step 11 or in the tab polish (the underline-tab visual treatment is per-page chrome that lives in `AI_CONTEXT.md`'s build paragraph if at all, not in the v1.0 product canon). **Files touched:** `ai_context/HISTORY.md`
+
+---
+
+## 2026-05-26 — EmployeeProfilePage tab bar: underline pattern + emerald active emphasis
+
+Two consecutive UI tweaks on the `/employees/:uuid` profile tab bar after step 11 landed.
+
+**Pass 1 — switched to underline tabs with a full-width baseline.** The default shadcn `<TabsList>` variant was a `bg-muted` pill row that stretched its triggers equally via `flex-1`. The user wanted: each tab sized to its label (no stretch), a horizontal baseline running the full width of the container, and the active indicator sitting flush on that baseline (Material-style underline tabs).
+
+Fix landed at the call site in [`EmployeeProfilePage.tsx`](../dashboard/src/features/employees/profile/EmployeeProfilePage.tsx) rather than editing the shadcn primitive — only one tab consumer exists right now, and shadcn's `variant="line"` is intentionally half-finished (no baseline, indicator floats 5 px below the trigger) so future tab uses may want different chrome. Per the LESSONS.md "edit primitive only when default is wrong for *every* call site" rule.
+
+Implementation:
+- `<TabsList variant="line" className="no-scrollbar h-auto w-full justify-start gap-1 overflow-x-auto rounded-none border-b border-line p-0 md:gap-2">` — strips the pill background, adds the `border-b border-line` baseline running the full container width, makes the list size to content (`h-auto` overrides the primitive's `h-8`).
+- A single hoisted `TAB_TRIGGER_CN` const applied to all four triggers: `flex-none` (overrides primitive's `flex-1` cleanly via tw-merge since both target `flex-*`), `rounded-none px-3 py-2.5 text-sm h-auto`, and a matching-prefix after-pseudo override (`group-data-horizontal/tabs:after:-bottom-px group-data-horizontal/tabs:after:h-0.5 group-data-horizontal/tabs:after:bg-emerald`) so the active indicator overlaps the 1 px baseline border at `-bottom-px` and renders as a 2 px emerald bar.
+- IDE plugin's `suggestCanonicalClasses` lint flagged `[-1px]` → `-bottom-px` and `[2px]` → `h-0.5` rewrites; accepted both since these are canonical core Tailwind utilities (not the `tw-animate-css` trap from LESSONS.md, which only applies to `slide-in-from-<side>-full`).
+- The `group-data-horizontal/tabs:` prefix on the after-overrides matches the primitive's conditional prefix exactly so tw-merge replaces (rather than stacks) the primitive's `after:bottom-[-5px]`. Without the matching prefix it'd be the same data-attribute specificity trap as the SelectTrigger one — separate conditional, CSS specificity wins, override silently no-ops.
+
+**Pass 2 — emphasized the active tab with emerald color + semibold weight.** First pass left the active tab visually quiet — only the underline distinguished it (text inherited the primitive's `data-active:text-foreground` which is just slightly less faded than the inactive `text-foreground/60`). User wanted clearer "active" treatment.
+
+Added two utilities to the same `TAB_TRIGGER_CN` const:
+- `data-active:text-emerald` — overrides the primitive's `data-active:text-foreground` cleanly via tw-merge (same `data-active:text-*` prefix). The lucide icons inside each trigger inherit `currentColor` so they flip to emerald alongside the label without separate handling.
+- `data-active:font-semibold` — overrides the primitive's unconditional `font-medium` for active triggers only. Inactive labels stay `font-medium` so the weight contrast itself signals selection.
+
+Net: the active tab now reads with three layered cues — emerald color shift on label + icon, weight bump from medium → semibold, plus the 2 px emerald underline flush on the baseline. Inactive tabs stay quiet at `text-foreground/60 font-medium`, so the contrast does the work without any container backgrounds fighting the underline pattern.
+
+**No primitive edits.** The shadcn `tabs.tsx` is unchanged — all customisation lives in [`EmployeeProfilePage.tsx`](../dashboard/src/features/employees/profile/EmployeeProfilePage.tsx). If a future surface (audit log in step 13 / certificates Kanban filter row in step 12) needs underline tabs, the cleanest path is either reusing the `TAB_TRIGGER_CN` const (extract to a shared module) OR adding a `variant="underline"` to the primitive that pre-bakes the baseline + flush indicator + emerald active. Decide then, not now.
+
+**Verification:** `npm run build` → 2882 modules unchanged, **112.85 KB CSS** (+0.83 KB over pre-polish — new underline + emerald-active utilities), **809.81 KB JS / 237.32 KB gzip** (+0.36 KB JS — the hoisted const string). Clean compile, no TS diagnostics. IDE plugin warnings cleared after accepting the canonical-class rewrites.
+
+**Not browser-tested.** Three things worth eyeballing in real browser chrome:
+1. At 360 px width the tab bar should scroll horizontally inside `no-scrollbar` with the full-width baseline still visible underneath — the baseline is on `<TabsList>` so it grows with the scroll container's `min-width: max-content` natural width, not clamped to the visible viewport.
+2. Tabbing through with the keyboard should still surface the primitive's `focus-visible:ring-ring/50 focus-visible:ring-[3px]` focus ring — those classes are unchanged.
+3. The active tab's emerald label + icon + underline should read as one cohesive visual unit, not three competing emphases — particularly at desktop widths where the underline's 2 px height and label's font-weight bump both compete for attention against the icon glyph.
+
+**Files touched:** `dashboard/src/features/employees/profile/EmployeeProfilePage.tsx`, `ai_context/HISTORY.md`
+
+---
+
+## 2026-05-26 — Dashboard step 11: Flow 3 — `/employees/:uuid` profile + transfer + AssignmentTimeline
+
+Executed [`docs/dashboard-prompts/11-flow3-assignments.md`](../docs/dashboard-prompts/11-flow3-assignments.md). The `/employees/:uuid` route now renders a 4-tab profile (Ma'lumotlar · Bo'linmalar · ERI kalitlari · Tarix) with an identity hero, inline Edit + Terminate actions, and a vertical assignment timeline. The new `/employees/:uuid/transfer` route hosts the unit-transfer form with a 150% workload guard and a slider+numeric workload control. The wizard's success toast (step 10) already navigated to `/employees/:uuid`, so the create → view loop now closes for real.
+
+**What landed:**
+
+- **Mock-backend hardening:**
+  - [`src/lib/mock-backend/errors.ts`](../dashboard/src/lib/mock-backend/errors.ts) — added typed `AssignmentValidationError` + `AssignmentValidationCode` (`'workload-exceeded'`). Mirrors the `UnitValidationError` / `EmployeeValidationError` pattern from steps 08 / 10 so the UI maps `err.code` → `dashboard:employees.transfer.errors.${err.code}` toast text.
+  - [`src/lib/mock-backend/index.ts`](../dashboard/src/lib/mock-backend/index.ts) — `transferEmployee` now:
+    - Computes the per-employee active-workload sum and throws `AssignmentValidationError('workload-exceeded')` if the projected total exceeds the new exported `MAX_TOTAL_WORKLOAD_PERCENT = 150` constant.
+    - Demotes the existing open `isPrimary` row to `isPrimary: false` when `type === 'PRIMARY'` and `closeOldAssignment === false` (previous version only handled this via the close path — two open primaries was possible by setting `closeOld=false`).
+    - Captures the prior primary's `unitUuid` / `positionId` before mutation and writes them into the audit entry's `changes` block (`{ unit: { from, to }, position: { from, to } }`) so step 13's audit-log view can render meaningful diffs. The flat `context` retains `assignmentType` / `workloadPercent` / `closedOld` / `reason` for richer queryability.
+    - Re-exported `MAX_TOTAL_WORKLOAD_PERCENT` so the client can show a live "Hozirgi yig'indi: {{used}}% / {{cap}}%" hint synced against the backend's actual cap (no risk of UI / backend drift).
+  - `listAudit` gained a `resourceUuid` filter so the ProfileHistoryTab can scope to a single employee server-side instead of pulling all rows and filtering client-side.
+  - Re-export block updated to expose the new `AssignmentValidationError` + `AssignmentValidationCode` alongside the existing typed errors.
+- **Shadcn `slider` primitive landed in step 11** ([`src/components/ui/slider.tsx`](../dashboard/src/components/ui/slider.tsx)) — canonical shadcn Radix-backed Slider, single-file, ~50 lines, uses the existing `radix-ui` umbrella package (no new dep). Used by the transfer form's workload field; reusable from step 12 onwards. Matches the `Progress` primitive's import style (`import { Slider as SliderPrimitive } from "radix-ui"`).
+- **Profile tabs under [`src/features/employees/profile/`](../dashboard/src/features/employees/profile/) (6 files):**
+  - `EmployeeProfilePage.tsx` — top-level page. Back link → `/employees`, identity hero band (avatar with bg-emerald initials, FIO + email + phone, StatusBadge + grouped PINFL, Transfer CTA disabled when status=TERMINATED), then a `Tabs` with 4 triggers (Info / Units / Certs / History). Identity hero stacks vertically on mobile and switches to a horizontal row at `md+`. `emp === undefined` → LoadingState; `emp === null` → not-found message + Back CTA. Re-fetch on `uuid` change.
+  - `ProfileInfoTab.tsx` — mobile-stacked / desktop 2-col description list of 11 fields (PINFL grouped, employment-type localised, dates localised, `—` for empty). Edit button opens `UpdateEmployeeSheet`; Terminate button (red outline) opens an `AlertDialog` confirming the cascade (revokes all ACTIVE certs per TZ §6.6; the existing `terminateEmployee` mock-backend mutation already handles this). Terminate succeeds → toast + `navigate(..., { replace: true })` so the page re-fetches the freshly-terminated employee record. Terminate hidden when status is already TERMINATED.
+  - `UpdateEmployeeSheet.tsx` — `ResponsiveDialog`-wrapped 2-column form. Reuses the wizard's step-1 + step-2 field shapes (drops PINFL — locked post-creation per TZ §4.4) with the same zod regexes (phone mask, corporate email must end `@devon.uz`, etc.). Email dedup runs only when the value changes (skips self-collision via `findUserByEmail`). Calls `updateEmployee`; success toast + `onSaved` propagates the new employee back up to the page so the hero/dl re-render. Form resets to current values whenever the sheet re-opens.
+  - `ProfileUnitsTab.tsx` — fetches `listAssignments(employee.uuid)` + units + positions on mount, sorts newest-first (open assignments rank above closed via `endDate ?? '9999'` sentinel; secondary sort by `startDate` desc), passes to `AssignmentTimeline`. "Yangi biriktirma" CTA routes to `/employees/:uuid/transfer`.
+  - `ProfileCertificatesTab.tsx` — `listCertificates({ employeeUuid })`, sorted by `createdAt` desc. Each row: KeyRound icon avatar + commonName + serial (mono tabular-nums) + valid window (`{{from}} – {{to}}`) + `StatusBadge`. "Yangi yuklash" CTA routes to `/certificates?upload=1&employee=<uuid>` (lands in step 12). Empty state: dashed border + muted body copy.
+  - `ProfileHistoryTab.tsx` — `listAudit({ resourceUuid: employee.uuid })`. Reuses the `ACTION_ICON` map + visual rhythm from `RecentActivityCard` (lucide-iconed action tiles + localised verb forms via `dashboard:audit.actions.*` + `formatRelative()` timestamps). Empty state mirrors certs tab.
+- **Assignment feature files under [`src/features/employees/assignments/`](../dashboard/src/features/employees/assignments/) (3 files):**
+  - `AssignmentTimeline.tsx` — pure presentation. Vertical `<ol>` with a `border-l-2 border-line` rail and `-left-[31px]` dot anchors. Active (no `endDate`) dot is `bg-emerald` with `ring-4 ring-emerald-soft`; closed dot is `bg-muted-foreground`. Each card: localised period (`DD.MM.YYYY – hozirgacha` for open), Primary + assignment-type badges, unit link (chevron, hover → emerald), position name, `Progress` bar when workload < 100, italic muted reason when present.
+  - `TransferForm.tsx` — react-hook-form + zodResolver, 7 fields:
+    - `newUnitUuid` — Combobox over ACTIVE units only, with `common:unit-types.${type}` sublabel.
+    - `newPositionId` — Combobox over positions filtered by selected unit's type (auto-clears when previously-picked position no longer fits).
+    - `startDate` — date input defaulting to today.
+    - `workloadPercent` — paired Slider (5–100 step 5) + numeric Input (1–100). Both sync via `form.setValue`. A live "Hozirgi yig'indi: 130% / 150%" hint flips destructive red when projected total breaks the cap, mirroring the backend's `MAX_TOTAL_WORKLOAD_PERCENT` exactly.
+    - `type` — 2×2 (mobile) / 1×4 (desktop) styled `RadioGroup` (PRIMARY / COMBINATION / ACTING / TEMPORARY) with the same selectable-card visual treatment as the wizard's employment-type. PRIMARY + existing open primary + close-old=off surfaces a cinnamon note: "Mavjud asosiy biriktirma avtomatik ravishda qo'shimchaga aylantiriladi."
+    - `closeOldAssignment` — Checkbox + body copy. Auto-forced to `false` and disabled when `type === COMBINATION` (kombinatsiya = both rows stay open by definition).
+    - `reason` — optional Textarea, 500-char cap.
+    - Client-side guard against `newUnitUuid === employee.primaryUnitUuid && type === PRIMARY` (would be a no-op) → inline error. Backend re-validates the 150% cap and toasts on `workload-exceeded`. Success → toast + `navigate('/employees/:uuid', { replace: true })`.
+  - `EmployeeTransferPage.tsx` — outer chrome mirroring the wizard's structure. Mobile (<md): own top bar with X close + truncated title; sticky `pb-safe` footer with Cancel + Save. Desktop (≥md): back link + title + subtitle + centred `max-w-3xl` card; same sticky footer. Submit button is wired to the form via `<Button form={FORM_ID} type="submit">` — same pattern as the wizard's step-N forms. Loading / not-found states render in a centred full-screen layout.
+- **Router** — [`src/router.tsx`](../dashboard/src/router.tsx) `/employees/:uuid` swapped from placeholder to `<EmployeeProfilePage />`; added `/employees/:uuid/transfer` under `ProtectedNoShell` (same auth + no-AppShell treatment as the wizard, so the page owns its own top bar / footer chrome).
+- **i18n** — [`uz.json`](../dashboard/src/i18n/locales/uz.json) extended with two new top-level blocks under `dashboard.employees`:
+  - `profile.*` (~50 keys): not-found / back / pinfl-label / transfer label / 4 tab labels / 14 field labels under info.fields / gender + employment dicts / terminate copy (title / body / confirm / cancel / success) / units.* (heading / add / empty / current / primary / workload / 4 type labels) / certs.* (heading / empty / upload-cta / valid-window / serial-label) / history.* (heading / empty).
+  - `transfer.*` (~25 keys): title / subtitle / back / current-label / current-position-label / 5 field labels + placeholders / workload + workload-pct + workload-hint + workload-current / type / reason + reason-placeholder / close-old + close-old-hint / combine-note / primary-demote-note / submit / cancel / 4 type labels / 4 error keys (workload-exceeded / no-unit / no-position / same-unit) / success interpolation.
+
+**Deviations from the step prompt:**
+
+- **Shadcn Slider primitive added** rather than using the prompt's "slider + numeric input" phrasing as a numeric-only field. The Slider + synced numeric Input pair reads better for a 0–100 range on touch and matches the prompt's intent verbatim. No new npm dep (uses the existing `radix-ui` umbrella package). One new primitive file.
+- **`AssignmentValidationError` typed** alongside `UnitValidationError` / `EmployeeValidationError` rather than the prompt's `Object.assign(new Error, { code })` inline shape. Consistency with the typed-error pattern already established in steps 08 / 10. Same UI mapping rhythm (`if (err instanceof AssignmentValidationError) toast(t('errors.' + err.code))`).
+- **Edit-employee sheet skips PINFL + work-fields** — the prompt's sketch says "form mirroring step-1+step-2 of the wizard (excluding PINFL — that's locked after creation)". Step-3 (unit / position / employment / role) and step-4 (login / password) are intentionally NOT editable from the Info tab — unit + position changes go through the dedicated transfer flow (assignments are the source of truth), and login / role changes belong in a future user-management screen. Avoids the temptation to add "edit everything" capability that conflicts with the assignment-history semantics.
+- **`MAX_TOTAL_WORKLOAD_PERCENT` exported as a const** from the mock-backend rather than hard-coding 150 in both the form and the validator. The UI's live "Hozirgi yig'indi: {{used}}% / {{cap}}%" hint binds to the exact same constant the backend enforces — single source of truth, no drift if the cap ever changes.
+- **Audit `changes` block uses the flat `{ unit: { from, to }, position: { from, to } }` shape** matching the prompt's stated diff intent, and ALSO retains a richer `context` with `assignmentType` / `workloadPercent` / `closedOld` / `reason`. Two-channel: `changes` for clean diff rendering in step 13's audit-log view; `context` for queryability and richer narration.
+- **`listAudit` gained `resourceUuid` filter** — the prompt suggests `listAudit({ actorUuid: employee.uuid })` for the History tab, but that's wrong: it'd surface things the employee *did* (LOGIN, PASSWORD_CHANGED, etc.) instead of things *done to them* (the actual demand). Filtering by `resourceUuid === employee.uuid` matches the user expectation that the History tab is the audit trail for *this employee's record*.
+- **Transfer page mobile route NOT in AppShell** — explicit `ProtectedNoShell` wrapper. Page owns its own top bar / sticky footer same as the wizard. The prompt called this out for the transfer flow specifically.
+- **Email dedup runs only when the corporate email changed** in the edit sheet, not on every save — re-checking your own email value would always self-collide. Tiny correctness win.
+- **`replace: true` on the post-terminate / post-transfer navigation** — re-routing to the same path re-mounts the page and triggers the `useEffect` fetch, so the freshly-terminated / freshly-transferred record renders without a stale state. `replace` keeps the back button clean (you don't get a duplicate `/employees/:uuid` in history).
+- **`SEED_VERSION` not bumped** — step 11 touched no fixture data, only code. Cached seed remains valid per the LESSONS.md rule.
+
+**Lessons respected:**
+
+- Form-control primitives (Input / SelectTrigger / Button) use the bumped `h-10` defaults — no overrides anywhere in the profile or transfer form.
+- ResponsiveDialog used for the edit sheet — the `gap-0 p-0` band-padding fix from yesterday means form fields get the right 24 px breathing room on mobile without per-component tricks.
+- No `backdrop-blur` on any overlay (Combobox Popover / mobile Sheet / AlertDialog).
+- Full-width `<main>` from AppShell — `EmployeeProfilePage` has no outer `max-w-*` clamp (data-density surface).
+- Transfer page explicitly opts out of AppShell via `ProtectedNoShell` (mirrors step 10 wizard).
+- `crypto.randomUUID()` not minted client-side here — `transferEmployee` owns its own UUID generation.
+
+**Verification:**
+
+- `tsc -b && vite build` → **2882 modules** (+12 over step 10), **112.02 KB CSS** (+5.5 KB — Slider primitive utilities + timeline rail + tabs density), **809 KB JS / 237 KB gzip** (+74 KB JS / +16 KB gzip — Slider + Tabs + Avatar + AlertDialog + 9 new feature files were imported-but-unused before; this delta is the actual code being pulled in). One transient TS error caught during build: unused `Button` import in `TransferForm.tsx` (the form's submit is wired via the parent's `<Button form={FORM_ID}>`, no inline button needed) — removed.
+- Production bundle grep'd for 13 distinctive new UZ strings — all present (`Boshqa bo'linmaga ko'chirish`, `Biriktirmalar tarixi`, `Ishdan bo'shatish`, `Joriy bo'linma`, `Eski biriktirmani yopish`, `Jami ish yuki 150`, `ERI kalitlari`, `Audit jurnali`, `Tarmoq xatosi`, `Mavjud asosiy biriktirma`, `Korporativ pochta`, `Vazifani bajaruvchi`).
+- Dev server: `GET /Devon/dashboard/employees/abc-123` → 200; `GET /Devon/dashboard/employees/abc-123/transfer` → 200. SPA fallback resolves both routes (UUID validity is checked client-side via `getEmployee` returning `null`).
+- TS strict + verbatim type imports — `ComboboxOption` / `AssignmentType` / `UnitType` / `Employee` / `Position` / `Assignment` / `LucideIcon` all imported as `type`. No diagnostics.
+
+**Not browser-tested.** Worth eyeballing once the dev server is up:
+1. **Mobile 360 px** profile — identity hero stacks vertically, transfer CTA below the avatar, tabs scroll horizontally without the page scrollbar bleeding under them.
+2. **Desktop ≥ md** — identity hero is a horizontal row with the transfer CTA right-aligned, tabs inline.
+3. **Edit sheet** — desktop: centred Dialog at `sm:max-w-2xl` with 2-col field grid + footer with Cancel / Save. Mobile: bottom Sheet at 92vh with single-column fields + sticky safe-area footer. PINFL row absent (locked); changing corporate email and saving should succeed; trying to set it to an email another user already has should toast `Bu email allaqachon ro'yxatdan o'tgan`.
+4. **Terminate** — click "Ishdan bo'shatish" → AlertDialog with name-interpolated body copy + Cancel / red Confirm. Confirm → mock-backend cascades cert revocations + writes audit + employee status flips to TERMINATED + transfer CTA on the hero disables.
+5. **Units tab** — timeline shows newest-first; the currently-open assignment has the emerald ringed dot, closed ones are grey. Unit name is a Link → `/units?focus=<uuid>` (focus param hook lands in a future step; currently navigates to the units page).
+6. **Transfer form** — pick a new unit → position dropdown narrows by allowed-unit-type; drag slider to 80% → "Hozirgi yig'indi" shows `180% / 150%` in destructive red; toggle "Eski biriktirmani yopish" off → projected total updates live; switch type to COMBINATION → close-old checkbox auto-unchecks and disables; submit a valid transfer → toast + navigate back to profile, then check the Units tab — the new row sits at the top of the timeline with the active dot.
+7. **History tab** — should show the just-created UNIT_TRANSFER entry + any UPDATE entries from the Info-tab edit, with `formatRelative` timestamps.
+
+**Intentionally NOT done:** real cert PFX parsing (step 12 owns the upload modal), URL-synced tab state (tab is a local `useState` via `defaultValue="info"`; querystring sync is a step-15 polish concern), inline employee rename via the profile (the Info tab's Edit sheet handles names; a profile-page header rename inline editor was not in prompt scope), bulk-transfer (one-employee-at-a-time per TZ §5.4).
+
+**Files touched:** `dashboard/src/lib/mock-backend/errors.ts` (+ `AssignmentValidationError`), `dashboard/src/lib/mock-backend/index.ts` (transferEmployee hardening + `MAX_TOTAL_WORKLOAD_PERCENT` + `listAudit` `resourceUuid` filter + re-exports), `dashboard/src/components/ui/slider.tsx` (created — shadcn primitive), `dashboard/src/features/employees/profile/{EmployeeProfilePage,ProfileInfoTab,UpdateEmployeeSheet,ProfileUnitsTab,ProfileCertificatesTab,ProfileHistoryTab}.tsx` (created — 6 files), `dashboard/src/features/employees/assignments/{AssignmentTimeline,TransferForm,EmployeeTransferPage}.tsx` (created — 3 files), `dashboard/src/router.tsx` (`/employees/:uuid` swap + `/employees/:uuid/transfer` route), `dashboard/src/i18n/locales/uz.json` (+ `dashboard.employees.profile.*` + `dashboard.employees.transfer.*`), `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md`
+
+---
+
 ## 2026-05-26 — `/doc_sync` checkpoint (post step 10)
 
 Ran `/doc_sync` after step 10. The AI_CONTEXT.md Status block + open-question + Next pointer were already updated in-flight during the step 09 and step 10 turns — the snapshot reads current (Steps 01–10 landed, HR_ADMIN `Pulatov Asilbek Karimovich`, build state 735 KB JS, Next → step 11). HISTORY.md already carries detailed entries for both step 09 (employees list) and step 10 (4-step wizard + shadcn `form` primitive + `Combobox` + `EmployeeValidationError`). No `docs/*` updates needed — the `docs/product_states.md` / `docs/models.md` / `docs/product_requirements_document.md` / `docs/mermaid_schemas/` paths from the `/doc_sync` template don't exist in Devon's doc tree (the template is from a different project; Devon's canon is `product-specification.md` + `business-processes.md` + `use-cases.md` + `glossary.md` + `competitive-analysis.md`, and dashboard-demo build progress lives in `AI_CONTEXT.md` not the product canon). **Files touched:** `ai_context/HISTORY.md`
