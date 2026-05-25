@@ -55,16 +55,24 @@ export default function ResponsiveDialog({
     );
   }
 
+  // Mobile sheet pattern (matches UnitDetailsSheet's right-side variant):
+  // strip SheetContent's default gap+padding, then own each band's padding
+  // explicitly with borders between them. The prior `-mx-6 px-6` "bleed-edge"
+  // trick assumed SheetContent had px-6 baked in — it doesn't, so the body
+  // extended 24px outside the visible panel and read as paddingless on mobile.
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="flex h-[92vh] flex-col rounded-t-2xl">
-        <SheetHeader className="text-left">
-          <SheetTitle>{title}</SheetTitle>
+      <SheetContent
+        side="bottom"
+        className="flex h-[92vh] flex-col gap-0 rounded-t-2xl p-0"
+      >
+        <SheetHeader className="border-b border-line p-6 text-left">
+          <SheetTitle className="pr-10">{title}</SheetTitle>
           {description && <SheetDescription>{description}</SheetDescription>}
         </SheetHeader>
-        <div className="-mx-6 flex-1 overflow-y-auto px-6 py-4">{children}</div>
+        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
         {footer && (
-          <SheetFooter className="pb-safe sticky bottom-0 -mx-6 border-t border-line bg-background px-6 pt-4">
+          <SheetFooter className="pb-safe border-t border-line bg-background px-6 pt-4">
             {footer}
           </SheetFooter>
         )}

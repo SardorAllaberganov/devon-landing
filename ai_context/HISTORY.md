@@ -4,6 +4,20 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-05-26 — ResponsiveDialog mobile sheet padding fix
+
+User opened the unit edit/create form on mobile and saw the form body sitting flush against the panel edges, no breathing room around the inputs. Diagnosis: my `ResponsiveDialog` mobile-Sheet variant used a `-mx-6 px-6` "bleed-edge" trick on the body and footer — the negative margin was meant to compensate for some parent's 24 px horizontal padding so the scrollbar could reach the panel edge. But `SheetContent` itself has **zero horizontal padding** baked in (`flex flex-col gap-4 bg-popover` only). The `-mx-6` therefore pulled the body 24 px **outside** the visible panel bounds; the `+px-6` then padded its content back to where SheetContent's left edge actually sits. Net: form fields stretched edge-to-edge with no visible padding from the panel, and the body's right edge clipped under the panel border.
+
+Rewrote `ResponsiveDialog` to the same pattern that works on the right-side `UnitDetailsSheet`: `gap-0 p-0` on `SheetContent` (strip the primitive's default chrome), then each band owns its padding explicitly — `SheetHeader p-6 border-b`, body `flex-1 px-6 py-5`, `SheetFooter px-6 pt-4 pb-safe border-t`. No negative margins anywhere. Added `pr-10` on the SheetTitle to match the `UnitDetailsSheet` convention (clears the close-X at top-3 right-3).
+
+Net behaviour: form inputs now have 24 px breathing room on either side, the bottom sticky footer has a real border above it instead of looking welded to the body, and the iOS safe-area inset still resolves correctly via `.pb-safe`. Same fix applies to every consumer of `ResponsiveDialog` (currently only `UnitFormSheet` — the employee wizard in step 10 will also benefit).
+
+**Verification:** `npm run build` clean (102.66 KB CSS unchanged, 660 KB JS +0.02 KB — added a single border-b + pr-10 utility, removed two -mx-6's). Single-file change, low blast radius.
+
+**Files touched:** `dashboard/src/components/common/ResponsiveDialog.tsx`, `ai_context/HISTORY.md`
+
+---
+
 ## 2026-05-26 — `/doc_sync` checkpoint
 
 Ran `/doc_sync` to reconcile [`AI_CONTEXT.md`](./AI_CONTEXT.md) with the day's work. The Status paragraph was one rename stale (still said `Umarov Jahongir Sobirovich`; actual is `Pulatov Asilbek Karimovich` after the third rename) and missing the `SEED_VERSION` versioning system, `useAuthStore.refreshSessionUser()`, the Input/Select/Button `h-10` primitive bumps, and the units details-drawer button-stack fix. Rewrote the Status block into clearer paragraphs (Foundation / Seed contents / Dashboard home / Flow 1 / Cross-cutting polish / Build state / Next) instead of one run-on sentence. Added a new open-question entry covering the three-renames-in-one-day pattern and the seed-versioning fix that backstops it. Bumped build figures (102.66 KB CSS, 660 KB JS). No changes needed in `docs/product-specification.md` / `docs/business-processes.md` / `docs/use-cases.md` / `docs/glossary.md` / `docs/competitive-analysis.md` — those describe the v1.0 product (8 modules, roles, business processes), and the dashboard demo's build progress belongs in `AI_CONTEXT.md` not the product canon. The `docs/product_states.md` / `docs/models.md` / `docs/product_requirements_document.md` / `docs/mermaid_schemas/` paths from the `/doc_sync` template don't exist in Devon's doc tree — that template carries over from a different project's conventions. **Files touched:** `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md`
