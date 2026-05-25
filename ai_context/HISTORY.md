@@ -4,6 +4,59 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-05-25 — AppShell main full-width + LESSONS.md created
+
+Two follow-ups after step 05 landed:
+
+1. **Main content area is now full-width.** Removed the `mx-auto w-full max-w-[1280px]` clamp from `<main>` in [`AppShell.tsx`](../dashboard/src/components/layout/AppShell.tsx) per user direction. Content now fills the full viewport minus the sidebar (240px on `lg+`) and the page padding (`px-4 → md:px-6`). Reason: Devon's dashboard is a data-dense admin surface; tables, kanban, audit logs, and employee lists benefit from horizontal density. The 1280px clamp made the page feel like a marketing landing on wide monitors and wasted vertical scroll on tables that would otherwise fit horizontally.
+2. **Created [`ai_context/LESSONS.md`](./LESSONS.md)** with a Layout section capturing the full-width decision, the why, and a how-to-apply note. The file was already a known-empty gap flagged in `AI_CONTEXT.md`'s open questions section — closing that gap.
+3. **Patched the step 05 build prompt** ([`docs/dashboard-prompts/05-app-shell.md`](../docs/dashboard-prompts/05-app-shell.md)) to drop the clamp from the `AppShell` template + added an inline comment + updated the desktop acceptance check, so future runs of step 05 in a fresh session don't re-introduce the clamp.
+
+A feedback memory was also saved under the user's auto-memory directory so future sessions see the rule even before reading LESSONS.md.
+
+**Files touched:** `dashboard/src/components/layout/AppShell.tsx`, `ai_context/LESSONS.md` (created), `docs/dashboard-prompts/05-app-shell.md`, `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md`
+
+---
+
+## 2026-05-25 — Dashboard step 05: AppShell (sidebar drawer + topbar + user menu)
+
+Executed [`docs/dashboard-prompts/05-app-shell.md`](../docs/dashboard-prompts/05-app-shell.md). Every protected route is now wrapped in `<AppShell>` — persistent 240px Devon-branded sidebar on `lg+`, slide-in `Sheet` drawer on mobile/tablet, sticky `cream/85` backdrop-blur top bar with search + notifications + user menu, content area constrained to `max-w-[1280px]` with responsive padding. Placeholder pages now render through the reusable `<PageHeader>` component instead of bare `<main>` tags.
+
+**What landed:**
+
+- **`src/stores/useUiStore.ts`** — Zustand store for UI chrome state. Currently only `mobileNavOpen` (open/close/toggle) — locale + theme deferred until they're actually needed.
+- **`src/lib/use-media-query.ts`** — `useMediaQuery(query)` hook. Used by `App.tsx` to flip Toaster position between `top-center` (mobile) and `bottom-right` (desktop). SSR-safe with `typeof window === 'undefined'` guard, but moot for an SPA — kept for hygiene.
+- **`src/components/layout/Sidebar.tsx`** — Same component renders on both mobile (inside `Sheet`) and desktop (inline 240px column). Header with DEVON wordmark, two nav sections (BOSHQARUV / SHAXSIY), active state is the emerald-pill-with-cream-text variant matching the master spec's "brand-warm chrome" tone. Footer carries the `Rivolanish intizom bilan!` slogan in cinnamon Fraunces-italic. Icons via lucide-react (`LayoutDashboard`, `Network`, `Users`, `KeySquare`, `ScrollText`, `UserCircle2`).
+- **`src/components/layout/MobileNavTrigger.tsx`** — Hamburger button visible below `lg`. Opens `Sheet` containing the same `<Sidebar>` with `onNavigate` callback that closes the drawer on nav click. Aria-label flows from `dashboard:topbar.open-nav`.
+- **`src/components/layout/UserMenu.tsx`** — Avatar dropdown showing full name + email, profile/settings shortcuts (both route to `/profile` for now), reset-demo (clears all `devon.dashboard.*` localStorage keys + toast confirmation + 800ms reload), logout (clears session + redirects to `/login`). First name hidden below `md` so the avatar alone is the chip on mobile.
+- **`src/components/layout/TopBar.tsx`** — Sticky `z-30` header. Hamburger (mobile/tablet only) + compact DEVON wordmark (mobile/tablet only) + search input (visible from `sm+`, with embedded `Search` icon) + notifications dropdown (empty state for now) + user menu. Backdrop-blur on a translucent cream surface for the layered chrome feel.
+- **`src/components/layout/AppShell.tsx`** — Outer layout: desktop sidebar in a `fixed inset-y-0` column with a `w-60` placeholder sibling for layout flow, main column with the topbar on top and content centered to `max-w-[1280px]`.
+- **`src/components/common/PageHeader.tsx`** — Reusable responsive header: title (`text-2xl → md:text-3xl`), optional subtitle (`text-sm text-muted-foreground`), optional actions slot that stacks below on mobile and right-aligns on desktop.
+- **`src/router.tsx`** — Refactored to use a `<Protected>` helper (= `<RequireAuth><AppShell>...</AppShell></RequireAuth>`) so each of the 8 routes reads cleanly. `Placeholder` now renders through `PageHeader` with `t('common:labels.coming-soon')` as subtitle.
+- **`src/App.tsx`** — Toaster position toggles via `useMediaQuery('(min-width: 768px)')` — `top-center` on mobile (clears the sticky action bar), `bottom-right` on desktop.
+- **`uz.json` additions:** `common.labels.coming-soon` (Keyingi bosqichlarda to'ldiriladi), `dashboard.topbar.open-nav` (Navigatsiyani ochish — for the hamburger aria-label), `dashboard.user-menu.reset-demo-toast` (the success toast text).
+
+**Deviations from the step prompt:**
+
+- **Hardcoded English/UZ strings in the prompt fixed.** Step 05's prompt has `aria-label="Open navigation"` (English) on the hamburger and a hardcoded UZ toast (`"Demo ma'lumotlar qayta tiklandi..."`) inside `onResetDemo`. Both routed through new UZ keys to keep step 03's no-hardcoded-strings discipline intact.
+- **Per-field store selectors.** Both `MobileNavTrigger` and `UserMenu` use `useUiStore((s) => s.x)` / `useAuthStore((s) => s.x)` per field instead of the prompt's full-store destructure — avoids re-rendering on unrelated state changes.
+- **`React.ComponentType` → `import type { ComponentType }`.** TS 6 + `verbatimModuleSyntax` requires the explicit type import. The prompt's `icon: React.ComponentType<{ className?: string }>` wouldn't compile.
+- **lucide-react install task skipped** — already pulled in by shadcn during step 02 init.
+
+**Known dev-only noise carried forward:** the same two React Router v6 future-flag warnings (`v7_startTransition`, `v7_relativeSplatPath`) — cosmetic, not in prod logs.
+
+**Verification:**
+
+- `npm run build` → 1905 modules (up from 1894 — 11 new files), 94 KB CSS, 456 KB JS / 144 KB gzip. JS bundle grew ~92 KB from step 04 because radix-ui primitives (Sheet, DropdownMenu, Avatar) that were imported-but-unused before are now actively tree-shaken in.
+- `npm run dev` → `GET /Devon/dashboard/`, `/units`, `/profile` all return HTTP 200 (Vite SPA fallback).
+- Production JS bundle contains the new UZ strings: `BOSHQARUV`, `SHAXSIY`, `Navigatsiyani ochish`, `Keyingi bosqichlarda`, `Tarkibiy tuzilma`.
+
+**Intentionally NOT done:** TooltipProvider wrap (deferred — no current primitive uses tooltips, will add when first needed), real breadcrumbs (master §11 + prompt's notes call for in-page back links instead until deeper hierarchies arrive), locale switcher in UserMenu (RU/EN copy ships in v1.1 per roadmap).
+
+**Files touched:** `dashboard/src/stores/useUiStore.ts` (created), `dashboard/src/lib/use-media-query.ts` (created), `dashboard/src/components/layout/Sidebar.tsx` (created), `dashboard/src/components/layout/MobileNavTrigger.tsx` (created), `dashboard/src/components/layout/UserMenu.tsx` (created), `dashboard/src/components/layout/TopBar.tsx` (created), `dashboard/src/components/layout/AppShell.tsx` (created), `dashboard/src/components/common/PageHeader.tsx` (created), `dashboard/src/router.tsx` (refactored with Protected helper), `dashboard/src/App.tsx` (responsive Toaster), `dashboard/src/i18n/locales/uz.json` (+ 3 keys), `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md`
+
+---
+
 ## 2026-05-25 — Login page polish: password toggle, slogan legibility, brand-pane redesign
 
 Three iterative polish passes on the step 04 [`LoginPage.tsx`](../dashboard/src/features/auth/LoginPage.tsx) after the initial step landed, all UZ-keyed and verified in the production bundle:
