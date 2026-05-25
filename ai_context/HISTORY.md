@@ -4,6 +4,256 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-05-26 — `/doc_sync` checkpoint
+
+Ran `/doc_sync` to reconcile [`AI_CONTEXT.md`](./AI_CONTEXT.md) with the day's work. The Status paragraph was one rename stale (still said `Umarov Jahongir Sobirovich`; actual is `Pulatov Asilbek Karimovich` after the third rename) and missing the `SEED_VERSION` versioning system, `useAuthStore.refreshSessionUser()`, the Input/Select/Button `h-10` primitive bumps, and the units details-drawer button-stack fix. Rewrote the Status block into clearer paragraphs (Foundation / Seed contents / Dashboard home / Flow 1 / Cross-cutting polish / Build state / Next) instead of one run-on sentence. Added a new open-question entry covering the three-renames-in-one-day pattern and the seed-versioning fix that backstops it. Bumped build figures (102.66 KB CSS, 660 KB JS). No changes needed in `docs/product-specification.md` / `docs/business-processes.md` / `docs/use-cases.md` / `docs/glossary.md` / `docs/competitive-analysis.md` — those describe the v1.0 product (8 modules, roles, business processes), and the dashboard demo's build progress belongs in `AI_CONTEXT.md` not the product canon. The `docs/product_states.md` / `docs/models.md` / `docs/product_requirements_document.md` / `docs/mermaid_schemas/` paths from the `/doc_sync` template don't exist in Devon's doc tree — that template carries over from a different project's conventions. **Files touched:** `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md`
+
+---
+
+## 2026-05-26 — Form-control height consistency (primitive bump h-8 → h-10) + drawer footer-button stack
+
+Three related fixes after the user spotted that on the `/units` page, inputs and selects rendered at different heights, action buttons looked inconsistent, and the details-drawer's three action buttons collided into each other on tablet widths.
+
+**Root cause — SelectTrigger silently dropped consumer height overrides.** The shadcn Nova-preset primitives ship with `h-8` (32 px) baked in via different mechanisms:
+
+- `Input` uses a plain `h-8` class (specificity 0,1,0) — consumer's `className="h-11"` is detected as a conflict by `tailwind-merge` and resolves cleanly to `h-11`. ✅
+- `SelectTrigger` uses a conditional `data-[size=default]:h-8` (specificity **0,1,1**) — tw-merge sees this as a separate utility from a plain `h-11` (different conditional prefix), so both end up in the className chain. CSS specificity then picks the conditional one. The trigger silently renders at 32 px while the sibling `<Input className="h-11">` renders at 44 px. ❌
+- `Button` `default` size was `h-8` — sat 8 px shorter than the inputs above it, looked unbalanced in form-action rows.
+
+**Fix — bump the primitive defaults instead of slapping `!h-*` everywhere.** Following the LESSONS.md rule "edit shadcn primitives only when the default is wrong for *every* call site":
+
+- [`input.tsx`](../dashboard/src/components/ui/input.tsx) — `h-8` → `h-10`; `px-2.5` → `px-3`; file-input slot `h-6` → `h-7` to match the new height.
+- [`select.tsx`](../dashboard/src/components/ui/select.tsx) — `data-[size=default]:h-8` → `h-10`; `data-[size=sm]:h-7` → `h-8`; `pl-2.5` → `pl-3`. Inline comment warns future contributors that the data-attribute selector beats plain `h-*` overrides — to grow a single trigger taller, use `!h-12` (Tailwind v4 important modifier) or write a matching data-attribute selector.
+- [`button.tsx`](../dashboard/src/components/ui/button.tsx) cva sizes — `default` h-8 → h-10, `sm` h-7 → h-8, `lg` h-9 → h-11, `icon` size-8 → size-9, `icon-sm` size-7 → size-8, `icon-lg` size-9 → size-10. Same proportional bump up one notch on the spacing scale, so every variant grew by ~4 px and the relative scale stays the same.
+
+Net: every `Input` / `SelectTrigger` / `Button` (default size) in the dashboard now renders at 40 px tall, perfectly aligned in form rows.
+
+**Removed redundant `h-*` overrides** that the new primitive defaults now own:
+
+- [`SearchInput.tsx`](../dashboard/src/components/common/SearchInput.tsx) — dropped `h-10` (primitive default now).
+- [`UnitsPage.tsx`](../dashboard/src/features/units/UnitsPage.tsx) filter row — dropped `h-10` from the SelectTrigger.
+- [`UnitFormSheet.tsx`](../dashboard/src/features/units/UnitFormSheet.tsx) — dropped 5 `h-11` overrides (3 Inputs + 2 SelectTriggers). Form now lets the primitive own the height; consistent with the rest of the app.
+
+**Kept intentional overrides:**
+
+- [`LoginPage.tsx`](../dashboard/src/features/auth/LoginPage.tsx) — CTA `h-12` and field `h-12` stay (deliberately oversized for a public sign-in screen). Button has no data-attribute height selector (cva emits class strings, not conditionals), so `h-12` overrides cleanly.
+- [`UserMenu.tsx`](../dashboard/src/components/layout/UserMenu.tsx) trigger — `h-9` stays (deliberately compact for topbar density).
+- [`UnitsTreeDesktop.tsx`](../dashboard/src/features/units/UnitsTreeDesktop.tsx) kebab — `size="icon"` + `className="h-7 w-7"` stays (deliberately tight for table-row density).
+
+**Drawer footer-button overflow** — separate problem from the height work. `UnitDetailsSheet` action row used `grid-cols-1 sm:grid-cols-3` to put three buttons side-by-side from `sm:` (640 px) upwards. But the drawer itself caps at `sm:max-w-md` (448 px), and the longest Uzbek action label — `Ichki bo'linma qo'shish` (~24 chars) — plus its Plus icon needs ~200 px on its own. With ~408 px usable width split three ways (~136 px per cell), the long label wrapped to two lines AND the buttons grew vertically to match, looking ragged. The Edit/Archive buttons (short labels) got pulled up to 2-line height for no reason.
+
+Fix: switched to `flex flex-col gap-2` — every button on its own row at full width. Each label renders on a single line. Bonus: also bumped Edit to `variant="default"` (filled emerald) since it's the most-likely intent in a details panel — gives the eye a primary anchor.
+
+**Net behaviour after refresh:**
+- Inputs, selects, and buttons in the `/units` filter row are all 40 px tall — they sit on the same baseline, share the same border-radius, and look like one row.
+- The unit form (create + edit sheet) has consistent input + select + button heights all the way down.
+- The details drawer's three action buttons stack vertically with breathing room; long Uzbek labels never wrap.
+
+**`SEED_VERSION` bumped to `'4'`** alongside this UI-only change is **NOT** necessary — this turn didn't touch fixture data, only primitive styling. Cached seed remains valid.
+
+**Documented in [`LESSONS.md`](./LESSONS.md):** new "Form-control height" entry under Animation (rebranded to "Animation / shadcn primitives"). Future PRs that touch form primitives or that try to size a SelectTrigger via plain className will land on this lesson and avoid re-walking the specificity trap.
+
+**Verification:** `npm run build` → 2844 modules, 102.66 KB CSS (+0.19 KB — bumped utilities + one new vertical-stack flex combo), 660 KB JS (-0.02 KB — removed a few className strings). Compiled CSS confirms `h-10` is now present 2× (Input + SelectTrigger primitives) and `h-8` count dropped to 4 (Button sm + SelectTrigger sm + minor uses). No new diagnostics. No new bundle warnings.
+
+**Not browser-tested.** Three things worth eyeballing once the dev server is up:
+1. **`/units` filter row** — `SearchInput` and the status `Select` should sit at the same height with identical border-radius, looking like one continuous row.
+2. **Unit form sheet** — open create-unit, scroll through Name / Short-name / Code / Parent / Type / Description. Every input + select tile should be 40 px tall; Cancel + Save buttons in the footer should also be 40 px tall and align with the form fields above.
+3. **Right-side details drawer** — open any unit's details. Three action buttons at the bottom should stack one-per-row, each full-width within the footer, no wrapping, no overlap. Edit button should be the filled emerald (primary intent).
+
+**Files touched:** `dashboard/src/components/ui/input.tsx`, `dashboard/src/components/ui/select.tsx`, `dashboard/src/components/ui/button.tsx`, `dashboard/src/components/common/SearchInput.tsx`, `dashboard/src/features/units/UnitsPage.tsx`, `dashboard/src/features/units/UnitFormSheet.tsx`, `dashboard/src/features/units/UnitDetailsSheet.tsx`, `ai_context/LESSONS.md`, `ai_context/HISTORY.md`
+
+---
+
+## 2026-05-26 — Second HR_ADMIN rename + `SEED_VERSION` to auto-invalidate cached seeds
+
+User asked for another rename. `Umarov Jahongir Sobirovich` → **`Pulatov Asilbek Karimovich`**. Picked Pulatov (surname not in seed), Asilbek (given name not in seed), Karimovich (patronymic root distinct from the `Karimov` surname already in the seed — Uzbek naming convention keeps patronymics and surnames in separate namespaces, no collision).
+
+**The real fix landed alongside the rename:** the previous `refreshSessionUser` hook from earlier today only re-resolved the cached session against the *cached seed*, not the fresh seed. The cached seed kept saying `Umarov Jahongir Sobirovich` because `seedIfEmpty()`'s guard was a literal `localStorage.getItem(SEED_FLAG) === '1'` — a binary flag that, once set, was never invalidated by any future `seed.ts` change. Result: my previous rename surfaced in `seed.ts` but never reached actual user browsers, because the user's already-set `'1'` flag short-circuited the reseed every time.
+
+**Now `seed.ts` carries a versioned flag.** `SEED_VERSION = '3'` (string). `seedIfEmpty()` reseeds when `localStorage.getItem(SEED_FLAG) !== SEED_VERSION`. `resetAndSeed()` writes the current `SEED_VERSION`. Bumping the constant on any identity-affecting change (rename, status mix, hierarchy reshape) silently re-seeds every user's browser on next page load — no "Reset demo" required, no logout. The pattern is documented in [`LESSONS.md`](./LESSONS.md) under the new "Mock backend" section so future seed renames don't repeat this dance.
+
+**End-to-end load behaviour for an existing user now:**
+1. App boots → `main.tsx` calls `seedIfEmpty()`.
+2. `seedIfEmpty` sees stored value `'1'` (or `'2'` if they hit reset-demo between renames) ≠ `'3'` → calls `resetAndSeed()`.
+3. `resetAndSeed` wipes the `devon.dashboard.*` tables and re-runs `buildUnits` / `buildEmployeesAndUsers` / `buildCertificates` / `buildAudit` with the new FIO. Writes `SEED_FLAG = '3'`.
+4. `main.tsx` then calls `useAuthStore.refreshSessionUser()` (from the previous turn). That reads the persisted session, looks the user up by email, finds the new employee record with `fullNameGenerated = 'Pulatov Asilbek Karimovich'`, and silently updates `session.user.fullName`.
+5. React mounts. Topbar avatar chip flips to `Pulatov`, home greeting to `Salom, Asilbek!`, UserMenu dropdown header to the full new FIO. No visible flicker beyond the ~200–600 ms simulated read latency.
+
+**Files updated for the rename itself** (same four-file pattern as before, now reaching real users thanks to the version bump): `seed.ts` (4 spots: `HR_ADMIN_NAME` constant, `fios[0]` entry, two comments mentioning the first name), `00-master.md` (§13 seed-scale example), `04-routing-auth.md` (the step-04 stopgap `fullName` literal), `06-mock-backend.md` (3 spots in the `buildEmployeesAndUsers` example), `09-flow2-employees-list.md` (search-debounce acceptance line). The `SEED_VERSION` bump itself is `seed.ts` only.
+
+**Verification:** `npm run build` → 2844 modules, 102.47 KB CSS, 660 KB JS / 202 KB gzip — identical to last build modulo the new string. Bundle grep: `Pulatov` × 2, `Asilbek` × 2, `Karimovich` × 2 (display literal + parts mapping), zero occurrences of `Umarov` / `Jahongir` / `Sobirovich` / `Allaberganov` / `Sardor` / `Otabekovich`. (The `Karimov` surname stays in the bundle for the existing Karimov Bekzod Anvarovich seed row — that's intentional, the rename only touched the HR_ADMIN at index 0.)
+
+**Not browser-tested.** When you refresh the dashboard: the topbar chip should flip to `Pulatov`, the home greeting to `Salom, Asilbek!`. If you still see `Umarov` or `Allaberganov`, hard-refresh — the `SEED_VERSION` check runs on every load but the JS bundle itself is cache-busted by Vite's content hash, so the only reason to see stale UI is the browser serving an old JS file from disk cache.
+
+**Files touched:** `dashboard/src/lib/mock-backend/seed.ts` (FIO + `SEED_VERSION` + `seedIfEmpty` / `resetAndSeed` version checks), `docs/dashboard-prompts/00-master.md`, `docs/dashboard-prompts/04-routing-auth.md`, `docs/dashboard-prompts/06-mock-backend.md`, `docs/dashboard-prompts/09-flow2-employees-list.md`, `ai_context/LESSONS.md` (+ new "Bump `SEED_VERSION`..." rule under Mock backend), `ai_context/HISTORY.md`
+
+---
+
+## 2026-05-26 — Post-step-08 polish: stale-session refresh, units details-drawer layout, kebab dropdown width
+
+Three follow-ups after the user opened the units page and reset their seed:
+
+1. **Stale `fullName` after rename surfaced everywhere — fixed at the auth-store level.** After yesterday's HR_ADMIN rename (`Allaberganov Sardor` → `Umarov Jahongir`), the user's persisted session in `localStorage` still carried the OLD `fullName` because `seedIfEmpty()` re-reads seed data but never touches the auth session, and `resetAndSeed()` only clears the data tables — not the cached session. Result: the topbar avatar chip showed `Allaberganov`, the home greeting showed `Salom, Sardor!`, the UserMenu dropdown header showed the full old FIO — all three derived from `useAuthStore().user.fullName` which was frozen from the pre-rename login.
+
+   Fix: added `refreshSessionUser()` to [`useAuthStore`](../dashboard/src/stores/useAuthStore.ts). It re-resolves the cached session's `fullName` + `roles` against the current seed (lookup via `findUserByEmail(user.email)` → `listEmployees().find(e => e.uuid === user.employeeUuid)`). Diff-only `set()` so unchanged sessions don't trigger re-renders. Silently catches `MockNetworkError` — if the 3% simulated failure hits, the cached session keeps working and the next refresh tries again. Hook is fired from two places:
+   - **[`main.tsx`](../dashboard/src/main.tsx)** — right after `seedIfEmpty()` resolves, before React mounts. Fire-and-forget; the UI doesn't wait. This handles the "deployed code with newer seed but older session" case (which is exactly what the user hit).
+   - **[`UserMenu.onResetDemo`](../dashboard/src/components/layout/UserMenu.tsx)** — awaited after `resetAndSeed()` so the re-seeded names take effect before the 800 ms reload fires. The reload is no longer strictly necessary for the name to update, but it stays as a deliberate cosmetic "fresh start" signal.
+
+   Net effect: any session whose cached `fullName` drifts from the seed gets silently reconciled within ~200–600 ms of app load (the simulated read latency). No logout required. No user-visible flicker.
+
+2. **`/units` right-side details drawer was cramped.** My step-08 `UnitDetailsSheet` wrapped everything in `<div className="space-y-4 p-1">` — 4 px of padding everywhere, plus `SheetHeader className="px-0"` killed the header's built-in `p-4`. The shadcn `SheetContent` itself has **zero horizontal padding** by default (only `flex flex-col gap-4 bg-popover`), relying on `SheetHeader`/`SheetFooter` to bring their own — I'd unwittingly canceled the only padding the layout had, so the title sat at ~4 px from the panel edge and overlapped the close-X (which is `absolute top-3 right-3`).
+
+   Rewrote the structure to the canonical shadcn pattern: `SheetContent gap-0 p-0` (panel chrome only) → `SheetHeader p-6 border-b` (proper title + meta band, with `pr-10` on the title to clear the close-X) → scrolling `flex-1 px-6 py-5` body → `SheetFooter p-4 border-t` pinned at the bottom (via `mt-auto`) holding the action-button grid. Also added a `SheetDescription` (sr-only) for the type-and-code sentence so Radix doesn't log the "missing description" a11y warning that was silently appearing in dev. Bonus: added `Pencil` and `Archive` icons to the matching buttons (they were missing the lucide icons that the dropdown items used).
+
+3. **Tree kebab dropdown was too narrow for Uzbek labels.** The shadcn `DropdownMenuContent` default is `min-w-32` (128 px), and the longest tree-row action — `Ichki bo'linma qo'shish` (Add child) — needs ~200 px to render on a single line with its leading icon + Radix's `p-1` padding. At default width the label wrapped to two lines, the kebab menu looked ragged, and the menu items had inconsistent heights.
+
+   Fix: [`UnitsTreeDesktop`](../dashboard/src/features/units/UnitsTreeDesktop.tsx) `DropdownMenuContent className="min-w-56"` (224 px, the Tailwind canonical token equivalent to `min-w-[14rem]` — the IDE lint surfaced this as a `suggestCanonicalClasses` warning and the substitution is safe here, unlike the step-06 `slide-in-from-<side>` linter trap which silently dropped the rule). Added `whitespace-nowrap` on each `DropdownMenuItem` belt-and-braces in case a future locale produces a label longer than 224 px — at that point the menu just expands instead of wrapping. Also added `Pencil` icon to the Edit row so all three rows have icons (Add child → Plus, Edit → Pencil, Archive → Archive), matching the visual rhythm of the details-sheet action buttons.
+
+**Verification:**
+
+- `npm run build` → 2844 modules, 102.47 KB CSS, 660 KB JS / 202 KB gzip. No new chunks, +1 KB JS (refreshSessionUser + 2 extra lucide icon imports), +0.34 KB CSS (`min-w-56` + new flexbox utility combinations on the drawer).
+- TS strict + verbatim type imports — no new diagnostics.
+- IDE lint warning on `min-w-[14rem]` → switched to `min-w-56`. Confirmed safe — Tailwind's spacing scale maps `56 → 14rem (224 px)` 1:1, and tw-animate-css isn't involved here so the step-06 silent-no-op trap doesn't apply.
+
+**Not browser-tested.** Three things worth eyeballing once the dev server is up: (a) refresh the units page with an already-authenticated session — the topbar chip and greeting should flip from `Allaberganov` / `Sardor` to `Umarov` / `Jahongir` within ~half a second (the simulated read latency) without any visible flicker; (b) open a unit's details panel from the right — the title should have breathing room from the X, the action buttons should sit comfortably at the bottom with a separator above, and the body section should scroll cleanly if it overflows; (c) click the kebab on any tree row — all three options (Add child / Edit / Archive) should sit on single lines with their icons, and the menu should be ~224 px wide.
+
+**Files touched:** `dashboard/src/stores/useAuthStore.ts` (+ `refreshSessionUser`), `dashboard/src/main.tsx` (call after `seedIfEmpty`), `dashboard/src/components/layout/UserMenu.tsx` (call after `resetAndSeed`), `dashboard/src/features/units/UnitDetailsSheet.tsx` (layout rewrite), `dashboard/src/features/units/UnitsTreeDesktop.tsx` (dropdown width + icons + nowrap), `ai_context/HISTORY.md`
+
+---
+
+## 2026-05-26 — Dashboard step 08: Flow 1 — tarkibiy bo'linmalar CRUD (tree + accordion + form sheet + details sheet)
+
+Executed [`docs/dashboard-prompts/08-flow1-units.md`](../docs/dashboard-prompts/08-flow1-units.md). The `/units` route now renders the full Flow 1 surface: a recursive desktop tree, a mobile accordion, a Dialog/Sheet form for create + edit, a side-sheet details panel, debounced search across name + code + shortName, and an active/archived/all status filter. First step that exercises the mock-backend mutation path end-to-end — validation surfaces as localised toasts via a typed `UnitValidationError`.
+
+**What landed:**
+
+- **Three reusable common components** (will keep paying off through steps 09+):
+  - [`src/components/common/ResponsiveDialog.tsx`](../dashboard/src/components/common/ResponsiveDialog.tsx) — `Dialog` ≥ 768 px / bottom-`Sheet` < 768 px wrapper. Mobile sheet is `h-[92vh]` with rounded top corners, sticky footer that respects `.pb-safe` for iOS safe-area, and full-bleed scrolling content (the `-mx-6 px-6` overflow trick keeps padding visual but lets the scrollbar reach the edge).
+  - [`src/components/common/StatusBadge.tsx`](../dashboard/src/components/common/StatusBadge.tsx) — 11 status kinds covering Unit / Employee / Certificate / Assignment domains. Icon + colour pair + localised label. Future entity screens just pass `<StatusBadge status={x.status} />` and never invent colours.
+  - [`src/components/common/SearchInput.tsx`](../dashboard/src/components/common/SearchInput.tsx) — `Input` with a search icon on the left, an `X` clear button on the right, and a 300 ms internal debounce so caller props get the settled value (no churn during typing). Two `useEffect`s: one mirrors external resets into local state, the other fires the debounced `onChange`.
+- **Mock-backend hardening** in [`src/lib/mock-backend/index.ts`](../dashboard/src/lib/mock-backend/index.ts) — the step-06 stubs for `createUnit`/`updateUnit` had no validation. Now:
+  - **`MAX_UNIT_DEPTH = 7`** constant + `nameClashesWithSibling` helper (case-insensitive, parent-scoped, excludes ARCHIVED siblings since archived names are free to reuse).
+  - **`createUnit`** throws `invalid-parent` / `max-depth` / `duplicate-name` (one of the four codes) before mutating.
+  - **`updateUnit`** does the same plus **cycle detection** (`newParent.path.includes('/${uuid}/')`) and a full **descendant path recompute** when the parent moves: walks every unit whose `path` starts with the old `/${uuid}/` fragment, swaps the prefix, recomputes `level` from the new path's segment count, and re-checks `MAX_UNIT_DEPTH` for the deepest descendant. Each touched descendant gets its `updatedAt` / `updatedBy` bumped.
+  - **[`errors.ts`](../dashboard/src/lib/mock-backend/errors.ts)** — new `UnitValidationError` class carrying a typed `code` field (`'cycle' | 'duplicate-name' | 'max-depth' | 'invalid-parent'`) plus the `UnitValidationCode` type, both re-exported from `mock-backend/index.ts` so UIs can do `err instanceof UnitValidationError` and `t(`dashboard:units.errors.${err.code}`)`. Beats the prompt's `throw new Error('cycle')` (string-message matching is brittle).
+- **Form schema** — [`src/features/units/unit.schema.ts`](../dashboard/src/features/units/unit.schema.ts), zod v4. Name 3–255 chars, optional shortName ≤ 50, optional code `/^[A-Z0-9-]{2,20}$/i`, type enum, nullable parent uuid, optional description ≤ 1000. Error messages are i18n keys (`'common:errors.min-length'`, etc.) so the form lookup is a single `t(message)` call.
+- **[`UnitFormSheet`](../dashboard/src/features/units/UnitFormSheet.tsx)** (create + edit). Built on react-hook-form + zodResolver. Notable details:
+  - **Parent dropdown excludes self + descendants when editing** (server would reject as `cycle`, but failing client-side first avoids a wasted network round-trip and a confusing toast).
+  - **Type dropdown auto-corrects** when parent changes — if the current type isn't in the new parent's `ALLOWED_CHILDREN` list, it snaps to `allowedTypes[0]`. No invalid combinations can be submitted.
+  - **`autoCode()`** mints a 6-char uppercase alphanumeric when the code field is left blank — matches the prompt's intent without leaking the randomness into the field while the user is typing.
+  - Catches `UnitValidationError` from the backend and routes to `dashboard:units.errors.${err.code}`. Generic errors fall back to `common:errors.network`.
+- **[`UnitsTreeDesktop`](../dashboard/src/features/units/UnitsTreeDesktop.tsx)** — recursive `Node` component with expand/collapse chevrons, kebab menu (Add child / Edit / Archive — Archive hidden for already-ARCHIVED units), employee-count chip, type badge, and ARCHIVED badge. Stand-out improvement: **search highlights work for deep descendants**. The prompt's `kids.some(...)` only checks direct children; I precompute a `visible: Set<string>` that includes every hit's full ancestor chain (parsed from `path.split('/').filter(Boolean)`) so a hit five levels deep auto-expands the entire chain above it. Hits get `bg-cinnamon-soft/40` highlight; non-hits in the chain render normally so the user can see context.
+- **[`UnitsAccordionMobile`](../dashboard/src/features/units/UnitsAccordionMobile.tsx)** — 2-level shadcn Accordion. Root departments collapsed by default; expanding shows direct children only; tapping a child opens the details sheet (where the user can keep drilling). "Add child" CTA sits at the bottom of each open root in emerald-ghost styling.
+- **[`UnitDetailsSheet`](../dashboard/src/features/units/UnitDetailsSheet.tsx)** — right-side sheet (`w-full sm:max-w-md`). Shows name, type badge, StatusBadge, code, employee count (live from `listEmployees({ unitUuid })`), child count, **resolved head name** (looks up `headEmployeeUuid` in the unit's employees and prints `fullNameGenerated` — the prompt printed the raw uuid which was wrong). Children list is clickable — tapping re-opens the sheet for the child (the recursive drill-down mentioned in the prompt's goal).
+- **[`UnitsPage`](../dashboard/src/features/units/UnitsPage.tsx)** — composition. State: `units / employees / search / filterStatus / formOpen / editingUnit / defaultParent / detailsUnit`. `useMediaQuery('(min-width: 768px)')` picks tree vs accordion. Archive guard: if the unit has ≥ 1 non-terminated employee, surface a `has-employees` toast with the count instead of calling `archiveUnit` (catching the failure server-side would be too late — the UI already trusts the local employees array).
+- **Router** — [`src/router.tsx`](../dashboard/src/router.tsx) `/units` route now renders `<UnitsPage />` instead of the placeholder.
+- **i18n** — `dashboard:units.*` extended in [`uz.json`](../dashboard/src/i18n/locales/uz.json): page-title, page-subtitle, search-placeholder, empty.title, tree.{add-root, add-child, employees-suffix}, form.* (10 keys), details.* (4), toast.* (3), errors.* (6 — one per `UnitValidationCode` + `has-employees`, `invalid-code`).
+- **Deps** — `npm install react-hook-form@^7.76 @hookform/resolvers@^5.4` (3 new packages, 0 vulnerabilities). The Step-02 `shadcn form` primitive gap stays open — this form deliberately uses raw `register` / `setValue` / `watch` rather than the `Form` wrapper, so we still haven't needed it.
+
+**Deviations from the step prompt:**
+
+- **Typed error class** (`UnitValidationError` + `UnitValidationCode`) instead of `throw new Error('cycle')`. Less brittle, more discoverable.
+- **Recursive descendant search** in `UnitsTreeDesktop` via `path`-derived ancestor set, replacing the prompt's direct-children-only `kids.some(k => k.path.includes(unit.uuid))` check.
+- **Auto-expand on active search** — when any search query is non-empty, every node defaults open so the chain to a hit is always visible; toggle still works per-node and clears with the search.
+- **Parent dropdown filters out self + descendants** when editing (client-side first, server-side enforcement as fallback).
+- **Type dropdown auto-snaps** to a valid type if the parent change made the current selection invalid — instead of letting the user submit something the backend will reject.
+- **`listEmployees({ unitUuid })`** filters down to the unit's employees inside `UnitDetailsSheet` instead of fetching all 30 and counting — uses the existing step-06 filter.
+- **Head name resolved**, not printed as uuid (prompt bug).
+- **`has-employees` count uses non-TERMINATED employees** (terminated employees don't "block" archival — they're already gone).
+- **Status filter default is `ACTIVE`** (not `ALL`) — admins almost always care about live units; archived ones are a deliberate retrospective look.
+
+**Lessons respected:**
+
+- Full-width `<main>` from AppShell still owns the page width — the tree, accordion, and search/filter row all fill the content area cleanly (per [`LESSONS.md`](./LESSONS.md) Layout section).
+- No `backdrop-blur` introduced on overlays — both `Dialog` and `Sheet` are static surfaces here (the drawer-animation polish from step-06 still applies and is untouched).
+- Per-field Zustand selector for `useAuthStore(s => s.user?.uuid ?? '')`.
+- `crypto.randomUUID()` is what `createUnit` uses inside the mock backend — no `uuid` import.
+
+**Verification:**
+
+- `tsc -b && vite build` → **2844 modules** (+97 over step 07), **102 KB CSS** (+3 KB — accordion-data attributes, badge variants, new utility combos), **659 KB JS / 202 KB gzip** (+147 KB JS / +43 KB gzip; ~95 KB is react-hook-form + @hookform/resolvers + zodResolver, the rest is the 9 new feature files + lucide additions). Still under one chunk — code-splitting is the step-14 concern.
+- Production bundle grep'd for the 15 most distinctive new UZ strings — every one present (`Tarkibiy tuzilma`, `Tashkilot iyerarxiyasini boshqaring`, `Hali bo'linmalar yo'q...`, `Ichki bo'linma qo'shish`, `Yangi bo'linma yaratish`, `Bo'linmani tahrirlash`, `Bo'linma yaratildi/yangilandi/arxivlandi`, `Shu nomdagi bo'linma allaqachon mavjud`, `Maksimal 7 daraja iyerarxiya joiz`, `Bo'linma o'z avlodiga ota bo'la olmaydi`, `Belgilanmagan`, `Ota-bo'linma`, `Bo'sh qoldirsangiz avtomatik yaratiladi`).
+- Dev server: `GET /Devon/dashboard/` → 200, `GET /Devon/dashboard/units` → 200.
+- TS strict + verbatim type imports — all type-only imports use `import type`; no diagnostics from the new files.
+
+**Not browser-tested.** Build + dev-server curl both green, but I didn't drive the UI in a real browser. Worth eyeballing: (a) tree expand/collapse on a search hit five levels deep, (b) parent-change in the form rejecting cycles before submit (the dropdown shouldn't even show the descendants), (c) archive guard toast firing when archiving a unit that still has employees, (d) the mobile accordion's "Add child" CTA on a freshly opened root, (e) `pb-safe` padding on the mobile form sheet's sticky footer on a real iPhone (or Chrome devtools' iPhone preset with the safe-area inset enabled).
+
+**Intentionally NOT done:** drag-and-drop move (master §17 out-of-scope; re-parenting via the Edit form covers it), head/deputy pickers (those are part of Flow 2/3 employee context, not Flow 1), the explicit `moveUnit` mock-backend export the prompt mentions (re-parenting via `updateUnit({ parentUuid })` covers the same path-recompute logic, and the descendant rewrite lives there now), the shadcn `form` primitive (still not needed — raw `useForm` is enough for this style).
+
+**Files touched:** `dashboard/package.json` (+ `react-hook-form@^7.76`, `@hookform/resolvers@^5.4`), `dashboard/src/components/common/{ResponsiveDialog,StatusBadge,SearchInput}.tsx` (created), `dashboard/src/features/units/{unit.schema,UnitFormSheet,UnitsTreeDesktop,UnitsAccordionMobile,UnitDetailsSheet,UnitsPage}.tsx` (created), `dashboard/src/lib/mock-backend/errors.ts` (+ `UnitValidationError` + `UnitValidationCode`), `dashboard/src/lib/mock-backend/index.ts` (createUnit + updateUnit validation + descendant path recompute + re-exports), `dashboard/src/router.tsx` (`/units` route → `UnitsPage`), `dashboard/src/i18n/locales/uz.json` (+ `dashboard.units.*`), `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md`
+
+---
+
+## 2026-05-26 — HR_ADMIN FIO rename + RecentActivityCard full-width
+
+Two post-step-07 follow-ups requested in the same turn:
+
+1. **HR_ADMIN renamed.** `Allaberganov Sardor Otabekovich` → `Umarov Jahongir Sobirovich` everywhere it surfaced as the user-facing identity of the demo HR admin. New surname / given name / patronymic all chosen to not collide with the other 29 seeded FIOs (Umarov isn't in the list, Jahongir isn't in the list, Sobirovich differs from `Sobirova`'s feminine surname form). The HR_ADMIN email stays `admin@devon.uz` — it's hardcoded in `seed.ts` independent of the FIO, so the demo credentials (`admin@devon.uz` / `Demo2026!`) shown on the login screen are unaffected. The user's macOS account path (`/Users/sardorallaberganov/`) was deliberately not touched — that's the local filesystem, not a product identity.
+
+   Files updated: [`dashboard/src/lib/mock-backend/seed.ts`](../dashboard/src/lib/mock-backend/seed.ts) (4 spots: `HR_ADMIN_NAME` constant, the `fios[0]` entry, the `Index 0` comment in `fioToUnit`, the login-traffic comment in `buildAudit`). Prompt docs that templates future re-runs: [`docs/dashboard-prompts/00-master.md`](../docs/dashboard-prompts/00-master.md) (§13 seed-scale example FIO), [`docs/dashboard-prompts/04-routing-auth.md`](../docs/dashboard-prompts/04-routing-auth.md) (the literal `fullName: '...'` in the step-04 stopgap login, even though that stopgap is gone in the actual code — keeping the prompt internally consistent), [`docs/dashboard-prompts/06-mock-backend.md`](../docs/dashboard-prompts/06-mock-backend.md) (3 spots in the `buildEmployeesAndUsers` example), [`docs/dashboard-prompts/09-flow2-employees-list.md`](../docs/dashboard-prompts/09-flow2-employees-list.md) (the `"typing 'Sardor'"` search-debounce acceptance criterion).
+
+   **One-time user step:** existing browser localStorage still carries the old name in `devon.dashboard.*` tables. To pick up the new seed, hit *Demo ma'lumotlarni qayta tiklash* in the UserMenu — `resetAndSeed()` clears + re-seeds with the new FIO. Fresh visitors / incognito automatically get the new seed because `seedIfEmpty()` finds the missing flag and runs the (updated) `seed.ts`.
+
+2. **`RecentActivityCard` is now full-width.** Removed the `grid-cols-1 lg:grid-cols-3` + `lg:col-span-2` + reserved right column from [`DashboardHome.tsx`](../dashboard/src/features/dashboard-home/DashboardHome.tsx). The card now sits directly under `QuickActions` and uses the full content area on every breakpoint, matching the data-density philosophy from [`LESSONS.md`](./LESSONS.md) (full-width `<main>` for admin surfaces). The 2/3-width pattern was carried over from the step-07 prompt's "reserve space for future widgets" idea — but with the activity card being the *primary* signal on the home page, giving it the full row reads better. Future widgets (upcoming reviews, deadlines) can stack above or below as their own full-width rows when they land.
+
+**Verification:** `npm run build` → 2747 modules, 99.33 KB CSS (-0.14 KB vs. step 07 — one less grid layout), 511.79 KB JS / 159.33 KB gzip (-0.20 KB — removed wrapper div + col-span class). Bundle grep: `Umarov` × 2, `Jahongir` × 2, `Sobirovich` × 2 (display literal + parts mapping), zero occurrences of `Allaberganov` or `Sardor`.
+
+**Files touched:** `dashboard/src/lib/mock-backend/seed.ts`, `dashboard/src/features/dashboard-home/DashboardHome.tsx`, `docs/dashboard-prompts/00-master.md`, `docs/dashboard-prompts/04-routing-auth.md`, `docs/dashboard-prompts/06-mock-backend.md`, `docs/dashboard-prompts/09-flow2-employees-list.md`, `ai_context/HISTORY.md`
+
+---
+
+## 2026-05-26 — Dashboard step 07: home page (stats + activity + quick actions + expiring-cert alert)
+
+Executed [`docs/dashboard-prompts/07-dashboard-home.md`](../docs/dashboard-prompts/07-dashboard-home.md). The `/` route now renders a real HR_ADMIN home page instead of the step-04 placeholder: greeting with first name parsed from the seeded `Surname Given Patronymic` FIO, an expiring-certs alert that null-renders when no ACTIVE certs fall inside the 30-day horizon, a 4-card stats row (Faol xodimlar / Tarkibiy bo'linmalar / Faol ERI kalitlari / Tasdiqlash kutilmoqda) with the master-spec tone rotation (emerald → default → signal → cinnamon), a 4-up quick-actions grid, and a recent-activity list sourced from `listAudit({ limit: 8 })`. First real consumer of the step-06 mock backend.
+
+**What landed:**
+
+- **Common state components (reusable across steps 08+):**
+  - [`src/components/common/LoadingState.tsx`](../dashboard/src/components/common/LoadingState.tsx) — N-row skeleton wrapper, default 4.
+  - [`src/components/common/EmptyState.tsx`](../dashboard/src/components/common/EmptyState.tsx) — optional icon (lucide), title, body, action slot. Cream-warm pill behind the icon to match the activity-row icon tiles.
+  - [`src/components/common/ErrorState.tsx`](../dashboard/src/components/common/ErrorState.tsx) — destructive-tinted variant with optional retry button; default title falls back to `common:errors.unknown`.
+  - [`src/components/common/StatCard.tsx`](../dashboard/src/components/common/StatCard.tsx) — `default | emerald | cinnamon | signal` tones, lucide icon in a contrast-aware pill, optional delta line. `cn()`+tw-merge correctly overrides the shadcn Card's default `py-4` with `p-5 md:p-6`.
+- **Feature pieces:**
+  - [`src/features/dashboard-home/StatsRow.tsx`](../dashboard/src/features/dashboard-home/StatsRow.tsx) — `Promise.all([listEmployees, listUnits, listCertificates])` → 4 StatCards. Skeleton grid while loading; `cancelled` flag in the effect so a fast unmount can't `setState` after the response.
+  - [`src/features/dashboard-home/RecentActivityCard.tsx`](../dashboard/src/features/dashboard-home/RecentActivityCard.tsx) — Card with "Hammasini ko'rish" → `/audit` ghost button in the header; renders LoadingState skeleton, "Harakatlar yo'q" empty state, or a `divide-y divide-line` list of 8 rows. Each row: lucide icon in an emerald-on-cream-warm tile, `actorName` (medium weight) + localised verb + `resourceLabel`, relative timestamp via `formatRelative()` (date-fns Uzbek locale, returns "3 soat oldin"-style strings).
+  - [`src/features/dashboard-home/ExpiringCertsAlert.tsx`](../dashboard/src/features/dashboard-home/ExpiringCertsAlert.tsx) — `listCertificates({ status: 'ACTIVE' })` filtered to `validTo < now + 30 days`. Returns `null` when count is 0 — no empty alert pollution. Cinnamon-soft background with cinnamon icon + outline CTA → `/certificates?filter=expiring`.
+  - [`src/features/dashboard-home/QuickActions.tsx`](../dashboard/src/features/dashboard-home/QuickActions.tsx) — 4 Link tiles: `/employees/new` (UserPlus), `/units` (Network), `/certificates` (KeySquare), `/audit` (FileText). 2-col grid below `sm`, 4-col from `sm` up. Icon pill flips from `cream-deep/emerald` to `emerald/cream` on hover.
+  - [`src/features/dashboard-home/DashboardHome.tsx`](../dashboard/src/features/dashboard-home/DashboardHome.tsx) — composes `PageHeader → ExpiringCertsAlert → StatsRow → QuickActions → grid(2/3 RecentActivityCard, reserved right column)`.
+- **Router wired:** [`src/router.tsx`](../dashboard/src/router.tsx) `/` route now renders `<DashboardHome />` (no longer the `Placeholder` for `dashboard:sidebar.nav-home`). All other 7 placeholder routes untouched until their respective steps.
+- **i18n:** [`uz.json`](../dashboard/src/i18n/locales/uz.json) extended with `dashboard.home.*` (greeting + subtitle + 4 stat labels + recent-activity + no-activity + expiring-alert.{title,body,cta} + 4 quick-action labels + `quick.title`) and `dashboard.audit.actions.*` (13 verb forms — `yaratdi`, `yangiladi`, `tasdiqladi`, `tizimga kirdi`, `ERI yukladi`, etc., one per `AuditAction` enum value so no row renders as a raw code).
+
+**Deviations from the step prompt:**
+
+- **lucide-react icons in the activity feed instead of unicode/emoji glyphs.** The prompt maps each `AuditAction` to a unicode character (`✚ ✎ ⌫ ⇄ ↻ ✓ ⊘` + the literal emoji `🔑`). Unicode geometric glyphs render inconsistently across fonts (size, baseline, color); the emoji key would render in full color on macOS/iOS but monochrome on Windows — visually jarring inside otherwise-monochrome chrome. Swapped to lucide icons matching the action semantics (`Plus / Pencil / Archive / LogIn / LogOut / KeyRound / ArrowRightLeft / Upload / ShieldCheck / ShieldX / UserCog / UserCheck / Trash2`), consistent with the StatCard / QuickActions / Sidebar / Topbar icon language already in use across the dashboard.
+- **`Network` icon for the units quick-action.** Prompt imports `NetworkIcon`; lucide-react exports the icon as `Network`. (The `Icon`-suffix aliases were removed in lucide v0.300+ and we're on the current major.)
+- **Quick-action `/certificates/upload` → `/certificates`.** Prompt links the "ERI yuklash" tile to `/certificates/upload`, which doesn't exist as a route (step 12 places upload as a sheet/dialog opened from `/certificates`). Routed to `/certificates` directly so the click doesn't 404-redirect-home in the demo.
+- **`firstNameOf` helper.** The prompt's `user?.fullName.split(' ')[1]` works for the seed convention (`Allaberganov Sardor Otabekovich`) but throws on a single-word `fullName` (the fallback path uses `user.email` which contains no space). Extracted to a tiny `firstNameOf()` helper that returns `parts[1]` when present, `parts[0]` otherwise, empty string for falsy input. Documented inline why the seed convention drives the index.
+- **Cancellation flags on all three async effects.** Prompt's `RecentActivityCard` / `ExpiringCertsAlert` don't guard `setState` against unmount; added the same `cancelled` pattern that already lives in `StatsRow`. Cheap insurance.
+- **Card `pt-0` on CardContent.** Kept per prompt — the CardHeader's bottom padding is enough; no double-padding above the list.
+- **Added `quick.title` to the i18n block.** Not used by the current QuickActions render (the tiles are self-labelling), but reserved so step 08+ can add a section heading without re-editing the locale file.
+
+**Lessons respected (per [`LESSONS.md`](./LESSONS.md)):**
+
+- `<main>` in AppShell still has no `max-w-*` clamp — the new home page fills the full content area, which is what we want for the 4-card stats row on wide monitors.
+- No `crypto.randomUUID()` / `uuid` import needed — step 07 mints no UUIDs.
+- Per-field Zustand selector for `useAuthStore(s => s.user)`.
+- No `backdrop-blur` added (the alert and stat cards are static surfaces).
+
+**Verification:**
+
+- `tsc -b && vite build` → **2747 modules**, **99 KB CSS** (+5 KB over step 06 for the new utilities), **512 KB JS / 159 KB gzip** (+41 KB / +11 KB for the new components + ~13 lucide icons). The 500 KB chunk warning is cosmetic — code-splitting lands in step 14's deploy prep.
+- Production bundle grep'd: all 17 expected UZ strings present — `Salom, `, `Bugun nima qilamiz`, `Faol xodimlar`, `Tarkibiy bo`, `Faol ERI`, `Tasdiqlash kutilmoqda`, `So'nggi harakatlar`, `Harakatlar yo`, `Yangi xodim`, `Tuzilmani boshqarish`, `ERI yuklash`, `Audit jurnali`, `ERI muddati`, `yaratdi`, `tasdiqladi`, `tizimga kirdi`, `ERI yukladi`.
+- Dev server: `GET /Devon/dashboard/` → 200, `GET /Devon/dashboard/login` → 200.
+- TS strict + verbatim type imports — all icon imports use `import type { LucideIcon }`, no diagnostics.
+
+**Not browser-tested.** I ran the build and curl'd the dev server but did not open the page in a real browser. The next person at the screen should verify: (a) stats row collapses 4-col → 2-col → 1-col cleanly at 1280/768/360; (b) the expiring-cert alert wraps gracefully on mobile (CTA stacks below body text); (c) the activity feed icons render at the correct size in the 28px tile; (d) the QuickActions hover state (`cream-warm` background, icon flip to `emerald → cream`) feels right.
+
+**Intentionally NOT done:** real-time refresh (no use case yet — the demo seed is static between resets), the right-column reserved space (per prompt §7 note — left empty for future "upcoming reviews" / "deadlines" widgets), RU/EN translations of the new keys (UZ-only ships in v1.0 per master §17; RU lands in v1.1).
+
+**Files touched:** `dashboard/src/components/common/{LoadingState,EmptyState,ErrorState,StatCard}.tsx` (created), `dashboard/src/features/dashboard-home/{StatsRow,RecentActivityCard,ExpiringCertsAlert,QuickActions,DashboardHome}.tsx` (created), `dashboard/src/router.tsx` (route `/` swap), `dashboard/src/i18n/locales/uz.json` (+ `dashboard.home.*` + `dashboard.audit.actions.*`), `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md`
+
+---
+
 ## 2026-05-26 — Sheet drawer animation polish (post-step-06)
 
 Two iterations on the mobile sidebar drawer slide-in animation after step 06 landed. First pass made minor improvements at the call site (full-edge slide, bg fix, hide close button); user reported it still didn't feel smooth on a second look, so the second pass went deeper and edited the shadcn `sheet.tsx` primitive directly — a one-time exception to the "do not edit shadcn primitives" convention, justified by the root causes being baked into the primitive's defaults.

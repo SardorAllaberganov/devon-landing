@@ -26,6 +26,23 @@
 - For an arbitrary partial slide, use the numeric spacing scale: `slide-in-from-left-10` (40 px), `slide-in-from-left-16` (64 px), etc.
 - Ignore the IDE's "canonical" suggestion on these specific utilities. If you accept it, the rule silently disappears.
 
+### Form-control height — primitives default to h-10 (40 px), do NOT rely on consumer overrides for SelectTrigger
+
+**Decision (2026-05-26):** [`input.tsx`](../dashboard/src/components/ui/input.tsx), [`select.tsx`](../dashboard/src/components/ui/select.tsx), and [`button.tsx`](../dashboard/src/components/ui/button.tsx) primitives all default to `h-10` (40 px) in the dashboard. The Nova preset originally shipped `h-8` (32 px) for all three — that's below comfortable mobile touch targets and causes a subtle CSS-specificity bug on `SelectTrigger`.
+
+**The SelectTrigger trap:** the primitive sets its height via a data-attribute selector — `data-[size=default]:h-8` — which has CSS specificity `(0,1,1)`. A consumer writing `<SelectTrigger className="h-11">` adds a plain `.h-11` class at specificity `(0,1,0)`. The data-attribute rule wins. `tailwind-merge` doesn't detect the conflict because the conditional prefix differs (it sees them as separate utilities, not duplicates). Result: the trigger renders at 32 px while a sibling `<Input className="h-11">` renders correctly at 44 px (Input has no data-attribute selector, so the plain `h-*` override resolves normally). Visual mismatch in every form row that mixed inputs and selects.
+
+**Why edit the primitive instead of slapping `!h-10` everywhere:** the h-8 default was wrong for **every** form in the dashboard — there's no call site that legitimately wanted 32 px form controls. This is exactly the "edit shadcn primitives only when the default is wrong for *every* call site" rule from the next entry below.
+
+**How to apply:**
+- New forms: drop `className="h-10"` / `h-11` overrides on `Input`, `SelectTrigger`, and `Button`. The primitives now hit 40 px on their own.
+- If you need a **taller** trigger (e.g., login page CTA at h-12): pass `className="!h-12"` (Tailwind v4 important modifier) OR write a matching data-attribute override at equal specificity (`[&[data-size=default]]:h-12`). Just `className="h-12"` won't beat the primitive's `data-[size=default]:h-10`.
+- For **shorter** controls in dense contexts (table-row kebabs, topbar chrome): use the explicit smaller variants — `size="sm"` on Button (h-8), `size="sm"` on SelectTrigger (h-8), `size="icon-sm"` for icon buttons (h-8 w-8). Don't override via `h-7` className.
+- `Button`'s `default` is `h-10`; `lg` is `h-11`; `sm` is `h-8`; `xs` is `h-6`. Icon variants are `icon-xs` (h-6), `icon-sm` (h-8), `icon` (h-9), `icon-lg` (h-10). Match the icon variant to the surrounding chrome's density.
+- **LoginPage CTA still uses `className="h-12"`** — `Button` doesn't have a data-attribute height selector (it uses cva, not data-attribute conditionals), so the plain `h-12` override resolves correctly. Same story for the few topbar-density overrides like `UserMenu`'s `h-9`.
+
+**Reference:** [`dashboard/src/components/ui/{input,select,button}.tsx`](../dashboard/src/components/ui/) for the bumped defaults; [`dashboard/src/features/units/UnitFormSheet.tsx`](../dashboard/src/features/units/UnitFormSheet.tsx) for the cleaned-up form where every `Input` and `SelectTrigger` now lets the primitive own the height.
+
 ### Edit shadcn primitives only when the default is wrong for *every* call site
 
 **Rule:** the convention is "don't edit `src/components/ui/*.tsx`". But when shadcn's default is broken in a way that affects every future use of the primitive (not just one screen), edit the primitive once and call out the exception. Per-call-site overrides for primitive-level defaults are a code smell — every future consumer pays the same fix.
@@ -45,6 +62,19 @@ When in doubt: if the same override would land on every consumer, push it into t
 ---
 
 ## Mock backend
+
+### Bump `SEED_VERSION` whenever `seed.ts` changes identity (rename, status mix, hierarchy)
+
+**Decision (2026-05-26, third HR_ADMIN rename in a single day):** [`seed.ts`](../dashboard/src/lib/mock-backend/seed.ts) carries a `SEED_VERSION` constant (currently `'3'`) compared against `localStorage['devon.dashboard.seeded']` inside `seedIfEmpty()`. If the stored value differs from the constant, the next app load silently calls `resetAndSeed()` and writes the new version.
+
+**Why:** The original guard was a literal `localStorage.getItem(SEED_FLAG) === '1'` — once any user had been seeded, no future change to `seed.ts` would ever reseed them. Two renames in this session shipped silently broken because of this: the user's cached `localStorage` retained the original `Allaberganov Sardor` data, and even my session-refresh hook in `useAuthStore.refreshSessionUser()` re-resolved the cached session against the *cached seed* (returning the old name unchanged). Versioning gives us a one-line invalidation knob.
+
+**How to apply:**
+- Bump `SEED_VERSION` (string increment) whenever you change anything in `seed.ts` that affects identity or distribution: FIO renames, password changes, status-mix shifts (e.g., the 18/4/2/1 certificate split), org-tree reshapes, new fixture rows, removed rows. Trivial edits that don't change observable data (a refactor, a renamed local helper, a comment) don't need a bump.
+- Existing users get the new seed on their next page load — no "Reset demo" required, no logout needed. Their session also re-syncs via `useAuthStore.refreshSessionUser()` (fired from [`main.tsx`](../dashboard/src/main.tsx) right after `seedIfEmpty()`).
+- Drawback to acknowledge: bumping reseeds wipes any units / employees / certs the user created or edited in their demo session. That's correct for a demo (the seed *is* the canonical state) but worth mentioning if a real customer is in the middle of evaluating the demo.
+
+**Reference:** [`dashboard/src/lib/mock-backend/seed.ts`](../dashboard/src/lib/mock-backend/seed.ts) (the `SEED_VERSION` constant + `seedIfEmpty` / `resetAndSeed` pair), [`dashboard/src/stores/useAuthStore.ts`](../dashboard/src/stores/useAuthStore.ts) (`refreshSessionUser` that resyncs the cached session against the freshly-seeded employee record).
 
 ### Use native `crypto.randomUUID()`, do NOT install the `uuid` package
 
