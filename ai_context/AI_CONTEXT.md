@@ -100,7 +100,7 @@ Full breakdown in [`docs/competitive-analysis.md`](../docs/competitive-analysis.
 
 ---
 
-## Dashboard — planned demo build (not yet scaffolded)
+## Dashboard — demo build (scaffold landed)
 
 A customer-facing product demo, deployed alongside the landing page on GitHub Pages, is planned to ship in the same site:
 
@@ -109,7 +109,7 @@ A customer-facing product demo, deployed alongside the landing page on GitHub Pa
 
 **Scope** — full demo of all four flows: Tarkibiy bo'linmalar CRUD · Xodim 4-step wizard · Assignment transfers + timeline · ERI certificate management (Kanban + mocked PFX upload).
 
-**Stack (locked)** — Vite + React 18 + TypeScript + shadcn/ui (`style: new-york`) + Tailwind + react-router-dom v6 (BrowserRouter, `/dashboard/` sub-path, SPA 404 fallback) + Zustand + react-hook-form + zod + react-i18next + date-fns + lucide-react.
+**Stack (locked)** — Vite 8 + React 19 + TypeScript 6 + Tailwind CSS 4 (CSS-first config, no `tailwind.config.ts`) + shadcn/ui (v4 CLI: `--template vite --base radix --preset nova`) + react-router-dom v6 (BrowserRouter, `/dashboard/` sub-path, SPA 404 fallback) + Zustand + react-hook-form + zod + react-i18next + date-fns + lucide-react. (Originally locked to React 18 / TS 5 / Vite 5 / Tailwind 3; bumped to current ecosystem during steps 01–02.)
 
 **Visual direction** — "brand-warm chrome, neutral work surfaces" — sidebar, top bar, page headers, hero stat cards inherit the cream + emerald palette from `landing/index.html`; data tables, form fields, wizard step content shift to white surfaces with tighter density. Devon's CSS tokens (`--cream`, `--emerald`, `--cinnamon`, `--signal`, etc.) map to shadcn's semantic vars (`--background`, `--primary`, `--accent`, …) so every primitive renders branded automatically.
 
@@ -121,13 +121,13 @@ A customer-facing product demo, deployed alongside the landing page on GitHub Pa
 
 **Mock backend** — there is no real server. All "API" calls hit a typed wrapper over `localStorage` with simulated 200–600ms latency and 3% random failure simulation. Seeded with ~6 root departments / 25 units / 30 employees with realistic Uzbek FIO / 25 certificates / 60+ audit entries. A "Reset demo" action in the user menu re-seeds cleanly.
 
-**Status** — Build prompt set complete (17 files, ~7,700 lines in [`docs/dashboard-prompts/`](../docs/dashboard-prompts/)). Code not yet scaffolded. The next session begins by loading `00-master.md` + `01-scaffold.md` into a fresh AI context.
+**Status** — Build prompt set complete (17 files, ~7,700 lines in [`docs/dashboard-prompts/`](../docs/dashboard-prompts/)). **Steps 01–04 landed 2026-05-25** — scaffold + Tailwind v4 + shadcn/ui (31 primitives) + react-i18next (UZ canonical, RU/EN stubs) + react-router-dom v6 with `basename: /Devon/dashboard` + Zustand auth store (persisted, 8h TTL, 3% mock failure) + `RequireAuth` deep-link preserver + mobile-first split-pane login page with show/hide password toggle, large-contrast Fraunces-italic slogan, and a redesigned brand pane (corner stamp + DEVON logo + 48px headline with emerald italic accent + paragraph + compass-radial SVG backdrop at 7% emerald opacity). Demo creds (`admin@devon.uz` / `Demo2026!`) are hardcoded in [`useAuthStore.ts`](../dashboard/src/stores/useAuthStore.ts) until step 07 refactors to the mock-backend `users[]` table. The 8 protected routes from master §11 are wired with localised placeholders. `npm run build` clean (91 KB CSS, 364 KB JS / 115 KB gzip). Outstanding from step 02: the shadcn `form` primitive's registry entry is silently skipped by the Nova preset — hand-add when a real form lands. Next session begins with `00-master.md` + `05-app-shell.md` to wire the sidebar drawer + topbar + AppShell that wraps every protected route.
 
 ---
 
 ## Open questions / known gaps
 
-- **Dashboard implementation not yet started** — only the build prompt set exists. Next milestone is running `01-scaffold.md` and continuing sequentially through `15-final-qa.md`. Out-of-scope items deliberately deferred per master §17: real backend, real PFX parsing, real E-IMZO plugin, real SMS/email OTP, automated tests.
+- **Dashboard implementation in progress** — steps 01–04 are done; step 05 (AppShell with sidebar drawer + topbar + user menu) is next, then sequentially through `15-final-qa.md`. Hand-add the shadcn `form` primitive when an actual form first appears (Nova preset's registry silently skips it). Out-of-scope items deliberately deferred per master §17: real backend, real PFX parsing, real E-IMZO plugin, real SMS/email OTP, automated tests.
 - **User manual (Uzbek)** — `docs/user-manual-uz.md` is referenced in the README but doesn't exist yet. Needs writing for end-user onboarding.
 - **Operations runbook** — `docs/operations/` is referenced but the folder is empty. Needs `deployment.md`, `backup.md`, `recovery.md`, `oncall.md` populated for sysadmins.
 - **BPMN diagrams** — `docs/bpmn/` is referenced but the visual diagrams from the legacy PLYMA spec haven't been migrated. `docs/business-processes.md` covers the same flows in text form; the visual diagrams are a "nice to have."
