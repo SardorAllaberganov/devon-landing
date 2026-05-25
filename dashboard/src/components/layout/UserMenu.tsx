@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 
 import { useAuthStore } from '@/stores/useAuthStore';
+import { resetAndSeed } from '@/lib/mock-backend';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,10 +43,8 @@ export default function UserMenu() {
     navigate('/login', { replace: true });
   }
 
-  function onResetDemo() {
-    Object.keys(localStorage)
-      .filter((k) => k.startsWith('devon.dashboard.'))
-      .forEach((k) => localStorage.removeItem(k));
+  async function onResetDemo() {
+    await resetAndSeed();
     toast.success(t('dashboard:user-menu.reset-demo-toast'));
     setTimeout(() => window.location.reload(), 800);
   }

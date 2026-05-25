@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Role } from '@/types/domain';
+import { findUserByEmail, listEmployees, MockNetworkError } from '@/lib/mock-backend';
+import { sha256Hex } from '@/lib/hash';
 
 export interface SessionUser {
   uuid: string;
@@ -24,11 +26,6 @@ interface AuthState {
 const STORAGE_KEY = 'devon.dashboard.session';
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
 
-// Step 04 stopgap — literal demo credentials. Step 07 will refactor
-// to query mock-backend/users.findByEmail and compare hashed passwords.
-const DEMO_EMAIL = 'admin@devon.uz';
-const DEMO_PASSWORD = 'Demo2026!';
-
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -37,29 +34,38 @@ export const useAuthStore = create<AuthState>()(
       expiresAt: null,
       isAuthenticated: false,
       login: async (email, password) => {
-        if (Math.random() < 0.03) return { ok: false, reason: 'network' };
-        await new Promise((r) => setTimeout(r, 300 + Math.random() * 300));
+        try {
+          const user = await findUserByEmail(email.trim());
+          if (!user) return { ok: false, reason: 'invalid-credentials' };
 
-        if (email.trim().toLowerCase() !== DEMO_EMAIL || password !== DEMO_PASSWORD) {
-          return { ok: false, reason: 'invalid-credentials' };
+          const hash = await sha256Hex(password);
+          if (hash !== user.passwordHash) return { ok: false, reason: 'invalid-credentials' };
+
+          let fullName = user.email;
+          if (user.employeeUuid) {
+            const employees = await listEmployees();
+            fullName =
+              employees.find((e) => e.uuid === user.employeeUuid)?.fullNameGenerated ??
+              user.email;
+          }
+
+          const now = new Date();
+          set({
+            user: {
+              uuid: user.uuid,
+              email: user.email,
+              fullName,
+              roles: user.roles,
+            },
+            issuedAt: now.toISOString(),
+            expiresAt: new Date(now.getTime() + SESSION_TTL_MS).toISOString(),
+            isAuthenticated: true,
+          });
+          return { ok: true };
+        } catch (err) {
+          if (err instanceof MockNetworkError) return { ok: false, reason: 'network' };
+          throw err;
         }
-
-        const now = new Date();
-        const issuedAt = now.toISOString();
-        const expiresAt = new Date(now.getTime() + SESSION_TTL_MS).toISOString();
-
-        set({
-          user: {
-            uuid: 'demo-hr-admin-uuid',
-            email: DEMO_EMAIL,
-            fullName: 'Sardor Allaberganov',
-            roles: ['ROLE_HR_ADMIN'],
-          },
-          issuedAt,
-          expiresAt,
-          isAuthenticated: true,
-        });
-        return { ok: true };
       },
       logout: () => set({ user: null, issuedAt: null, expiresAt: null, isAuthenticated: false }),
       isExpired: () => {
