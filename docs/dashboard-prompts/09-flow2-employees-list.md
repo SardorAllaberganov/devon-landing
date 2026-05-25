@@ -556,7 +556,7 @@ export default function EmployeeListPage() {
 - [ ] List renders 20 employees per page; pagination controls work
 - [ ] **Desktop**: full table with avatar + name + email, unit, position, masked PINFL, status badge
 - [ ] **Mobile (360px)**: card stack — each card has avatar, name, unit, status. Tap target ≥ 64px high.
-- [ ] Search: typing "Sardor" filters to matching employees within 300ms (debounce)
+- [ ] Search: typing "Asilbek" filters to matching employees within 300ms (debounce)
 - [ ] Filter by unit: only employees in the selected unit appear
 - [ ] Filter by status: switching to TERMINATED shows the (likely empty) set; switching back to ACTIVE restores the full set
 - [ ] **Mobile**: filter sheet from bottom shows active filter count badge on the trigger button (only counts non-default filter values)

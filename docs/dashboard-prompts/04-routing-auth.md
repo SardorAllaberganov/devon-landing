@@ -79,7 +79,7 @@ export const useAuthStore = create<AuthState>()(
           user: {
             uuid: 'demo-hr-admin-uuid',
             email: expectedEmail,
-            fullName: 'Sardor Allaberganov',
+            fullName: 'Asilbek Pulatov',
             roles: ['ROLE_HR_ADMIN'],
           },
           issuedAt,

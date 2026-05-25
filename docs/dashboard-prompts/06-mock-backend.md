@@ -358,7 +358,7 @@ function buildUnits(): Unit[] {
 async function buildEmployeesAndUsers(units: Unit[]): Promise<{ employees: Employee[]; users: User[]; assignments: Assignment[] }> {
   // Carefully chosen Uzbek FIOs — gender-aware
   const fios: Array<[string, string, string, 'M' | 'F']> = [
-    ['Allaberganov', 'Sardor', 'Otabekovich', 'M'],
+    ['Pulatov', 'Asilbek', 'Karimovich', 'M'],
     ['Karimov', 'Bekzod', 'Anvarovich', 'M'],
     ['Sobirova', 'Dilnoza', 'Murodovna', 'F'],
     ['Yusupov', 'Jasur', 'Rustamovich', 'M'],
@@ -372,15 +372,15 @@ async function buildEmployeesAndUsers(units: Unit[]): Promise<{ employees: Emplo
   const HR_ADMIN_UUID = 'demo-hr-admin-uuid';
   const HR_ADMIN_EMP_UUID = uuid();
 
-  // First the HR_ADMIN — Sardor Allaberganov
+  // First the HR_ADMIN — Asilbek Pulatov
   const hrUnit = units.find(u => u.code === 'DEP-HR-REC')!;
   const hrEmp: Employee = {
     uuid: HR_ADMIN_EMP_UUID,
     userUuid: HR_ADMIN_UUID,
-    lastName: 'Allaberganov',
-    firstName: 'Sardor',
-    middleName: 'Otabekovich',
-    fullNameGenerated: 'Allaberganov Sardor Otabekovich',
+    lastName: 'Pulatov',
+    firstName: 'Asilbek',
+    middleName: 'Karimovich',
+    fullNameGenerated: 'Pulatov Asilbek Karimovich',
     gender: 'M',
     birthDate: '1990-03-15',
     pinfl: '32905901230011',

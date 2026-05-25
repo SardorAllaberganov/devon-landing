@@ -357,7 +357,7 @@ devon.dashboard.profile-requests   JSON: ProfileChangeRequest[]
 
 ### Seed scale (realistic, not toy)
 - ~6 root departments, ~25 sub-units total spanning all 4 hierarchy levels
-- ~30 employees with real-looking Uzbek FIO (e.g., "Allaberganov Sardor Otabekovich"), plausible 14-digit PINFL, plausible Tashkent-area phone numbers
+- ~30 employees with real-looking Uzbek FIO (e.g., "Pulatov Asilbek Karimovich"), plausible 14-digit PINFL, plausible Tashkent-area phone numbers
 - ~25 certificates: 18 ACTIVE · 4 PENDING_APPROVAL · 2 EXPIRED · 1 REVOKED
 - Audit log seeded with 60–80 entries covering CREATE, UPDATE, TRANSFER, ERI_UPLOAD events
 - 1 demo HR_ADMIN user: `admin@devon.uz` / `Demo2026!`

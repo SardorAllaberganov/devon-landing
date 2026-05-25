@@ -26,6 +26,11 @@ import type {
 } from '@/types/domain';
 
 const SEED_FLAG = 'devon.dashboard.seeded';
+// Bump whenever seed.ts changes shape OR fixture identity (renames, status
+// distributions, hierarchy reshapes). Mismatched versions in localStorage
+// trigger a silent reseed on next app load — keeps demos consistent without
+// asking users to hit "Reset demo" after every change.
+const SEED_VERSION = '3';
 
 const uuid = () => crypto.randomUUID();
 const NOW = () => new Date().toISOString();
@@ -33,7 +38,7 @@ const DAYS_AGO = (n: number) => new Date(Date.now() - n * 86_400_000).toISOStrin
 const DAYS_FROM_NOW = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString();
 
 const HR_ADMIN_USER_UUID = 'demo-hr-admin-uuid';
-const HR_ADMIN_NAME = 'Allaberganov Sardor Otabekovich';
+const HR_ADMIN_NAME = 'Pulatov Asilbek Karimovich';
 const CA_NAME = "YANGI TEXNOLOGIYALAR ILMIY-AXBOROT MARKAZI AJ";
 const ORG_SHORT = 'Devon Demo';
 
@@ -367,7 +372,7 @@ interface Fio {
 }
 
 const fios: Fio[] = [
-  { lastName: 'Allaberganov', firstName: 'Sardor', middleName: 'Otabekovich', gender: 'M' },
+  { lastName: 'Pulatov', firstName: 'Asilbek', middleName: 'Karimovich', gender: 'M' },
   { lastName: 'Karimov', firstName: 'Bekzod', middleName: 'Anvarovich', gender: 'M' },
   { lastName: 'Yusupov', firstName: 'Jasur', middleName: 'Rustamovich', gender: 'M' },
   { lastName: 'Tursunov', firstName: 'Doniyor', middleName: 'Olimovich', gender: 'M' },
@@ -410,7 +415,7 @@ interface Assign {
 }
 
 const fioToUnit: Assign[] = [
-  // Index 0 — Sardor, HR_ADMIN
+  // Index 0 — Asilbek, HR_ADMIN
   { fioIdx: 0, unitCode: 'DEP-HR-REC', positionId: 'POS-HR-MANAGER', hireDaysAgo: 1100 },
 
   // IT branch
@@ -667,7 +672,7 @@ function buildAudit(employees: Employee[], units: Unit[], certificates: Certific
     });
   }
 
-  // Login traffic — Sardor logs in ~daily
+  // Login traffic — Asilbek logs in ~daily
   for (let d = 30; d >= 0; d -= 1) {
     if (Math.random() < 0.7) {
       add('LOGIN', 'user', HR_ADMIN_USER_UUID, HR_ADMIN_NAME, d);
@@ -730,7 +735,7 @@ function buildAudit(employees: Employee[], units: Unit[], certificates: Certific
 // === Public seeding API ===
 
 export async function seedIfEmpty(): Promise<void> {
-  if (localStorage.getItem(SEED_FLAG) === '1') return;
+  if (localStorage.getItem(SEED_FLAG) === SEED_VERSION) return;
   await resetAndSeed();
 }
 
@@ -750,7 +755,7 @@ export async function resetAndSeed(): Promise<void> {
   writeTable(Tables.audit, audit);
   writeTable(Tables.profileRequests, []);
 
-  localStorage.setItem(SEED_FLAG, '1');
+  localStorage.setItem(SEED_FLAG, SEED_VERSION);
 }
 
 export { NOW, DAYS_AGO };
