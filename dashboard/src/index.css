@@ -142,4 +142,13 @@
   .pb-safe {
     padding-bottom: max(env(safe-area-inset-bottom), 1rem);
   }
+
+  /* Hide native scrollbar on horizontally-scrolling pill rows (wizard stepper,
+     etc). Content stays scrollable via touch / wheel. */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }

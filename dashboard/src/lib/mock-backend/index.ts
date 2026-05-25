@@ -4,7 +4,7 @@
 // localStorage tables defined in `./storage.ts`.
 
 import { simulatedDelay } from './delay';
-import { maybeFail, UnitValidationError } from './errors';
+import { EmployeeValidationError, maybeFail, UnitValidationError } from './errors';
 import { readTable, writeTable, Tables } from './storage';
 
 // Max nesting depth for the org tree (TZ §3.3 caps real hierarchies at 7).
@@ -379,6 +379,17 @@ export async function createEmployeeFull(
   const assignments = readAssignments();
 
   const e = input.employee;
+
+  // Uniqueness checks per TZ §4.4 — fail before any writes so a partial
+  // create can't strand orphan records.
+  if (employees.some((x) => x.pinfl === e.pinfl && x.status !== 'TERMINATED')) {
+    throw new EmployeeValidationError('pinfl-taken');
+  }
+  const emailLc = e.corporateEmail.toLowerCase();
+  if (users.some((u) => u.email.toLowerCase() === emailLc)) {
+    throw new EmployeeValidationError('email-taken');
+  }
+
   const employeeUuid = uid();
   const userUuid = uid();
   const fullNameGenerated = [e.lastName, e.firstName, e.middleName].filter(Boolean).join(' ');
@@ -748,5 +759,5 @@ export async function revokeCertificate(
 // === Re-exports ===
 
 export { seedIfEmpty, resetAndSeed } from './seed';
-export { MockNetworkError, UnitValidationError } from './errors';
-export type { UnitValidationCode } from './errors';
+export { EmployeeValidationError, MockNetworkError, UnitValidationError } from './errors';
+export type { EmployeeValidationCode, UnitValidationCode } from './errors';

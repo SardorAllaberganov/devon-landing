@@ -7,6 +7,8 @@ import { RequireAuth } from '@/features/auth/RequireAuth';
 import AppShell from '@/components/layout/AppShell';
 import PageHeader from '@/components/common/PageHeader';
 import DashboardHome from '@/features/dashboard-home/DashboardHome';
+import EmployeeListPage from '@/features/employees/list/EmployeeListPage';
+import EmployeeWizardPage from '@/features/employees/wizard/EmployeeWizardPage';
 import UnitsPage from '@/features/units/UnitsPage';
 
 function Protected({ children }: { children: ReactElement }) {
@@ -15,6 +17,13 @@ function Protected({ children }: { children: ReactElement }) {
       <AppShell>{children}</AppShell>
     </RequireAuth>
   );
+}
+
+// The employee creation wizard renders its own chrome (top bar + stepper +
+// sticky footer) and goes full-screen on mobile. Wrapping it in AppShell
+// would double the topbar + waste vertical room. Auth gate still required.
+function ProtectedNoShell({ children }: { children: ReactElement }) {
+  return <RequireAuth>{children}</RequireAuth>;
 }
 
 function Placeholder({ titleKey }: { titleKey: string }) {
@@ -47,16 +56,16 @@ export default function Router() {
         path="/employees"
         element={
           <Protected>
-            <Placeholder titleKey="dashboard:sidebar.nav-employees" />
+            <EmployeeListPage />
           </Protected>
         }
       />
       <Route
         path="/employees/new"
         element={
-          <Protected>
-            <Placeholder titleKey="dashboard:sidebar.nav-employees" />
-          </Protected>
+          <ProtectedNoShell>
+            <EmployeeWizardPage />
+          </ProtectedNoShell>
         }
       />
       <Route

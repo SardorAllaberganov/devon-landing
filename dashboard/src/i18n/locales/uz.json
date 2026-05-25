@@ -199,6 +199,103 @@
         "PROFILE_CHANGE_APPROVED": "profil o'zgarishini tasdiqladi"
       }
     },
+    "pagination": {
+      "range": "{{from}}–{{to}} / {{total}}"
+    },
+    "employees": {
+      "list": {
+        "title": "Xodimlar",
+        "subtitle": "Jami: {{total}} ta",
+        "cta-new": "Yangi xodim",
+        "search-placeholder": "FIO, email yoki JSHShIR bo'yicha qidirish...",
+        "filter-unit": "Bo'linma",
+        "filter-status": "Holat",
+        "filter-employment": "Ish turi",
+        "all-units": "Barcha bo'linmalar",
+        "empty-title": "Hozircha xodimlar topilmadi",
+        "empty-body": "Filtr shartlarini o'zgartiring yoki yangi xodim yarating.",
+        "open-profile": "{{name}} profilini ochish",
+        "col-fio": "FIO va aloqa",
+        "col-unit": "Bo'linma",
+        "col-position": "Lavozim",
+        "col-pinfl": "JSHShIR",
+        "col-status": "Holat"
+      },
+      "wizard": {
+        "title": "Yangi xodim qo'shish",
+        "subtitle": "To'rt bosqichli ro'yxatga olish",
+        "stepper-label": "Ro'yxatga olish bosqichlari",
+        "submit-cta": "Xodimni yaratish",
+        "confirm-close": "Kiritilgan ma'lumotlar yo'qoladi. Yopishni xohlaysizmi?",
+        "success": "{{name}} muvaffaqiyatli yaratildi",
+        "step-1": { "title": "Shaxsiy ma'lumotlar" },
+        "step-2": { "title": "Aloqa" },
+        "step-3": { "title": "Ish o'rni" },
+        "step-4": { "title": "Kirish ma'lumotlari" },
+        "review": {
+          "title": "Ko'rib chiqish",
+          "intro": "{{name}}ni yaratishdan oldin ma'lumotlarni tekshirib chiqing."
+        },
+        "fields": {
+          "last-name": "Familiya",
+          "first-name": "Ism",
+          "middle-name": "Sharif",
+          "gender": "Jinsi",
+          "birth-date": "Tug'ilgan sanasi",
+          "pinfl": "JSHShIR",
+          "passport": "Passport seriya va raqami",
+          "work-phone": "Ish telefoni",
+          "extension": "Ichki raqam",
+          "mobile-phone": "Mobil telefon",
+          "corporate-email": "Korporativ pochta",
+          "personal-email": "Shaxsiy pochta",
+          "unit": "Tarkibiy bo'linma",
+          "position": "Lavozim",
+          "employment-type": "Ish turi",
+          "hire-date": "Ishga qabul sanasi",
+          "role": "Tizimdagi roli",
+          "login": "Login",
+          "password": "Parol",
+          "notify-sms": "SMS orqali yuborish",
+          "notify-email": "Email orqali yuborish"
+        },
+        "placeholders": {
+          "pinfl": "14 ta raqam",
+          "unit": "Bo'linmani tanlang",
+          "unit-search": "Bo'linma nomi bo'yicha qidirish...",
+          "position": "Lavozimni tanlang",
+          "position-disabled": "Avval bo'linmani tanlang"
+        },
+        "hints": {
+          "corporate-email": "Pochta @devon.uz bilan tugashi shart",
+          "derived-login": "Login korporativ pochtadan avtomatik olinadi. O'zgartirish uchun yuqoridagi tugmani bosing."
+        },
+        "actions": {
+          "show-password": "Parolni ko'rsatish",
+          "hide-password": "Parolni yashirish",
+          "copy-password": "Nusxalash",
+          "regenerate-password": "Yangi parol yaratish",
+          "use-derived-login": "Avtomatik loginni qaytarish",
+          "copied": "Nusxalandi"
+        },
+        "password-strength": {
+          "0": "Parol juda zaif",
+          "1": "Parol zaif",
+          "2": "Parol o'rtacha",
+          "3": "Parol kuchli",
+          "4": "Parol juda kuchli"
+        },
+        "notify": {
+          "title": "Yangi xodimga yuborish"
+        },
+        "errors": {
+          "age-18": "Xodim 18 yoshdan katta bo'lishi kerak",
+          "password-weak": "Parol kamida 8 belgi, katta va kichik harflar, raqam va maxsus belgini o'z ichiga olishi kerak",
+          "no-units": "Faol bo'linmalar topilmadi",
+          "no-positions-for-unit": "Bu bo'linma turiga mos lavozim yo'q"
+        }
+      }
+    },
     "units": {
       "page-title": "Tarkibiy tuzilma",
       "page-subtitle": "Tashkilot iyerarxiyasini boshqaring",
