@@ -1,17 +1,23 @@
+import type { ReactElement } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+
 import LoginPage from '@/features/auth/LoginPage';
 import { RequireAuth } from '@/features/auth/RequireAuth';
+import AppShell from '@/components/layout/AppShell';
+import PageHeader from '@/components/common/PageHeader';
 
-// Placeholder for routes that will be filled in later steps.
+function Protected({ children }: { children: ReactElement }) {
+  return (
+    <RequireAuth>
+      <AppShell>{children}</AppShell>
+    </RequireAuth>
+  );
+}
+
 function Placeholder({ titleKey }: { titleKey: string }) {
   const { t } = useTranslation(['dashboard', 'common']);
-  return (
-    <main className="mx-auto max-w-5xl px-4 py-12 md:px-8">
-      <h1 className="text-2xl font-bold tracking-tight text-ink">{t(titleKey)}</h1>
-      <p className="text-muted-foreground mt-2">Coming in a later step.</p>
-    </main>
-  );
+  return <PageHeader title={t(titleKey)} subtitle={t('common:labels.coming-soon')} />;
 }
 
 export default function Router() {
@@ -22,65 +28,65 @@ export default function Router() {
       <Route
         path="/"
         element={
-          <RequireAuth>
+          <Protected>
             <Placeholder titleKey="dashboard:sidebar.nav-home" />
-          </RequireAuth>
+          </Protected>
         }
       />
       <Route
         path="/units"
         element={
-          <RequireAuth>
+          <Protected>
             <Placeholder titleKey="dashboard:sidebar.nav-units" />
-          </RequireAuth>
+          </Protected>
         }
       />
       <Route
         path="/employees"
         element={
-          <RequireAuth>
+          <Protected>
             <Placeholder titleKey="dashboard:sidebar.nav-employees" />
-          </RequireAuth>
+          </Protected>
         }
       />
       <Route
         path="/employees/new"
         element={
-          <RequireAuth>
+          <Protected>
             <Placeholder titleKey="dashboard:sidebar.nav-employees" />
-          </RequireAuth>
+          </Protected>
         }
       />
       <Route
         path="/employees/:uuid"
         element={
-          <RequireAuth>
+          <Protected>
             <Placeholder titleKey="dashboard:sidebar.nav-employees" />
-          </RequireAuth>
+          </Protected>
         }
       />
       <Route
         path="/certificates"
         element={
-          <RequireAuth>
+          <Protected>
             <Placeholder titleKey="dashboard:sidebar.nav-certificates" />
-          </RequireAuth>
+          </Protected>
         }
       />
       <Route
         path="/profile"
         element={
-          <RequireAuth>
+          <Protected>
             <Placeholder titleKey="dashboard:sidebar.nav-profile" />
-          </RequireAuth>
+          </Protected>
         }
       />
       <Route
         path="/audit"
         element={
-          <RequireAuth>
+          <Protected>
             <Placeholder titleKey="dashboard:sidebar.nav-audit" />
-          </RequireAuth>
+          </Protected>
         }
       />
       <Route path="*" element={<Navigate to="/" replace />} />

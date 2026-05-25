@@ -37,7 +37,8 @@
       "all": "Barchasi",
       "none": "Hech narsa",
       "select": "Tanlang",
-      "search-placeholder": "Qidirish..."
+      "search-placeholder": "Qidirish...",
+      "coming-soon": "Keyingi bosqichlarda to'ldiriladi"
     },
     "errors": {
       "required": "Bu maydon majburiy",
@@ -121,12 +122,14 @@
     "topbar": {
       "search-placeholder": "Xodim, bo'linma yoki sertifikat bo'yicha qidirish...",
       "notifications": "Bildirishnomalar",
-      "no-notifications": "Yangi bildirishnomalar yo'q"
+      "no-notifications": "Yangi bildirishnomalar yo'q",
+      "open-nav": "Navigatsiyani ochish"
     },
     "user-menu": {
       "profile": "Profilim",
       "settings": "Sozlamalar",
       "reset-demo": "Demo ma'lumotlarni qayta tiklash",
+      "reset-demo-toast": "Demo ma'lumotlar qayta tiklandi. Sahifa qayta yuklanadi.",
       "logout": "Chiqish"
     },
     "login": {
