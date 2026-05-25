@@ -21,6 +21,13 @@ interface AuthState {
   login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => void;
   isExpired: () => boolean;
+  /**
+   * Re-derive the persisted session's `fullName` (and roles) from the current
+   * seed. Lets renames / reseeds reflect into already-cached sessions without
+   * forcing a logout. No-op when not authenticated, when expired, or when
+   * the user no longer exists in the seed.
+   */
+  refreshSessionUser: () => Promise<void>;
 }
 
 const STORAGE_KEY = 'devon.dashboard.session';
@@ -72,6 +79,32 @@ export const useAuthStore = create<AuthState>()(
         const exp = get().expiresAt;
         if (!exp) return true;
         return new Date(exp).getTime() < Date.now();
+      },
+      refreshSessionUser: async () => {
+        const current = get().user;
+        if (!current || get().isExpired()) return;
+        try {
+          const fresh = await findUserByEmail(current.email);
+          if (!fresh) return;
+          let fullName = fresh.email;
+          if (fresh.employeeUuid) {
+            const employees = await listEmployees();
+            fullName =
+              employees.find((e) => e.uuid === fresh.employeeUuid)?.fullNameGenerated ??
+              fresh.email;
+          }
+          const changed =
+            fullName !== current.fullName ||
+            fresh.uuid !== current.uuid ||
+            fresh.roles.join() !== current.roles.join();
+          if (!changed) return;
+          set({
+            user: { uuid: fresh.uuid, email: fresh.email, fullName, roles: fresh.roles },
+          });
+        } catch {
+          // Mock-backend can throw on simulated network failure — swallow.
+          // The cached session keeps working; next refresh tries again.
+        }
       },
     }),
     {

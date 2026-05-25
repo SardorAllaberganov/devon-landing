@@ -45,6 +45,7 @@ export default function UserMenu() {
 
   async function onResetDemo() {
     await resetAndSeed();
+    await useAuthStore.getState().refreshSessionUser();
     toast.success(t('dashboard:user-menu.reset-demo-toast'));
     setTimeout(() => window.location.reload(), 800);
   }
