@@ -1,0 +1,145 @@
+@import "tailwindcss";
+@import "shadcn/tailwind.css";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* shadcn semantic tokens — mapped to Devon palette in HSL */
+  --background: hsl(38 40% 97%);          /* cream */
+  --foreground: hsl(230 14% 8%);          /* ink */
+  --card: hsl(0 0% 100%);                 /* surface */
+  --card-foreground: hsl(230 14% 8%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(230 14% 8%);
+  --primary: hsl(154 43% 21%);            /* emerald */
+  --primary-foreground: hsl(38 40% 97%);  /* cream */
+  --secondary: hsl(41 39% 91%);           /* cream-deep */
+  --secondary-foreground: hsl(230 14% 8%);
+  --muted: hsl(42 47% 93%);               /* cream-warm */
+  --muted-foreground: hsl(224 8% 38%);    /* body-fg */
+  --accent: hsl(32 67% 89%);              /* cinnamon-soft */
+  --accent-foreground: hsl(28 64% 45%);   /* cinnamon */
+  --destructive: hsl(0 70% 45%);
+  --border: hsl(41 30% 87%);              /* line */
+  --input: hsl(41 30% 87%);
+  --ring: hsl(154 43% 21%);               /* emerald */
+  --radius: 0.75rem;
+
+  /* Sidebar tokens — used by shadcn's sidebar primitive */
+  --sidebar: hsl(41 39% 91%);             /* cream-deep */
+  --sidebar-foreground: hsl(230 14% 8%);
+  --sidebar-primary: hsl(154 43% 21%);
+  --sidebar-primary-foreground: hsl(38 40% 97%);
+  --sidebar-accent: hsl(32 67% 89%);
+  --sidebar-accent-foreground: hsl(28 64% 45%);
+  --sidebar-border: hsl(41 30% 87%);
+  --sidebar-ring: hsl(154 43% 21%);
+
+  /* Chart palette — Devon progression */
+  --chart-1: hsl(154 43% 21%);            /* emerald */
+  --chart-2: hsl(28 64% 45%);             /* cinnamon */
+  --chart-3: hsl(153 33% 36%);            /* signal */
+  --chart-4: hsl(155 43% 16%);            /* emerald-deep */
+  --chart-5: hsl(225 6% 64%);             /* muted-fg */
+
+  /* Devon brand-name tokens — for direct use via text-emerald, bg-cream-deep, etc. */
+  --color-cream: hsl(38 40% 97%);
+  --color-cream-deep: hsl(41 39% 91%);
+  --color-cream-warm: hsl(42 47% 93%);
+  --color-surface: hsl(0 0% 100%);
+  --color-ink: hsl(230 14% 8%);
+  --color-ink-soft: hsl(224 16% 12%);
+  --color-body: hsl(224 8% 38%);
+  --color-body-fg: hsl(224 8% 38%);
+  --color-muted-fg: hsl(225 6% 64%);
+  --color-line: hsl(41 30% 87%);
+  --color-emerald: hsl(154 43% 21%);
+  --color-emerald-deep: hsl(155 43% 16%);
+  --color-emerald-soft: hsl(150 22% 92%);
+  --color-cinnamon: hsl(28 64% 45%);
+  --color-cinnamon-soft: hsl(32 67% 89%);
+  --color-signal: hsl(153 33% 36%);
+}
+
+@theme inline {
+  /* Expose Devon brand-name tokens as Tailwind utilities */
+  --color-cream: var(--color-cream);
+  --color-cream-deep: var(--color-cream-deep);
+  --color-cream-warm: var(--color-cream-warm);
+  --color-surface: var(--color-surface);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-body: var(--color-body);
+  --color-body-fg: var(--color-body-fg);
+  --color-line: var(--color-line);
+  --color-emerald: var(--color-emerald);
+  --color-emerald-deep: var(--color-emerald-deep);
+  --color-emerald-soft: var(--color-emerald-soft);
+  --color-cinnamon: var(--color-cinnamon);
+  --color-cinnamon-soft: var(--color-cinnamon-soft);
+  --color-signal: var(--color-signal);
+
+  /* shadcn semantic Tailwind tokens */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-heading: var(--font-sans);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    font-family: var(--font-sans);
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01", "cv11", "tnum";
+  }
+
+  /* Mobile safe-area bottom padding for sticky action bars */
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+  }
+}

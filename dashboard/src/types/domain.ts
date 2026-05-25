@@ -1,0 +1,7 @@
+export type Role =
+  | 'ROLE_SUPER_ADMIN'
+  | 'ROLE_HR_ADMIN'
+  | 'ROLE_HR_OPERATOR'
+  | 'ROLE_UNIT_HEAD'
+  | 'ROLE_EMPLOYEE'
+  | 'ROLE_AUDITOR';

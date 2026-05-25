@@ -1,0 +1,159 @@
+{
+  "common": {
+    "actions": {
+      "save": "Saqlash",
+      "cancel": "Bekor qilish",
+      "delete": "O'chirish",
+      "archive": "Arxivlash",
+      "confirm": "Tasdiqlash",
+      "submit": "Yuborish",
+      "back": "Orqaga",
+      "next": "Keyingisi",
+      "previous": "Oldingisi",
+      "close": "Yopish",
+      "edit": "Tahrirlash",
+      "search": "Qidirish",
+      "filter": "Filtrlash",
+      "reset": "Tozalash",
+      "create": "Yaratish",
+      "approve": "Tasdiqlash",
+      "reject": "Rad etish",
+      "upload": "Yuklash",
+      "download": "Yuklab olish",
+      "logout": "Chiqish",
+      "view-all": "Hammasini ko'rish",
+      "show-more": "Ko'proq ko'rsatish",
+      "show-less": "Kamroq ko'rsatish"
+    },
+    "labels": {
+      "loading": "Yuklanmoqda...",
+      "saving": "Saqlanmoqda...",
+      "processing": "Jarayonda...",
+      "empty": "Bo'sh",
+      "required": "Majburiy",
+      "optional": "Ixtiyoriy",
+      "yes": "Ha",
+      "no": "Yo'q",
+      "all": "Barchasi",
+      "none": "Hech narsa",
+      "select": "Tanlang",
+      "search-placeholder": "Qidirish..."
+    },
+    "errors": {
+      "required": "Bu maydon majburiy",
+      "invalid-email": "Email noto'g'ri",
+      "invalid-pinfl": "JSHShIR noto'g'ri (14 raqamli bo'lishi kerak)",
+      "pinfl-taken": "Bu JSHShIR allaqachon ro'yxatdan o'tgan",
+      "invalid-phone": "Telefon raqami noto'g'ri (+998 XX XXX XX XX)",
+      "email-must-be-corporate": "Korporativ pochta @devon.uz bilan tugashi kerak",
+      "email-taken": "Bu email allaqachon ro'yxatdan o'tgan",
+      "min-length": "Kamida {{count}} ta belgi kerak",
+      "max-length": "Maksimum {{count}} ta belgi",
+      "passwords-dont-match": "Parollar mos kelmadi",
+      "password-too-weak": "Parol kuchli emas",
+      "network": "Tarmoq xatosi, qayta urinib ko'ring",
+      "unknown": "Noma'lum xatolik yuz berdi",
+      "session-expired": "Sessiya muddati tugadi, qayta kiring"
+    },
+    "status": {
+      "active": "Faol",
+      "archived": "Arxivlangan",
+      "draft": "Qoralama",
+      "pending": "Kutilmoqda",
+      "approved": "Tasdiqlangan",
+      "rejected": "Rad etilgan",
+      "expired": "Muddati tugagan",
+      "revoked": "Bekor qilingan",
+      "suspended": "To'xtatilgan",
+      "on-leave": "Ta'tilda",
+      "terminated": "Ishdan bo'shatilgan"
+    },
+    "unit-types": {
+      "DEPARTMENT": "Departament",
+      "DIRECTORATE": "Boshqarma",
+      "DIVISION": "Bo'lim",
+      "DEPARTMENT_SUB": "Sho'ba",
+      "SECTION": "Bo'limcha",
+      "OTHER": "Boshqa"
+    },
+    "employment-types": {
+      "FULL_TIME": "To'liq stavka",
+      "PART_TIME": "Yarim stavka",
+      "CONTRACT": "Shartnoma",
+      "INTERN": "Stajyor"
+    },
+    "roles": {
+      "ROLE_SUPER_ADMIN": "Bosh administrator",
+      "ROLE_HR_ADMIN": "Kadrlar administratori",
+      "ROLE_HR_OPERATOR": "Kadrlar operatori",
+      "ROLE_UNIT_HEAD": "Bo'linma rahbari",
+      "ROLE_EMPLOYEE": "Xodim",
+      "ROLE_AUDITOR": "Auditor"
+    },
+    "genders": {
+      "M": "Erkak",
+      "F": "Ayol"
+    },
+    "time": {
+      "today": "Bugun",
+      "yesterday": "Kecha",
+      "minutes-ago": "{{count, plural, one {# daqiqa oldin} other {# daqiqa oldin}}}",
+      "hours-ago": "{{count, plural, one {# soat oldin} other {# soat oldin}}}",
+      "days-ago": "{{count, plural, one {# kun oldin} other {# kun oldin}}}"
+    }
+  },
+  "dashboard": {
+    "app": {
+      "name": "Devon",
+      "tagline": "Hujjat aylanmasi platformasi"
+    },
+    "sidebar": {
+      "nav-home": "Bosh sahifa",
+      "nav-units": "Tarkibiy tuzilma",
+      "nav-employees": "Xodimlar",
+      "nav-certificates": "ERI kalitlari",
+      "nav-audit": "Audit jurnali",
+      "nav-profile": "Mening profilim",
+      "section-management": "BOSHQARUV",
+      "section-personal": "SHAXSIY",
+      "footer-slogan": "Rivolanish intizom bilan!"
+    },
+    "topbar": {
+      "search-placeholder": "Xodim, bo'linma yoki sertifikat bo'yicha qidirish...",
+      "notifications": "Bildirishnomalar",
+      "no-notifications": "Yangi bildirishnomalar yo'q"
+    },
+    "user-menu": {
+      "profile": "Profilim",
+      "settings": "Sozlamalar",
+      "reset-demo": "Demo ma'lumotlarni qayta tiklash",
+      "logout": "Chiqish"
+    },
+    "login": {
+      "title": "Devon platformasiga kirish",
+      "subtitle": "Korporativ pochta va parol orqali",
+      "email-label": "Korporativ pochta",
+      "email-placeholder": "ism.familiya@devon.uz",
+      "password-label": "Parol",
+      "password-placeholder": "Parolingizni kiriting",
+      "remember-me": "Meni eslab qol",
+      "forgot-password": "Parolni unutdingizmi?",
+      "cta": "Kirish",
+      "ctaLoading": "Tekshirilmoqda...",
+      "demo-hint-title": "Demo ma'lumotlari",
+      "demo-hint-body": "admin@devon.uz / Demo2026!",
+      "show-password": "Parolni ko'rsatish",
+      "hide-password": "Parolni yashirish",
+      "brand-eyebrow": "Korporativ platforma",
+      "brand-headline-line-1": "Hujjat aylanmasi",
+      "brand-headline-accent": "intizomli",
+      "brand-headline-line-2": "va xavfsiz.",
+      "brand-subtitle": "Tarkibiy bo'linmalar, xodimlar, kelishuv zanjirlari va ERI kalitlari — bitta mahalliy platformada.",
+      "errors": {
+        "invalid-credentials": "Email yoki parol noto'g'ri",
+        "network": "Tarmoq xatosi. Qayta urinib ko'ring."
+      },
+      "footer": "© 2026 Devon. Barcha huquqlar himoyalangan."
+    }
+  }
+}
