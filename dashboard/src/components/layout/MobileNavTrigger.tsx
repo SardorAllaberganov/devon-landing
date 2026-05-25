@@ -23,7 +23,11 @@ export default function MobileNavTrigger() {
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-72 p-0">
+      <SheetContent
+        side="left"
+        showCloseButton={false}
+        className="w-72 max-w-[85vw] border-0 bg-cream-deep p-0 shadow-xl"
+      >
         <Sidebar onNavigate={() => setMobileNavOpen(false)} />
       </SheetContent>
     </Sheet>
