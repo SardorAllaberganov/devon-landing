@@ -4,7 +4,12 @@
 // localStorage tables defined in `./storage.ts`.
 
 import { simulatedDelay } from './delay';
-import { EmployeeValidationError, maybeFail, UnitValidationError } from './errors';
+import {
+  AssignmentValidationError,
+  EmployeeValidationError,
+  maybeFail,
+  UnitValidationError,
+} from './errors';
 import { readTable, writeTable, Tables } from './storage';
 
 // Max nesting depth for the org tree (TZ §3.3 caps real hierarchies at 7).
@@ -173,6 +178,7 @@ export async function listCertificates(filters?: CertificateFilters): Promise<Ce
 
 export interface AuditFilters {
   resourceType?: AuditEntry['resourceType'];
+  resourceUuid?: string;
   actorUuid?: string;
   limit?: number;
 }
@@ -182,6 +188,7 @@ export async function listAudit(filters?: AuditFilters): Promise<AuditEntry[]> {
   let rows = readTable<AuditEntry>(Tables.audit, []);
   rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   if (filters?.resourceType) rows = rows.filter((r) => r.resourceType === filters.resourceType);
+  if (filters?.resourceUuid) rows = rows.filter((r) => r.resourceUuid === filters.resourceUuid);
   if (filters?.actorUuid) rows = rows.filter((r) => r.actorUuid === filters.actorUuid);
   if (filters?.limit) rows = rows.slice(0, filters.limit);
   return rows;
@@ -540,6 +547,8 @@ export interface TransferInput {
   reason?: string;
 }
 
+export const MAX_TOTAL_WORKLOAD_PERCENT = 150;
+
 export async function transferEmployee(
   input: TransferInput,
   actorUuid: string,
@@ -548,11 +557,38 @@ export async function transferEmployee(
   maybeFail();
   const assignments = readAssignments();
 
+  const activeForEmployee = assignments.filter(
+    (a) => a.employeeUuid === input.employeeUuid && !a.endDate,
+  );
+  // If we're closing the old assignment(s), their workload drops out of the
+  // sum. Otherwise the new assignment stacks on top of every existing active
+  // row and the combined total must respect the per-employee cap.
+  const carriedWorkload = input.closeOldAssignment
+    ? 0
+    : activeForEmployee.reduce((sum, a) => sum + a.workloadPercent, 0);
+  if (carriedWorkload + input.workloadPercent > MAX_TOTAL_WORKLOAD_PERCENT) {
+    throw new AssignmentValidationError('workload-exceeded');
+  }
+
+  // Capture the "before" state so the audit entry can carry a real diff.
+  const previousPrimary = activeForEmployee.find((a) => a.isPrimary);
+  const previousUnitUuid = previousPrimary?.unitUuid;
+  const previousPositionId = previousPrimary?.positionId;
+
   if (input.closeOldAssignment) {
     for (let i = 0; i < assignments.length; i++) {
       const a = assignments[i]!;
-      if (a.employeeUuid === input.employeeUuid && a.isPrimary && !a.endDate) {
+      if (a.employeeUuid === input.employeeUuid && !a.endDate) {
         assignments[i] = { ...a, endDate: input.startDate, isPrimary: false };
+      }
+    }
+  } else if (input.type === 'PRIMARY') {
+    // Promoting a new PRIMARY while keeping the old row open — the old row
+    // must lose its `isPrimary` flag so we never persist two open primaries.
+    for (let i = 0; i < assignments.length; i++) {
+      const a = assignments[i]!;
+      if (a.employeeUuid === input.employeeUuid && a.isPrimary && !a.endDate) {
+        assignments[i] = { ...a, isPrimary: false };
       }
     }
   }
@@ -594,9 +630,14 @@ export async function transferEmployee(
     resourceType: 'employee',
     resourceUuid: input.employeeUuid,
     resourceLabel: emp?.fullNameGenerated ?? input.employeeUuid,
+    changes: {
+      unit: { from: previousUnitUuid ?? null, to: input.newUnitUuid },
+      position: { from: previousPositionId ?? null, to: input.newPositionId },
+    },
     context: {
-      newUnitUuid: input.newUnitUuid,
-      newPositionId: input.newPositionId,
+      assignmentType: input.type,
+      workloadPercent: input.workloadPercent,
+      closedOld: input.closeOldAssignment,
       reason: input.reason,
     },
   });
@@ -759,5 +800,14 @@ export async function revokeCertificate(
 // === Re-exports ===
 
 export { seedIfEmpty, resetAndSeed } from './seed';
-export { EmployeeValidationError, MockNetworkError, UnitValidationError } from './errors';
-export type { EmployeeValidationCode, UnitValidationCode } from './errors';
+export {
+  AssignmentValidationError,
+  EmployeeValidationError,
+  MockNetworkError,
+  UnitValidationError,
+} from './errors';
+export type {
+  AssignmentValidationCode,
+  EmployeeValidationCode,
+  UnitValidationCode,
+} from './errors';

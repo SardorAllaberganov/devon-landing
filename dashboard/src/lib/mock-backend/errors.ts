@@ -27,6 +27,17 @@ export class EmployeeValidationError extends Error {
   }
 }
 
+export type AssignmentValidationCode = 'workload-exceeded';
+
+export class AssignmentValidationError extends Error {
+  readonly code: AssignmentValidationCode;
+  constructor(code: AssignmentValidationCode) {
+    super(`Assignment validation failed: ${code}`);
+    this.name = 'AssignmentValidationError';
+    this.code = code;
+  }
+}
+
 export function maybeFail(probability = 0.03): void {
   if (Math.random() < probability) throw new MockNetworkError();
 }
