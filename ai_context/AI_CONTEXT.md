@@ -48,11 +48,13 @@ All eight are specified in [`docs/product-specification.md`](../docs/product-spe
 |---|---|---|
 | Product overview, modules, roles, roadmap | [`README.md`](../README.md) | All stakeholders |
 | **Product specification (canonical)** | [`docs/product-specification.md`](../docs/product-specification.md) | Product, BA, Eng, QA, Sales |
+| **HR & ERI module — focused TZ (Uzbek)** | [`docs/Plyma TZ xodim kiritish.docx`](../docs/Plyma%20TZ%20xodim%20kiritish.docx) | Product, BA, Eng, QA — canonical spec for the dashboard's first milestone |
 | Business processes (swim-lane flows) | [`docs/business-processes.md`](../docs/business-processes.md) | BA, QA, customer implementation |
 | Functional use cases (UC-01 … UC-20) | [`docs/use-cases.md`](../docs/use-cases.md) | QA, BA, Product |
 | Glossary (Uzbek/Russian terms, pronunciation, naming history) | [`docs/glossary.md`](../docs/glossary.md) | Non-Uzbek-speaking team members |
 | Competitive analysis & positioning | [`docs/competitive-analysis.md`](../docs/competitive-analysis.md) | Sales, Product, BA |
 | Marketing landing page (Uzbek) | [`landing/index.html`](../landing/index.html) | Marketing, Sales, Web |
+| **Dashboard build prompt set** | [`docs/dashboard-prompts/`](../docs/dashboard-prompts/) | AI assistants and contributors building the SPA — master prompt + 15 sequential step prompts |
 | Workflow orchestration (how to work on Devon) | [`CLAUDE.md`](../CLAUDE.md) | AI assistants, contributors |
 | Legacy technical spec (reference only) | `docs/Plyma_Technical_Spec_v1.0.docx` | Historical reference |
 | Session work log | [`ai_context/HISTORY.md`](./HISTORY.md) | Internal, contributors |
@@ -98,8 +100,34 @@ Full breakdown in [`docs/competitive-analysis.md`](../docs/competitive-analysis.
 
 ---
 
+## Dashboard — planned demo build (not yet scaffolded)
+
+A customer-facing product demo, deployed alongside the landing page on GitHub Pages, is planned to ship in the same site:
+
+- `<owner>.github.io/Devon/` → existing landing
+- `<owner>.github.io/Devon/dashboard/` → React SPA covering the 4 flows from the HR & ERI TZ
+
+**Scope** — full demo of all four flows: Tarkibiy bo'linmalar CRUD · Xodim 4-step wizard · Assignment transfers + timeline · ERI certificate management (Kanban + mocked PFX upload).
+
+**Stack (locked)** — Vite + React 18 + TypeScript + shadcn/ui (`style: new-york`) + Tailwind + react-router-dom v6 (BrowserRouter, `/dashboard/` sub-path, SPA 404 fallback) + Zustand + react-hook-form + zod + react-i18next + date-fns + lucide-react.
+
+**Visual direction** — "brand-warm chrome, neutral work surfaces" — sidebar, top bar, page headers, hero stat cards inherit the cream + emerald palette from `landing/index.html`; data tables, form fields, wizard step content shift to white surfaces with tighter density. Devon's CSS tokens (`--cream`, `--emerald`, `--cinnamon`, `--signal`, etc.) map to shadcn's semantic vars (`--background`, `--primary`, `--accent`, …) so every primitive renders branded automatically.
+
+**Mobile-first (non-negotiable)** — every screen tested at 360 / 390 / 768 / 1024 / 1280 / 1920px. Sidebar collapses to a `Sheet` drawer below `lg`. Data tables become card stacks below `md`. The employee creation wizard becomes a full-screen route on mobile with a sticky bottom CTA above the iOS safe area. The certificates Kanban collapses to `Tabs` (one column at a time) below `lg`.
+
+**Auth model** — single HR_ADMIN demo user (`admin@devon.uz` / `Demo2026!`, credentials shown on the login screen). Other roles exist in the data model and seed data but aren't accessible via login in v1 of the demo.
+
+**i18n** — react-i18next scaffolded from day one. UZ JSON populated; RU and EN files stubbed and rely on UZ fallback. v1.1 roadmap fills Russian.
+
+**Mock backend** — there is no real server. All "API" calls hit a typed wrapper over `localStorage` with simulated 200–600ms latency and 3% random failure simulation. Seeded with ~6 root departments / 25 units / 30 employees with realistic Uzbek FIO / 25 certificates / 60+ audit entries. A "Reset demo" action in the user menu re-seeds cleanly.
+
+**Status** — Build prompt set complete (17 files, ~7,700 lines in [`docs/dashboard-prompts/`](../docs/dashboard-prompts/)). Code not yet scaffolded. The next session begins by loading `00-master.md` + `01-scaffold.md` into a fresh AI context.
+
+---
+
 ## Open questions / known gaps
 
+- **Dashboard implementation not yet started** — only the build prompt set exists. Next milestone is running `01-scaffold.md` and continuing sequentially through `15-final-qa.md`. Out-of-scope items deliberately deferred per master §17: real backend, real PFX parsing, real E-IMZO plugin, real SMS/email OTP, automated tests.
 - **User manual (Uzbek)** — `docs/user-manual-uz.md` is referenced in the README but doesn't exist yet. Needs writing for end-user onboarding.
 - **Operations runbook** — `docs/operations/` is referenced but the folder is empty. Needs `deployment.md`, `backup.md`, `recovery.md`, `oncall.md` populated for sysadmins.
 - **BPMN diagrams** — `docs/bpmn/` is referenced but the visual diagrams from the legacy PLYMA spec haven't been migrated. `docs/business-processes.md` covers the same flows in text form; the visual diagrams are a "nice to have."
