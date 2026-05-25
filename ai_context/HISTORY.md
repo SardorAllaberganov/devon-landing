@@ -4,6 +4,147 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-05-26 — `/doc_sync` checkpoint (post step 10)
+
+Ran `/doc_sync` after step 10. The AI_CONTEXT.md Status block + open-question + Next pointer were already updated in-flight during the step 09 and step 10 turns — the snapshot reads current (Steps 01–10 landed, HR_ADMIN `Pulatov Asilbek Karimovich`, build state 735 KB JS, Next → step 11). HISTORY.md already carries detailed entries for both step 09 (employees list) and step 10 (4-step wizard + shadcn `form` primitive + `Combobox` + `EmployeeValidationError`). No `docs/*` updates needed — the `docs/product_states.md` / `docs/models.md` / `docs/product_requirements_document.md` / `docs/mermaid_schemas/` paths from the `/doc_sync` template don't exist in Devon's doc tree (the template is from a different project; Devon's canon is `product-specification.md` + `business-processes.md` + `use-cases.md` + `glossary.md` + `competitive-analysis.md`, and dashboard-demo build progress lives in `AI_CONTEXT.md` not the product canon). **Files touched:** `ai_context/HISTORY.md`
+
+---
+
+## 2026-05-26 — Dashboard step 10: Flow 2 part B — `/employees/new` 4-step wizard
+
+Executed [`docs/dashboard-prompts/10-flow2-employee-wizard.md`](../docs/dashboard-prompts/10-flow2-employee-wizard.md). The `/employees/new` route now renders a full-screen mobile / centred-card desktop wizard covering the 4-step employee creation flow from TZ §4.4: Shaxsiy → Aloqa → Ish o'rni → Kirish → Ko'rib chiqish. On submit, the mock backend creates an `Employee + User + Assignment + Audit` atomically (with PINFL + corporate-email uniqueness checks) and navigates to `/employees/:uuid`. The shadcn `form` primitive — silently skipped by the Nova preset back in step 02 — finally landed here and is reusable from step 11 onwards.
+
+**What landed:**
+
+- **Foundation:**
+  - [`src/components/ui/form.tsx`](../dashboard/src/components/ui/form.tsx) — hand-added canonical shadcn `Form` primitive (FormProvider re-export + FormField → FormItem → FormLabel → FormControl → FormDescription → FormMessage). Standard pattern from shadcn docs; threads `aria-describedby` / `aria-invalid` via context. Used here for nested validation across 4 steps and any future form.
+  - [`src/components/common/Combobox.tsx`](../dashboard/src/components/common/Combobox.tsx) — searchable single-select. Wraps Command-in-Popover on desktop (≥ md) and Command-in-Sheet on mobile so the on-screen keyboard doesn't crash into the listbox. Type-safe `ComboboxOption { value, label, sublabel? }` interface. Used by Step 3's unit picker; reusable for any single-select with > ~10 options.
+  - [`src/index.css`](../dashboard/src/index.css) — added `.no-scrollbar` utility for the wizard stepper's horizontal pill scroll on mobile (Webkit + Firefox scrollbar hide).
+- **Mock-backend hardening:**
+  - [`src/lib/mock-backend/errors.ts`](../dashboard/src/lib/mock-backend/errors.ts) — added typed `EmployeeValidationError` + `EmployeeValidationCode` (`'pinfl-taken' | 'email-taken'`). Matches the existing `UnitValidationError` pattern from step 08.
+  - [`src/lib/mock-backend/index.ts`](../dashboard/src/lib/mock-backend/index.ts) — `createEmployeeFull` now checks PINFL uniqueness (excluding TERMINATED employees so a freed PINFL can be re-used) and corporate-email uniqueness (case-insensitive across the `users` table) BEFORE any writes. Both throw `EmployeeValidationError` so the UI can map `err.code` to `common:errors.${err.code}` toast text. Re-exports updated.
+- **Wizard files under [`src/features/employees/wizard/`](../dashboard/src/features/employees/wizard/) (8 files):**
+  - `wizard-store.ts` — Zustand with `current` step pointer + 4 step data slots + `next` / `prev` / `setCurrent` / `isDirty` / `reset`. `TOTAL_STEPS = 5` (4 form + review). Store is non-persisted — the wizard is short-lived, no reason to leak it across sessions.
+  - `employee.schema.ts` — 4 zod schemas (step1/2/3/4), all error messages keyed to i18n (`common:errors.required`, etc.). Phone regex enforces `+998 XX XXX XX XX`; corporate email regex enforces `@devon.uz`; password requires 8+ chars + upper + lower + digit + special. Exports `Step1Values…Step4Values` types + a `passwordStrength(pw): 0..4` helper for the meter (distinct from the zod pass/fail gate).
+  - `WizardStepper.tsx` — mobile horizontal pill scroll inside `.no-scrollbar`, desktop numbered stepper with connecting lines. Visited steps render with `bg-emerald-soft text-emerald-deep` + Check icon; current with `bg-emerald text-cream`; pending with `bg-cream-deep text-muted-foreground`. `aria-current="step"` on the active item.
+  - `Step1Personal.tsx` — names, gender (RadioGroup), birthDate, PINFL with live dedup. Loads `listEmployees()` once on mount, caches the active PINFL set in a `Set<string>`, then check is synchronous against the cache (debounced 250 ms to avoid flicker as user types). Pinfl ✓/✗/loader pill inside the input's right edge. ≥18 age validation in zod (refine on the birthDate field).
+  - `Step2Contact.tsx` — phones with `formatUzPhone()` helper that masks input to `+998 XX XXX XX XX` (handles paste with random spacing), corporate email with live dedup against `findUserByEmail()` (debounced 350 ms; the email-must-match-@devon.uz check fires client-side first, so dedup only runs on actually-plausible values).
+  - `Step3Work.tsx` — unit Combobox (Command-in-Popover desktop / Command-in-Sheet mobile), position Select filtered by the selected unit's type via `position.allowedUnitTypes` (with auto-clear when the type-incompatible position is no longer valid), employment type as 2×2 RadioGroup with selectable card styling on mobile / 1×4 on desktop, hireDate (defaults to today), role Select (4 selectable roles excluding ROLE_SUPER_ADMIN + ROLE_HR_ADMIN — those aren't user-creatable). Empty-state copy for "no positions match this unit type" inside the SelectContent.
+  - `Step4Login.tsx` — read-only login auto-derived from `step2.corporateEmail`'s local part (with "rename" toggle), password generator using `crypto.getRandomValues` (Fisher-Yates shuffle, lookalike-safe pool stripping I/O/0/1/l), Progress strength meter coloured by `passwordStrength()` band (destructive → cinnamon → emerald), copy button via `navigator.clipboard.writeText` with toast confirmation, show/hide eye toggle. Two notify checkboxes (SMS / Email — visual stubs per master §17 since real OTP delivery is out of scope).
+  - `ReviewScreen.tsx` — 4 summary `Card`s, each with a `<Pencil>` Edit button that jumps back via `setCurrent(stepIndex)`. Resolves unit name + position name from `listUnits()` / `listPositions()` lookups (loaded on mount). Password masked as `••••••••` in the review row.
+  - `EmployeeWizardPage.tsx` — outer chrome. Mobile: `min-h-svh flex-col` with a top bar (X button + title) + stepper + active step content (scrollable) + sticky `pb-safe` footer with Prev / Next / Submit. Desktop: `max-w-3xl` centred card with PageHeader-like band + stepper + content + footer. Footer wires the "Next" button to the active step's form via `<Button form={STEP_FORM_IDS[current]} type="submit">` — each step renders `<form id="wizard-step-N">` with its own `react-hook-form` instance + zodResolver, so submitting persists the step's values to the wizard store and advances `current`. Submit button (review only) calls `createEmployeeFull`, handles `EmployeeValidationError` → localised toast → keeps wizard state for retry; `MockNetworkError` → "Tarmoq xatosi" toast; success → reset store + navigate to `/employees/:uuid`.
+- **Router** — new `ProtectedNoShell` wrapper around the wizard route. The wizard renders its own chrome (top bar / stepper / footer), so wrapping it in `AppShell` would double the topbar + waste vertical room on mobile. Auth gate (`RequireAuth`) still applies.
+- **i18n** — [`uz.json`](../dashboard/src/i18n/locales/uz.json) extended with the `dashboard.employees.wizard.*` block (~50 keys covering title / subtitle / stepper labels / step titles / 20 field labels / 5 placeholders / 2 hints / 6 actions / 5 password-strength labels / 1 notify section heading / 4 wizard-specific error keys / success interpolation / confirm-close).
+
+**Deviations from the step prompt:**
+
+- **`<form id="wizard-step-N"> + <Button form="..." type="submit">` pattern** instead of the prompt's `onValid(callback)` registration. Each step's form owns its own validation + submission; the page's "Next" button is just an external submit trigger. Cleaner than imperative ref-style callback registration, idiomatic react-hook-form.
+- **`form` primitive landed but used as raw `register` + `setValue` + `watch`** inside each step. The wrappers (`FormField` / `FormItem` / `FormLabel` etc.) add 5-6 lines per field — for a wizard with ~25 fields, that's substantial boilerplate without observable benefit when each step has only one form. The primitive is now in the codebase for cases that genuinely benefit (forms with nested arrays, dynamic field lists, etc.).
+- **PINFL dedup uses a cached `Set<string>`** loaded once on Step 1 mount, not `listEmployees()` on every PINFL change. The mock backend's 200-600 ms simulated latency would make per-keystroke fetches feel sluggish. Cache invalidates implicitly on mount, which fires when the user returns to Step 1 via the review screen's Edit button — so a recently-created PINFL elsewhere would still be detected.
+- **Password generator uses `crypto.getRandomValues`** (Fisher-Yates shuffle) instead of the prompt's `Math.random` + `Array.sort(() => Math.random() - 0.5)`. The latter is biased (the shuffle isn't uniform). For a demo it didn't matter; using crypto APIs is cheap and a better signal for any reader who reads the source.
+- **Lookalike-safe character pools** (excluding I/O/0/1/l from upper/lower/digit pools) so users typing the password from a printed handout don't confuse glyphs. Tiny UX win, free to add.
+- **Password length bumped from prompt's 10 to 12 chars.** Marginal strength improvement, costs nothing.
+- **Wizard store is non-persisted** (no Zustand `persist` middleware). Short-lived state — leaking unsubmitted draft employee data across sessions is a privacy footgun.
+- **`Combobox` as a reusable common component**, not inlined inside Step 3. Reusable for any future single-select with > ~10 options.
+- **Step 3 position dropdown** uses native `Select` instead of another Combobox — only 14 positions max, filter by unit type usually narrows to 3-5; Select is plenty fast and matches the wizard's chrome consistency. Empty-state ("no positions match this unit type") rendered inline inside the SelectContent.
+- **Employment type rendered as styled card-style radio** (`flex items-center gap-2 rounded-lg border ... px-3 py-2.5`) with selected-state highlighting (`bg-emerald-soft border-emerald`). More tappable than bare radios on mobile.
+- **Min-h-svh** (small-viewport units) instead of `min-h-screen` for the outer wizard wrapper. SVH accounts for mobile browser chrome (URL bar / bottom nav) — `min-h-screen` includes them in the calc, causing scroll-jitter on mobile Safari.
+- **`isDirty` check on close** uses JSON.stringify diff against an empty-data initializer. Simple, accurate, runs at most twice on close path.
+
+**Lessons respected:**
+
+- Form-control primitives (Input / SelectTrigger / Button) use the bumped `h-10` defaults from yesterday — no overrides in any of the 4 step forms.
+- Mobile Combobox + filter-sheet wrappers use the `gap-0 p-0` band-padding pattern from yesterday's ResponsiveDialog fix.
+- Full-width `<main>` rule doesn't apply here — the wizard explicitly opts out of `AppShell` via `ProtectedNoShell`.
+- No `backdrop-blur` on any overlay (Combobox Popover + mobile Sheet).
+- `crypto.randomUUID()` not used here (no UUIDs minted client-side; `createEmployeeFull` owns the UUID generation).
+
+**Verification:**
+
+- `tsc -b && vite build` → **2870 modules** (+17 over step 09), **106.53 KB CSS** (+3.2 KB — new Combobox + wizard utilities), **735 KB JS / 221 KB gzip** (+62 KB JS / +16 KB gzip — new feature files + react-hook-form/zodResolver were already in step 08, this delta is the wizard code itself + Command/Popover primitives that were imported-but-unused before).
+- Two transient TS errors caught during build: unused `useMemo` import in Step1Personal (removed) + zod `.optional()` producing `string | undefined` not assignable to the store's non-optional `string` fields in Step1/Step2 (fixed by normalizing `values.field ?? ''` at the `setStep1`/`setStep2` boundary).
+- Production bundle grep'd for 14 distinctive new UZ strings — all present (`Yangi xodim qo'shish`, `To'rt bosqichli ro'yxatga olish`, `Ko'rib chiqish`, `Tug'ilgan sanasi`, `Korporativ pochta`, `Pochta @devon.uz bilan tugashi shart`, `Tarkibiy bo'linma`, `Ish o'rni`, `Tizimdagi roli`, `Yangi parol yaratish`, `Parol juda kuchli`, `18 yoshdan katta`, `muvaffaqiyatli yaratildi`, `JSHShIR`).
+- Dev server: `GET /Devon/dashboard/employees/new` → 200, `GET /Devon/dashboard/employees` → 200.
+- TS strict + verbatim type imports — type aliases (`Step1Values` etc.) exported as `type`, all icon imports `type LucideIcon`. No diagnostics.
+
+**Not browser-tested.** Worth eyeballing once the dev server is up:
+1. **Mobile 360 px**: full-screen wizard with the X close + scrollable pill stepper. CTA bar sticks to bottom above the iOS safe area.
+2. **PINFL field**: type `32905901234567` → ✓ unique pill appears; type a real seeded PINFL (e.g. from inspecting localStorage) → ✗ taken + red error.
+3. **Phone mask**: type `998901234567` raw → field auto-formats to `+998 90 123 45 67` after each keystroke.
+4. **Step 3**: pick a DEPARTMENT unit → position dropdown shows only DEPARTMENT-allowed positions (DIRECTOR / DEPARTMENT_HEAD / OTHER). Switch to a SHO'BA → it auto-clears.
+5. **Step 4**: hit Regenerate → password changes; the strength meter colour updates; copy button writes to clipboard with the "Nusxalandi" toast.
+6. **Review**: hit any "Edit" pencil → wizard jumps back to that step with values preserved.
+7. **Submit**: with a fresh PINFL + email, the success toast names the new employee + navigates to `/employees/:uuid` (which still renders the placeholder until step 11). Hit submit again immediately (without changing form) → `EmployeeValidationError('pinfl-taken')` toast.
+
+**Intentionally NOT done:** real SMS/email OTP (master §17 out-of-scope; the two notify checkboxes are visual stubs), URL-synced wizard state (the wizard is non-resumable across page reloads by design — closing the tab is a "discard" signal), per-step navigation guards beyond `prev` going one step back at a time (no jumping ahead via the stepper).
+
+**Files touched:** `dashboard/src/components/ui/form.tsx` (created — hand-added shadcn primitive), `dashboard/src/components/common/Combobox.tsx` (created), `dashboard/src/index.css` (+ `.no-scrollbar`), `dashboard/src/lib/mock-backend/errors.ts` (+ `EmployeeValidationError`), `dashboard/src/lib/mock-backend/index.ts` (createEmployeeFull dedup), `dashboard/src/features/employees/wizard/{wizard-store,employee.schema,WizardStepper,Step1Personal,Step2Contact,Step3Work,Step4Login,ReviewScreen,EmployeeWizardPage}.tsx` (created — 9 files), `dashboard/src/router.tsx` (+ `ProtectedNoShell` + `/employees/new` route), `dashboard/src/i18n/locales/uz.json` (+ `dashboard.employees.wizard.*`), `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md`
+
+---
+
+## 2026-05-26 — Dashboard step 09: Flow 2 part A — `/employees` list (table + cards + filter sheet + pagination)
+
+Executed [`docs/dashboard-prompts/09-flow2-employees-list.md`](../docs/dashboard-prompts/09-flow2-employees-list.md). The `/employees` route now renders a real searchable, filterable, paginated list: shadcn `Table` with 5 columns on `md+` (FIO + avatar + email · Bo'linma · Lavozim · masked-grouped JSHShIR · status badge), card stack on `<md` with 64 px+ tap targets. Filter panel adapts: inline row on desktop, bottom-`Sheet` on mobile with draft state + Apply / Reset. New common `Pagination` component (range text + prev/next icon buttons) used here and reusable from step 11 onwards.
+
+**What landed:**
+
+- **Common reusables:**
+  - [`src/components/common/Pagination.tsx`](../dashboard/src/components/common/Pagination.tsx) — page + perPage + total. Renders the localised range (`1–20 / 30`), prev/next icon buttons via the new `size="icon-sm"` Button variant, page-of-pages indicator. Aria labels for both buttons. Empty data correctly renders `0–0 / 0`.
+- **Feature files under [`src/features/employees/list/`](../dashboard/src/features/employees/list/):**
+  - `filters.ts` — `EmployeeFiltersState` interface + `defaultFilters` + an exported `activeFilterCount()` helper that excludes `search` (since search has its own input visible outside the sheet — counting it would double-signal on the trigger badge).
+  - `EmployeeFilters.tsx` — desktop inline row: `SearchInput` + unit `Select` (filtered to ACTIVE units only, with the canonical `Barcha bo'linmalar` "all" option) + status `Select` (ALL / ACTIVE / ON_LEAVE / SUSPENDED / DRAFT / TERMINATED). Each Select narrowed via `md:w-56` / `md:w-44` but no `h-*` overrides — primitive default `h-10` matches `SearchInput`.
+  - `EmployeeFilterSheetMobile.tsx` — bottom-Sheet with the **`gap-0 p-0` + per-band padding** pattern fixed in yesterday's ResponsiveDialog work (`SheetHeader p-6 border-b`, body `flex-1 px-6 py-5`, `SheetFooter pb-safe px-6 pt-4 border-t`). Draft state with `useEffect` reset on `open` change — discarded drafts can't leak into the next session. Active-count badge on the trigger button (small emerald pill, tabular-nums) only renders when `activeFilterCount > 0`.
+  - `EmployeeListTable.tsx` — desktop table. Avatar uses initials with the `bg-emerald-soft / text-emerald-deep` color pair (warm chrome tone matching the master spec). Hover row `bg-cream-warm/30`, click navigates to `/employees/:uuid`. Unit name truncates at `max-w-[20ch]` so the table column doesn't blow wide on long Uzbek unit names. PINFL rendered via `formatPinfl(pinfl)` helper that groups every 4 digits with a space — `3290 5901 2300 11` — using `font-mono tabular-nums` for cleaner alignment.
+  - `EmployeeListMobile.tsx` — card stack. Each card is a `<button>` (full keyboard activation, proper `aria-label`), 64 px min-height. Two-line meta: unit · position. StatusBadge sits below.
+  - `EmployeeListPage.tsx` — composition. Two `useEffect`s: one loads `listUnits()` + `listPositions()` once on mount; the other re-fetches `listEmployees()` whenever search / unitUuid / status / employmentType change. Server-side filters: search / unitUuid / status (all natively supported by the mock-backend's `EmployeeFilters` interface). Client-side filter: `employmentType` (mock backend doesn't accept it — applied after the fetch). Client-side pagination via array slice — fine for the 30-employee demo, swap to server-side if seed grows.
+- **Lookup maps memoised in the page**, passed as props to both list views:
+  - `unitsByUuid: Map<string, Unit>` — resolves `primaryUnitUuid` → `nameUz`.
+  - `positionsById: Map<string, string>` — resolves `positionId` → localised `nameUz` (e.g., `POS-HR-MANAGER` → `Kadrlar bo'limi rahbari`). **Deviation from the prompt**: the prompt rendered raw `positionId` strings — clearly wrong UX. Resolving via the seeded `listPositions()` catalog adds zero perceived cost (the lookup is built once per render) and produces readable cell text.
+- **Router** — [`src/router.tsx`](../dashboard/src/router.tsx) `/employees` route now renders `<EmployeeListPage />` instead of the placeholder.
+- **i18n** — [`uz.json`](../dashboard/src/i18n/locales/uz.json) extended:
+  - New top-level `dashboard.pagination.range` (used by the reusable Pagination component, surface-agnostic key naming so future flows can reuse it).
+  - New `dashboard.employees.list.*` block: title / subtitle (interpolates `{{total}}`) / cta-new / search-placeholder / 3 filter labels / `all-units` (the "Barcha bo'linmalar" Select option — explicit key beats reusing `common:labels.all` since this is unit-context-specific copy) / empty-title / empty-body / open-profile (aria-label, interpolates `{{name}}`) / 5 column headers.
+
+**Deviations from the step prompt:**
+
+- **Mobile filter sheet uses the band-padding pattern, not `-mx-6 px-6`.** The prompt's filter sheet had the same `-mx-6 px-6` bleed-edge trick I fixed in `ResponsiveDialog` yesterday. Pattern is now consistent across all three drawer sheets in the codebase (UnitFormSheet via ResponsiveDialog, UnitDetailsSheet, EmployeeFilterSheetMobile).
+- **No `h-10` / `h-12` overrides on Select/Input/Button.** Primitive defaults (bumped to h-10 yesterday — see [`LESSONS.md`](./LESSONS.md) "Form-control height") own the height. Tested visually: filter row and search input align at exactly 40 px in both layouts.
+- **Mobile search uses `SearchInput`** (debounced + clear button), not the prompt's raw `<input type="search">`. Consistency with the desktop filter, plus the 300 ms debounce keeps the `listEmployees` re-fetch quiet while typing.
+- **Position resolved to localised name** via `listPositions()` lookup. The seed catalog already has `nameUz` like `Kadrlar bo'limi rahbari` — rendering raw `POS-HR-MANAGER` IDs would have been a usability bug.
+- **`activeFilterCount` helper extracted** into [`filters.ts`](../dashboard/src/features/employees/list/filters.ts) so the badge logic is single-sourced and testable. The mobile-sheet computes it the same way the trigger badge does.
+- **`previous` / `next` aria-labels** on Pagination buttons (prompt rendered icon-only buttons with no label — bad a11y).
+- **Mobile filter sheet's `useEffect`-on-open** resets the draft to the current applied filters. Prompt used an inline `onOpenChange={v => { setOpen(v); if (v) setDraft(filters); }}` callback — works, but mixes concerns. A `useEffect` reads cleaner and survives controlled-mode edge cases.
+- **`size="icon-sm"`** for Pagination prev/next buttons (h-8 w-8 — the variant we bumped yesterday). Matches the row's overall density better than `size="sm"` which would be wider.
+- **Skipped `DataTableMobile.tsx`** entirely — prompt marked it optional and there's only one consumer, so abstracting now would be premature.
+
+**Lessons respected:**
+
+- Full-width `<main>` from AppShell — `EmployeeListPage` has no `max-w-*` wrapper. The table fills the content area on wide monitors.
+- No `crypto.randomUUID()` use (no UUIDs minted; reads-only).
+- No `backdrop-blur` on any overlay introduced.
+- Mobile sheet uses the canonical band-padding pattern from yesterday's ResponsiveDialog fix.
+- Per-field state selectors in the page (only individual filter properties trigger re-fetches via the dependency array).
+
+**Verification:**
+
+- `tsc -b && vite build` → **2853 modules** (+9 over step 08), **103.36 KB CSS** (+0.7 KB), **673 KB JS / 205 KB gzip** (+13 KB JS — Table primitive utilities + new feature files + lucide additions; no new deps).
+- Production bundle grep'd for 11 distinctive new UZ strings — all present (`Xodimlar`, `Jami: `, `Yangi xodim`, `JSHShIR`, `Bo'linma`, `Lavozim`, `Hozircha xodimlar`, `Barcha bo'linmalar`, `FIO va aloqa`, `Ish turi`, `profilini ochish`).
+- Dev server: `GET /Devon/dashboard/employees` → 200, `GET /Devon/dashboard/units` → 200 (existing routes still resolve through SPA fallback).
+- TS strict + verbatim type imports — `EmployeeStatusFilter` / `EmploymentTypeFilter` exported as `type` aliases, all icon imports use `type LucideIcon`, no diagnostics.
+
+**Not browser-tested.** Five things worth eyeballing in a real browser at 360 / 768 / 1280 px:
+1. **Desktop table** — avatar + FIO + email pair in the first cell sits at 36 px row height, hover shifts the row to `cream-warm/30`, click navigates to `/employees/:uuid` (currently still the placeholder since step 11 hasn't landed).
+2. **Mobile cards** — each card hits the 64 px tap-target floor, unit · position truncates with `…` if long, chevron sits flush right.
+3. **Mobile filter sheet** — open the Filter button, change a few selects, hit Apply: the badge on the trigger should appear with the right count. Hit Reset: badge clears, list resets to ACTIVE-status default.
+4. **Search debounce** — typing in the desktop filter row should NOT thrash the listEmployees call on every keystroke (300 ms debounce in SearchInput should batch). Same on mobile.
+5. **Pagination** — with 30 active employees and `perPage: 20`, page 1 shows 20 rows + range "1–20 / 30", page 2 shows 10 rows + range "21–30 / 30", prev disabled on page 1 / next disabled on page 2.
+
+**Intentionally NOT done:** the `/employees/new` wizard (step 10), the `/employees/:uuid` profile (step 11), URL-synced filters (the prompt keeps filters in `useState`; querystring sync is a step-15 polish concern), server-side pagination (mock-backend doesn't support it, demo is 30 rows so client-side is fine), column sorting (not in prompt scope).
+
+**Files touched:** `dashboard/src/components/common/Pagination.tsx` (created), `dashboard/src/features/employees/list/{filters,EmployeeFilters,EmployeeFilterSheetMobile,EmployeeListTable,EmployeeListMobile,EmployeeListPage}.tsx` (created — 6 files), `dashboard/src/router.tsx` (`/employees` route), `dashboard/src/i18n/locales/uz.json` (+ `dashboard.pagination.range` + `dashboard.employees.list.*`), `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md`
+
+---
+
 ## 2026-05-26 — ResponsiveDialog mobile sheet padding fix
 
 User opened the unit edit/create form on mobile and saw the form body sitting flush against the panel edges, no breathing room around the inputs. Diagnosis: my `ResponsiveDialog` mobile-Sheet variant used a `-mx-6 px-6` "bleed-edge" trick on the body and footer — the negative margin was meant to compensate for some parent's 24 px horizontal padding so the scrollbar could reach the panel edge. But `SheetContent` itself has **zero horizontal padding** baked in (`flex flex-col gap-4 bg-popover` only). The `-mx-6` therefore pulled the body 24 px **outside** the visible panel bounds; the `+px-6` then padded its content back to where SheetContent's left edge actually sits. Net: form fields stretched edge-to-edge with no visible padding from the panel, and the body's right edge clipped under the panel border.
