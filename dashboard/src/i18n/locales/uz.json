@@ -157,6 +157,93 @@
         "network": "Tarmoq xatosi. Qayta urinib ko'ring."
       },
       "footer": "© 2026 Devon. Barcha huquqlar himoyalangan."
+    },
+    "home": {
+      "greeting": "Salom, {{name}}!",
+      "subtitle": "Bugun nima qilamiz?",
+      "stats": {
+        "employees": "Faol xodimlar",
+        "units": "Tarkibiy bo'linmalar",
+        "active-certs": "Faol ERI kalitlari",
+        "pending-approvals": "Tasdiqlash kutilmoqda"
+      },
+      "recent-activity": "So'nggi harakatlar",
+      "no-activity": "Harakatlar yo'q",
+      "expiring-alert": {
+        "title": "{{count}} ta ERI muddati 30 kun ichida tugaydi",
+        "body": "Xodimlarga muddati tugayotgan kalitlarni yangilashni eslatib qo'ying.",
+        "cta": "Ko'rib chiqish"
+      },
+      "quick": {
+        "title": "Tezkor harakatlar",
+        "new-employee": "Yangi xodim",
+        "manage-units": "Tuzilmani boshqarish",
+        "upload-cert": "ERI yuklash",
+        "view-audit": "Audit jurnali"
+      }
+    },
+    "audit": {
+      "actions": {
+        "CREATE": "yaratdi",
+        "UPDATE": "yangiladi",
+        "DELETE": "o'chirdi",
+        "ARCHIVE": "arxivladi",
+        "LOGIN": "tizimga kirdi",
+        "LOGOUT": "tizimdan chiqdi",
+        "PASSWORD_CHANGED": "parolni o'zgartirdi",
+        "UNIT_TRANSFER": "bo'linmaga ko'chirildi",
+        "CERTIFICATE_UPLOADED": "ERI yukladi",
+        "CERTIFICATE_APPROVED": "ERIni tasdiqladi",
+        "CERTIFICATE_REVOKED": "ERIni bekor qildi",
+        "PROFILE_CHANGE_REQUESTED": "profil o'zgarishini so'radi",
+        "PROFILE_CHANGE_APPROVED": "profil o'zgarishini tasdiqladi"
+      }
+    },
+    "units": {
+      "page-title": "Tarkibiy tuzilma",
+      "page-subtitle": "Tashkilot iyerarxiyasini boshqaring",
+      "search-placeholder": "Bo'linma nomi yoki kodi bo'yicha qidirish...",
+      "empty": {
+        "title": "Hali bo'linmalar yo'q. Birinchi departamentni yarating."
+      },
+      "tree": {
+        "add-root": "Yangi bo'linma",
+        "add-child": "Ichki bo'linma qo'shish",
+        "employees-suffix": "xodim"
+      },
+      "form": {
+        "create-title": "Yangi bo'linma yaratish",
+        "edit-title": "Bo'linmani tahrirlash",
+        "description": "Bo'linmaning asosiy ma'lumotlarini kiriting.",
+        "name": "Nomi",
+        "short-name": "Qisqartma",
+        "code": "Ichki kod",
+        "code-placeholder": "Bo'sh qoldirsangiz avtomatik yaratiladi",
+        "parent": "Ota-bo'linma",
+        "root": "Ildiz (ota yo'q)",
+        "type": "Turi",
+        "type-hint": "Ota-bo'linma turidan kelib chiqib bola turlar cheklanadi",
+        "description-label": "Tavsif"
+      },
+      "details": {
+        "employees": "Faol xodimlar",
+        "children": "Ichki bo'linmalar",
+        "head": "Rahbar",
+        "no-head": "Belgilanmagan"
+      },
+      "toast": {
+        "created": "Bo'linma yaratildi",
+        "updated": "Bo'linma yangilandi",
+        "archived": "Bo'linma arxivlandi"
+      },
+      "errors": {
+        "invalid-code": "Kod faqat harf, raqam va tire bo'lishi mumkin (2–20 belgi)",
+        "duplicate-name": "Shu nomdagi bo'linma allaqachon mavjud",
+        "has-employees": "Bu bo'linmada {{count}} ta xodim ishlaydi. Avval ularni boshqa bo'linmaga ko'chiring.",
+        "max-depth": "Maksimal 7 daraja iyerarxiya joiz",
+        "cycle": "Bo'linma o'z avlodiga ota bo'la olmaydi",
+        "invalid-parent": "Tanlangan ota-bo'linma mavjud emas"
+      }
     }
   }
 }

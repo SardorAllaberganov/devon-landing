@@ -6,6 +6,8 @@ import LoginPage from '@/features/auth/LoginPage';
 import { RequireAuth } from '@/features/auth/RequireAuth';
 import AppShell from '@/components/layout/AppShell';
 import PageHeader from '@/components/common/PageHeader';
+import DashboardHome from '@/features/dashboard-home/DashboardHome';
+import UnitsPage from '@/features/units/UnitsPage';
 
 function Protected({ children }: { children: ReactElement }) {
   return (
@@ -29,7 +31,7 @@ export default function Router() {
         path="/"
         element={
           <Protected>
-            <Placeholder titleKey="dashboard:sidebar.nav-home" />
+            <DashboardHome />
           </Protected>
         }
       />
@@ -37,7 +39,7 @@ export default function Router() {
         path="/units"
         element={
           <Protected>
-            <Placeholder titleKey="dashboard:sidebar.nav-units" />
+            <UnitsPage />
           </Protected>
         }
       />

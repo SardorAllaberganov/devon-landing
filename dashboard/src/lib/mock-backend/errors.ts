@@ -5,6 +5,17 @@ export class MockNetworkError extends Error {
   }
 }
 
+export type UnitValidationCode = 'cycle' | 'duplicate-name' | 'max-depth' | 'invalid-parent';
+
+export class UnitValidationError extends Error {
+  readonly code: UnitValidationCode;
+  constructor(code: UnitValidationCode) {
+    super(`Unit validation failed: ${code}`);
+    this.name = 'UnitValidationError';
+    this.code = code;
+  }
+}
+
 export function maybeFail(probability = 0.03): void {
   if (Math.random() < probability) throw new MockNetworkError();
 }

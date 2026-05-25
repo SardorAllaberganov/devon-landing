@@ -4,8 +4,27 @@
 // localStorage tables defined in `./storage.ts`.
 
 import { simulatedDelay } from './delay';
-import { maybeFail } from './errors';
+import { maybeFail, UnitValidationError } from './errors';
 import { readTable, writeTable, Tables } from './storage';
+
+// Max nesting depth for the org tree (TZ §3.3 caps real hierarchies at 7).
+const MAX_UNIT_DEPTH = 7;
+
+function nameClashesWithSibling(
+  units: Unit[],
+  parentUuid: string | null,
+  name: string,
+  ignoreUuid?: string,
+): boolean {
+  const lc = name.trim().toLowerCase();
+  return units.some(
+    (u) =>
+      u.uuid !== ignoreUuid &&
+      u.parentUuid === parentUuid &&
+      u.status === 'ACTIVE' &&
+      u.nameUz.trim().toLowerCase() === lc,
+  );
+}
 import { sha256Hex } from '@/lib/hash';
 import type {
   Assignment,
@@ -210,7 +229,12 @@ export async function createUnit(input: CreateUnitInput, actorUuid: string): Pro
   maybeFail();
   const units = readUnits();
   const parent = input.parentUuid ? units.find((u) => u.uuid === input.parentUuid) : null;
+  if (input.parentUuid && !parent) throw new UnitValidationError('invalid-parent');
   const level = parent ? parent.level + 1 : 0;
+  if (level >= MAX_UNIT_DEPTH) throw new UnitValidationError('max-depth');
+  if (nameClashesWithSibling(units, input.parentUuid, input.nameUz)) {
+    throw new UnitValidationError('duplicate-name');
+  }
   const newUnit: Unit = {
     uuid: uid(),
     nameUz: input.nameUz,
@@ -252,12 +276,58 @@ export async function updateUnit(
   const idx = units.findIndex((u) => u.uuid === uuid);
   if (idx === -1) throw new Error(`Unit not found: ${uuid}`);
   const before = units[idx]!;
+
+  const parentChanging =
+    Object.prototype.hasOwnProperty.call(patch, 'parentUuid') &&
+    patch.parentUuid !== before.parentUuid;
+  const newParentUuid = parentChanging ? (patch.parentUuid ?? null) : before.parentUuid;
+
+  if (parentChanging && newParentUuid) {
+    if (newParentUuid === uuid) throw new UnitValidationError('cycle');
+    const newParent = units.find((u) => u.uuid === newParentUuid);
+    if (!newParent) throw new UnitValidationError('invalid-parent');
+    // Descendant detection: any unit whose path passes through `uuid` is a
+    // descendant (paths look like `/root/.../uuid/.../leaf/`).
+    if (newParent.path.includes(`/${uuid}/`)) throw new UnitValidationError('cycle');
+    const newLevel = newParent.level + 1;
+    if (newLevel >= MAX_UNIT_DEPTH) throw new UnitValidationError('max-depth');
+  }
+
+  const newName = patch.nameUz ?? before.nameUz;
+  const nameChanging = newName !== before.nameUz;
+  if ((parentChanging || nameChanging) && nameClashesWithSibling(units, newParentUuid, newName, uuid)) {
+    throw new UnitValidationError('duplicate-name');
+  }
+
   const updated: Unit = {
     ...before,
     ...patch,
+    parentUuid: newParentUuid,
     updatedAt: NOW(),
     updatedBy: actorUuid,
   };
+
+  // Re-derive level + path for self and descendants when the parent moves.
+  if (parentChanging) {
+    const newParent = newParentUuid ? units.find((u) => u.uuid === newParentUuid) ?? null : null;
+    updated.level = newParent ? newParent.level + 1 : 0;
+    updated.path = newParent ? `${newParent.path}${uuid}/` : `/${uuid}/`;
+    const oldPathFragment = before.path; // ends with `/${uuid}/`
+    for (const descendant of units) {
+      if (descendant.uuid === uuid) continue;
+      if (!descendant.path.startsWith(oldPathFragment)) continue;
+      const remainder = descendant.path.slice(oldPathFragment.length);
+      const rewritten = `${updated.path}${remainder}`;
+      descendant.path = rewritten;
+      descendant.level = rewritten.split('/').filter(Boolean).length - 1;
+      descendant.updatedAt = NOW();
+      descendant.updatedBy = actorUuid;
+      if (descendant.level >= MAX_UNIT_DEPTH) {
+        throw new UnitValidationError('max-depth');
+      }
+    }
+  }
+
   units[idx] = updated;
   writeTable(Tables.units, units);
   await appendAudit({
@@ -678,4 +748,5 @@ export async function revokeCertificate(
 // === Re-exports ===
 
 export { seedIfEmpty, resetAndSeed } from './seed';
-export { MockNetworkError } from './errors';
+export { MockNetworkError, UnitValidationError } from './errors';
+export type { UnitValidationCode } from './errors';
