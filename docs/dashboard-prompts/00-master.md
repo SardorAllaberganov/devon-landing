@@ -62,11 +62,11 @@ Relevant existing files to be aware of:
 
 | Concern | Choice | Notes |
 |---|---|---|
-| Build tool | **Vite 5** | `--template react-ts` |
-| Language | **TypeScript 5** | `"strict": true` |
-| Framework | **React 18** | function components only |
-| UI library | **shadcn/ui** | `style: new-york`, `baseColor: neutral`, then themed via CSS vars to Devon palette |
-| Styling | **Tailwind CSS 3** | tokens via CSS vars in `index.css` |
+| Build tool | **Vite 8** | `--template react-ts`; ships split tsconfig (`tsconfig.json` references `tsconfig.app.json` + `tsconfig.node.json`) |
+| Language | **TypeScript 6** | `"strict": true`; no `baseUrl` (deprecated in TS 6 — paths resolve relative to tsconfig) |
+| Framework | **React 19** | function components only |
+| UI library | **shadcn/ui** (v4+ CLI) | `--template vite --base radix --preset nova` (Nova is the current shadcn preset analogue of the old "new-york" style); themed via CSS vars to Devon palette. The `form` registry entry is silently skipped by the Nova preset — hand-add a canonical form primitive when a real form lands. |
+| Styling | **Tailwind CSS 4** | CSS-first config via `@theme inline` in `index.css`; no `tailwind.config.ts`. Vite integration via `@tailwindcss/vite` plugin. Animations via `tw-animate-css` (drop-in replacement for v3's `tailwindcss-animate`). |
 | Routing | **react-router-dom v6** | `BrowserRouter`, `basename` from `import.meta.env.BASE_URL` |
 | Global state | **Zustand** | one store per concern (`useAuthStore`, `useUiStore`, etc.) |
 | Server-state | Not used | plain async functions over the mock backend; no React Query |
@@ -107,52 +107,78 @@ Devon's landing palette MUST drive the dashboard. shadcn components consume CSS 
 
 ### shadcn semantic mapping (in `index.css`)
 
-```css
-@layer base {
-  :root {
-    /* Devon palette */
-    --cream: 38 40% 97%;
-    --cream-deep: 41 39% 91%;
-    --cream-warm: 42 47% 93%;
-    --surface: 0 0% 100%;
-    --ink: 230 14% 8%;
-    --ink-soft: 224 16% 12%;
-    --body-fg: 224 8% 38%;
-    --muted-fg: 225 6% 64%;
-    --line: 41 30% 87%;
-    --emerald: 154 43% 21%;
-    --emerald-deep: 155 43% 16%;
-    --emerald-soft: 150 22% 92%;
-    --cinnamon: 28 64% 45%;
-    --cinnamon-soft: 32 67% 89%;
-    --signal: 153 33% 36%;
+Tailwind v4 is CSS-first — there is no `tailwind.config.ts`. The canonical wiring uses three layers in `src/index.css`:
 
-    /* shadcn semantic tokens */
-    --background: var(--cream);
-    --foreground: var(--ink);
-    --card: var(--surface);
-    --card-foreground: var(--ink);
-    --popover: var(--surface);
-    --popover-foreground: var(--ink);
-    --primary: var(--emerald);
-    --primary-foreground: var(--cream);
-    --secondary: var(--cream-deep);
-    --secondary-foreground: var(--ink);
-    --muted: var(--cream-warm);
-    --muted-foreground: var(--body-fg);
-    --accent: var(--cinnamon-soft);
-    --accent-foreground: var(--cinnamon);
-    --destructive: 0 70% 45%;
-    --destructive-foreground: var(--cream);
-    --border: var(--line);
-    --input: var(--line);
-    --ring: var(--emerald);
-    --radius: 0.75rem;
-  }
+1. **Imports** — `tailwindcss`, `shadcn/tailwind.css`, `tw-animate-css`.
+2. **`:root`** — defines shadcn's semantic CSS variables (`--primary`, `--background`, etc.) with `hsl(...)` values drawn from the Devon palette. Also exposes Devon brand-name tokens (`--color-emerald`, `--color-cream-deep`, etc.) for direct utility access.
+3. **`@theme inline`** — maps both the shadcn semantic vars and the Devon brand-name vars to Tailwind utility tokens (`--color-primary: var(--primary)` etc.), so utilities like `bg-primary`, `text-emerald`, `bg-cream-deep` all resolve correctly.
+
+```css
+@import "tailwindcss";
+@import "shadcn/tailwind.css";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* shadcn semantic tokens — mapped to Devon palette in HSL */
+  --background: hsl(38 40% 97%);          /* cream */
+  --foreground: hsl(230 14% 8%);          /* ink */
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(230 14% 8%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(230 14% 8%);
+  --primary: hsl(154 43% 21%);            /* emerald */
+  --primary-foreground: hsl(38 40% 97%);
+  --secondary: hsl(41 39% 91%);           /* cream-deep */
+  --secondary-foreground: hsl(230 14% 8%);
+  --muted: hsl(42 47% 93%);               /* cream-warm */
+  --muted-foreground: hsl(224 8% 38%);
+  --accent: hsl(32 67% 89%);              /* cinnamon-soft */
+  --accent-foreground: hsl(28 64% 45%);   /* cinnamon */
+  --destructive: hsl(0 70% 45%);
+  --border: hsl(41 30% 87%);              /* line */
+  --input: hsl(41 30% 87%);
+  --ring: hsl(154 43% 21%);
+  --radius: 0.75rem;
+
+  /* Sidebar + chart tokens (used by shadcn sidebar/chart primitives later) */
+  --sidebar: hsl(41 39% 91%);
+  --sidebar-foreground: hsl(230 14% 8%);
+  --sidebar-primary: hsl(154 43% 21%);
+  --sidebar-primary-foreground: hsl(38 40% 97%);
+  --sidebar-accent: hsl(32 67% 89%);
+  --sidebar-accent-foreground: hsl(28 64% 45%);
+  --sidebar-border: hsl(41 30% 87%);
+  --sidebar-ring: hsl(154 43% 21%);
+  --chart-1: hsl(154 43% 21%);
+  --chart-2: hsl(28 64% 45%);
+  --chart-3: hsl(153 33% 36%);
+  --chart-4: hsl(155 43% 16%);
+  --chart-5: hsl(225 6% 64%);
+
+  /* Devon brand-name tokens (also exposed via @theme inline below) */
+  --color-cream: hsl(38 40% 97%);
+  --color-cream-deep: hsl(41 39% 91%);
+  --color-emerald: hsl(154 43% 21%);
+  --color-cinnamon: hsl(28 64% 45%);
+  /* ...etc. — see dashboard/src/index.css for the full list */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-primary: var(--primary);
+  --color-emerald: var(--color-emerald);
+  /* ...full list in dashboard/src/index.css */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
 }
 ```
 
-Tailwind config consumes these via `hsl(var(--xxx))`. shadcn primitives use these semantic names directly; the Devon palette is wired in once and inherits everywhere.
+Vite plugs Tailwind in via `@tailwindcss/vite` (one `plugins: [react(), tailwindcss()]` line in `vite.config.ts`). shadcn primitives use the semantic names (`bg-primary`, `text-foreground`, `border-border`) directly; the Devon palette is wired in once and inherits everywhere.
 
 ---
 
