@@ -7,6 +7,8 @@ import { RequireAuth } from '@/features/auth/RequireAuth';
 import AppShell from '@/components/layout/AppShell';
 import PageHeader from '@/components/common/PageHeader';
 import DashboardHome from '@/features/dashboard-home/DashboardHome';
+import CertificatesPage from '@/features/certificates/CertificatesPage';
+import CertificateUploadPage from '@/features/certificates/CertificateUploadPage';
 import EmployeeListPage from '@/features/employees/list/EmployeeListPage';
 import EmployeeWizardPage from '@/features/employees/wizard/EmployeeWizardPage';
 import EmployeeProfilePage from '@/features/employees/profile/EmployeeProfilePage';
@@ -90,8 +92,16 @@ export default function Router() {
         path="/certificates"
         element={
           <Protected>
-            <Placeholder titleKey="dashboard:sidebar.nav-certificates" />
+            <CertificatesPage />
           </Protected>
+        }
+      />
+      <Route
+        path="/certificates/upload"
+        element={
+          <ProtectedNoShell>
+            <CertificateUploadPage />
+          </ProtectedNoShell>
         }
       />
       <Route

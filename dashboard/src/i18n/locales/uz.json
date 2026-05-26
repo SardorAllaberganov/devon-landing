@@ -23,7 +23,8 @@
       "logout": "Chiqish",
       "view-all": "Hammasini ko'rish",
       "show-more": "Ko'proq ko'rsatish",
-      "show-less": "Kamroq ko'rsatish"
+      "show-less": "Kamroq ko'rsatish",
+      "open-profile": "Profilni ochish"
     },
     "labels": {
       "loading": "Yuklanmoqda...",
@@ -194,6 +195,7 @@
         "UNIT_TRANSFER": "bo'linmaga ko'chirildi",
         "CERTIFICATE_UPLOADED": "ERI yukladi",
         "CERTIFICATE_APPROVED": "ERIni tasdiqladi",
+        "CERTIFICATE_REJECTED": "ERIni rad etdi",
         "CERTIFICATE_REVOKED": "ERIni bekor qildi",
         "PROFILE_CHANGE_REQUESTED": "profil o'zgarishini so'radi",
         "PROFILE_CHANGE_APPROVED": "profil o'zgarishini tasdiqladi"
@@ -414,6 +416,114 @@
           "same-unit": "Yangi bo'linma joriy bo'linmadan farq qilishi kerak"
         },
         "success": "{{name}} muvaffaqiyatli ko'chirildi"
+      }
+    },
+    "certificates": {
+      "title": "ERI sertifikatlari",
+      "subtitle": "{{count}} ta tasdiqlash kutilmoqda",
+      "upload-cta": "Yangi ERI yuklash",
+      "empty-column": "Hozircha yo'q",
+      "select-aria": "Tanlash",
+      "columns": {
+        "PENDING_APPROVAL": "Tasdiqlash kutilmoqda",
+        "ACTIVE": "Faol",
+        "EXPIRED": "Muddati tugagan",
+        "REVOKED": "Bekor qilingan"
+      },
+      "card": {
+        "expiring-soon": "Tez orada tugaydi"
+      },
+      "bulk": {
+        "selected": "{{count}} ta sertifikat tanlandi",
+        "approve-cta": "Tanlanganlarni tasdiqlash"
+      },
+      "details": {
+        "title": "ERI ma'lumotlari",
+        "owner": "Egasi",
+        "issuer": "Sertifikat markazi",
+        "serial": "Seriya raqami",
+        "thumbprint": "Thumbprint",
+        "key-usage": "Kalit turi",
+        "validity": "Amal qilish muddati",
+        "uploaded-at": "Yuklangan sana",
+        "rejection-reason": "Rad etish sababi",
+        "revocation-reason": "Bekor qilish sababi"
+      },
+      "actions": {
+        "approve": "Tasdiqlash",
+        "reject": "Rad etish",
+        "revoke": "Bekor qilish"
+      },
+      "approve": {
+        "title": "Sertifikatni tasdiqlash",
+        "body": "{{name}}ning sertifikatini tasdiqlaysizmi? Tasdiqlashdan keyin sertifikat faol holatga o'tadi.",
+        "confirm": "Ha, tasdiqlash"
+      },
+      "reject": {
+        "title": "Sertifikatni rad etish",
+        "body": "{{name}}ning sertifikatini rad etishni tasdiqlaysizmi?",
+        "reason-label": "Rad etish sababi",
+        "reason-placeholder": "Masalan: PINFL noto'g'ri kiritilgan",
+        "reason-required": "Sabab kiritilishi shart (kamida 5 belgi)",
+        "confirm": "Rad etish"
+      },
+      "revoke": {
+        "title": "Sertifikatni bekor qilish",
+        "body": "Bekor qilingandan keyin sertifikatni qaytarib bo'lmaydi.",
+        "reason-label": "Bekor qilish sababi",
+        "reason-placeholder": "Sababni tanlang",
+        "reasons": {
+          "EXPIRED": "Muddati tugadi",
+          "COMPROMISED": "Buzilgan kalit",
+          "REPLACED": "Almashtirildi",
+          "MANUAL": "Qo'lda bekor qilingan"
+        },
+        "confirm": "Bekor qilish"
+      },
+      "toast": {
+        "approved": "Sertifikat tasdiqlandi",
+        "rejected": "Sertifikat rad etildi",
+        "revoked": "Sertifikat bekor qilindi",
+        "uploaded": "ERI muvaffaqiyatli yuklandi",
+        "bulk-approved": "{{count}} ta sertifikat tasdiqlandi"
+      },
+      "upload": {
+        "title": "ERI kalitini yuklash",
+        "subtitle": "PFX faylni yuklang va sertifikat ma'lumotlarini tasdiqlang",
+        "back": "Bekor qilish",
+        "step-employee": "Sertifikat egasini tanlang",
+        "step-employee-hint": "Sertifikat egasining JSHShIRi tanlangan xodimning JSHShIRiga teng bo'lishi shart",
+        "step-file": "PFX faylni tanlang",
+        "step-file-hint": ".pfx yoki .p12, maksimal 100 KB",
+        "step-file-cta": "Fayl tanlash",
+        "step-file-selected": "Tanlangan fayl: {{name}} · {{size}}",
+        "step-password": "Fayl parolini kiriting",
+        "step-password-hint": "Parol serverga uzatilmaydi — faqat fayl uchun",
+        "extract-cta": "Faylni o'qish",
+        "extracting": "Fayl o'qilmoqda...",
+        "step-confirm": "Ma'lumotlarni tasdiqlang",
+        "challenge-info": "Sertifikatga egalik tasdiqlanmoqda...",
+        "submit": "Sertifikatni saqlash",
+        "type-label": "Sertifikat turi",
+        "types": {
+          "SIGNING": "Imzo",
+          "ENCRYPTION": "Shifrlash",
+          "BOTH": "Imzo + Shifrlash"
+        },
+        "auto-approve": {
+          "label": "Avtomatik tasdiqlash",
+          "hint": "O'chirib qo'yilsa, sertifikat tasdiqlash navbatiga tushadi"
+        },
+        "success": "{{name}}ning ERI sertifikati saqlandi",
+        "errors": {
+          "pfx-too-large": "Fayl 100 KB dan katta bo'lishi mumkin emas",
+          "pfx-password-wrong": "Parol noto'g'ri",
+          "pinfl-mismatch": "Sertifikat egasining JSHShIRi xodimning JSHShIRiga mos kelmadi",
+          "serial-taken": "Bu sertifikat allaqachon tizimda mavjud",
+          "no-employee": "Avval xodimni tanlang",
+          "no-file": "Avval PFX faylni tanlang",
+          "no-password": "Faylning parolini kiriting"
+        }
       }
     },
     "units": {
