@@ -437,6 +437,9 @@
         "selected": "{{count}} ta sertifikat tanlandi",
         "approve-cta": "Tanlanganlarni tasdiqlash"
       },
+      "dnd": {
+        "forbidden": "Bunday o'tkazish ruxsat etilmagan"
+      },
       "details": {
         "title": "ERI ma'lumotlari",
         "owner": "Egasi",
@@ -478,7 +481,7 @@
           "REPLACED": "Almashtirildi",
           "MANUAL": "Qo'lda bekor qilingan"
         },
-        "confirm": "Bekor qilish"
+        "confirm": "Ha, bekor qiling"
       },
       "toast": {
         "approved": "Sertifikat tasdiqlandi",
