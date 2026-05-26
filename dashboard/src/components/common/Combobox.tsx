@@ -17,6 +17,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from '@/components/ui/sheet';
 import { useMediaQuery } from '@/lib/use-media-query';
 import { cn } from '@/lib/utils';
@@ -134,28 +135,26 @@ export default function Combobox({
   }
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => !disabled && setOpen(true)}
-        disabled={disabled}
-        className="contents"
+    <Sheet open={open} onOpenChange={setOpen}>
+      {/*
+        SheetTrigger asChild merges its trigger behavior (click handler, ref,
+        aria attributes) into the Button instead of rendering its own
+        wrapper <button>. The previous version used a manual
+        `<button className="contents">` wrapper around the Button —
+        <button> inside <button> is a hydration error per HTML spec.
+      */}
+      <SheetTrigger asChild>{trigger}</SheetTrigger>
+      <SheetContent
+        side="bottom"
+        className="flex h-[80vh] flex-col gap-0 rounded-t-2xl p-0"
       >
-        {trigger}
-      </button>
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent
-          side="bottom"
-          className="flex h-[80vh] flex-col gap-0 rounded-t-2xl p-0"
-        >
-          <SheetHeader className="border-b border-line p-4 text-left">
-            <SheetTitle className="pr-10 text-base">
-              {placeholder ?? t('common:labels.select')}
-            </SheetTitle>
-          </SheetHeader>
-          <div className="flex-1 overflow-hidden">{list}</div>
-        </SheetContent>
-      </Sheet>
-    </>
+        <SheetHeader className="border-b border-line p-4 text-left">
+          <SheetTitle className="pr-10 text-base">
+            {placeholder ?? t('common:labels.select')}
+          </SheetTitle>
+        </SheetHeader>
+        <div className="flex-1 overflow-hidden">{list}</div>
+      </SheetContent>
+    </Sheet>
   );
 }
