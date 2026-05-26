@@ -6,6 +6,7 @@
 import { simulatedDelay } from './delay';
 import {
   AssignmentValidationError,
+  CertificateValidationError,
   EmployeeValidationError,
   maybeFail,
   UnitValidationError,
@@ -668,6 +669,18 @@ export async function uploadCertificate(
   await simulatedDelay();
   maybeFail();
   const certs = readCertificates();
+
+  // TZ §6.2 — sertifikat egasining JSHShIRi xodimning JSHShIRiga teng bo'lishi shart.
+  const employee = readEmployees().find((e) => e.uuid === input.employeeUuid);
+  if (employee && employee.pinfl !== input.subjectPinfl) {
+    throw new CertificateValidationError('pinfl-mismatch');
+  }
+  // Serial-uniqueness across the whole certs table (case-insensitive).
+  const serialLc = input.serialNumber.toLowerCase();
+  if (certs.some((c) => c.serialNumber.toLowerCase() === serialLc)) {
+    throw new CertificateValidationError('serial-taken');
+  }
+
   const cert: Certificate = {
     uuid: uid(),
     employeeUuid: input.employeeUuid,
@@ -690,13 +703,13 @@ export async function uploadCertificate(
   certs.push(cert);
   writeTable(Tables.certificates, certs);
 
-  const emp = readEmployees().find((e) => e.uuid === input.employeeUuid);
+  const label = `ERI · ${employee?.fullNameGenerated ?? input.employeeUuid}`;
   await appendAudit({
     actorUuid,
     action: 'CERTIFICATE_UPLOADED',
     resourceType: 'certificate',
     resourceUuid: cert.uuid,
-    resourceLabel: `ERI · ${emp?.fullNameGenerated ?? input.employeeUuid}`,
+    resourceLabel: label,
   });
   if (input.autoApprove) {
     await appendAudit({
@@ -704,7 +717,7 @@ export async function uploadCertificate(
       action: 'CERTIFICATE_APPROVED',
       resourceType: 'certificate',
       resourceUuid: cert.uuid,
-      resourceLabel: `ERI · ${emp?.fullNameGenerated ?? input.employeeUuid}`,
+      resourceLabel: label,
     });
   }
   return cert;
@@ -758,11 +771,11 @@ export async function rejectCertificate(
   const emp = readEmployees().find((e) => e.uuid === updated.employeeUuid);
   await appendAudit({
     actorUuid,
-    action: 'CERTIFICATE_APPROVED', // reuse action; context carries the rejection
+    action: 'CERTIFICATE_REJECTED',
     resourceType: 'certificate',
     resourceUuid: uuid,
     resourceLabel: `ERI · ${emp?.fullNameGenerated ?? updated.employeeUuid}`,
-    context: { decision: 'REJECTED', reason },
+    context: { reason },
   });
   return updated;
 }
@@ -802,12 +815,14 @@ export async function revokeCertificate(
 export { seedIfEmpty, resetAndSeed } from './seed';
 export {
   AssignmentValidationError,
+  CertificateValidationError,
   EmployeeValidationError,
   MockNetworkError,
   UnitValidationError,
 } from './errors';
 export type {
   AssignmentValidationCode,
+  CertificateValidationCode,
   EmployeeValidationCode,
   UnitValidationCode,
 } from './errors';

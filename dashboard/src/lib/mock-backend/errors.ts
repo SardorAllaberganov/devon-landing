@@ -38,6 +38,17 @@ export class AssignmentValidationError extends Error {
   }
 }
 
+export type CertificateValidationCode = 'serial-taken' | 'pinfl-mismatch';
+
+export class CertificateValidationError extends Error {
+  readonly code: CertificateValidationCode;
+  constructor(code: CertificateValidationCode) {
+    super(`Certificate validation failed: ${code}`);
+    this.name = 'CertificateValidationError';
+    this.code = code;
+  }
+}
+
 export function maybeFail(probability = 0.03): void {
   if (Math.random() < probability) throw new MockNetworkError();
 }
