@@ -4,6 +4,160 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-05-26 — `/doc_sync` checkpoint (post Combobox button-nesting fix)
+
+Ran `/doc_sync` after a one-file fix to [`src/components/common/Combobox.tsx`](../dashboard/src/components/common/Combobox.tsx). The mobile branch was rendering a manual `<button className="contents">` wrapper around its trigger `<Button>` — that's `<button>` inside `<button>`, which HTML forbids and React 19's stricter hydration checks now report as `In HTML, <button> cannot be a descendant of <button>`. Replaced the manual wrapper with `<SheetTrigger asChild>` (the idiomatic Radix pattern that merges trigger behavior into the child Button instead of nesting). One-line semantic change; `SheetTrigger` added to the existing sheet imports. Build clean: 896 KB JS (down 0.09 KB without the wrapper). The fix also closed out the long-running dev-server crash thread — the bundle hash in the new error stack (`?v=3af12f38`) was different from the prior crash hash (`?v=ae686338`), confirming the Vite pre-bundle of `@dnd-kit/sortable` is now loading from the correct local install. Affects every mobile use of `Combobox` (step 10 wizard's Step 3 unit picker, step 11 transfer form's unit + position pickers, step 12 upload form's employee picker). No `docs/*` updates needed — same template-mismatch reasoning as prior checkpoints; this was a pure HTML-spec compliance fix at the primitive layer, not a product-level change. AI_CONTEXT.md unchanged (the snapshot narrative doesn't shift for a one-file primitive fix). **Files touched:** `ai_context/HISTORY.md`
+
+---
+
+## 2026-05-26 — `/doc_sync` checkpoint (post DnD + sortable + bug-fix marathon)
+
+Ran `/doc_sync` after a long iterative session on the certificates Kanban DnD. AI_CONTEXT.md's step-12 Build state line was already bumped to reflect the initial DnD addition; the subsequent rounds of bug fixes (decoupled dialog state, top-of-column reorder persistence, within-column sortable via `@dnd-kit/sortable`, the dev-server "Invalid hook call" debugging, `select-none` to suppress blue text selection during drag, `cursor-not-allowed` for terminal cards) are captured in the dedicated HISTORY entry below this one. No `docs/*` updates needed — same template-mismatch reasoning as the prior `/doc_sync` checkpoints: Devon's product canon (`product-specification.md` / `business-processes.md` / `use-cases.md` / `glossary.md` / `competitive-analysis.md`) describes the v1.0 product, and the cert Kanban's DnD treatment is per-page chrome detail, not a product-level state-machine change. ERI module (Flow 4) was already in the v1.0 scope and its visualization happens to be a Kanban — adding drag-and-drop to that visualization is a UX refinement of the existing surface, not a new feature.
+
+This session also revealed a build hygiene issue: a stray `package.json` + `package-lock.json` + `node_modules/` got accidentally created at the project root (`/Users/sardorallaberganov/Desktop/Projects/Devon/`) when some `npm install` commands ran from the wrong working directory. AI_CONTEXT.md gained a sentence noting these are present but inert (the `dashboard/` install now wins via closest-wins resolution); they can be removed at user discretion. They're listed in the entry below under "Build state notes". **Files touched:** `ai_context/HISTORY.md`
+
+---
+
+## 2026-05-26 — Certificates Kanban: drag-and-drop + sortable + cleanup pass
+
+Added drag-and-drop to the certs Kanban from step 12, then iterated through a tight loop of bug fixes and UX refinements. Final state: cards can be dragged between columns (with status-aware approval/revocation gating) AND reordered within their own column (PENDING / ACTIVE). Terminal columns (EXPIRED / REVOKED) stay static. Mobile (<lg) keeps the tabbed flow — touch DnD is fragile and the single-column tabs view has no other columns to drop into anyway.
+
+**What landed in chronological order:**
+
+1. **DnD foundation (PENDING→ACTIVE direct-action, ACTIVE→REVOKED via dialog):**
+   - Installed `@dnd-kit/core@^6.3.1` (later joined by `@dnd-kit/sortable@^9.0.0` + `@dnd-kit/utilities@^3.2.2` when within-column reorder was added).
+   - Rewrote [`CertificatesKanban.tsx`](../dashboard/src/features/certificates/CertificatesKanban.tsx) with `DndContext` + `useDroppable` columns + `useDraggable` cards + `DragOverlay` ghost.
+   - `PointerSensor` activation distance = 8 px so a tap-to-open-detail-sheet doesn't accidentally trigger a drag.
+   - Transition matrix locked: PENDING_APPROVAL → ACTIVE allowed, ACTIVE → REVOKED allowed, everything else surfaces a `Bunday o'tkazish ruxsat etilmagan` warning toast. Terminal-state cards (EXPIRED / REVOKED) are `useDraggable({ disabled: true })`.
+   - Visual feedback: destination columns light up emerald-ringed when the in-flight drag is valid, destructive-ringed when not; source column shows no hint.
+
+2. **CertificatesPage `onDrop` handler with optimistic UI + reason-gated revoke:**
+   - PENDING → ACTIVE: optimistic `setCerts` patch + `approveCertificate` + rollback on `MockNetworkError`.
+   - ACTIVE → REVOKED: defers the move until the user picks a reason in the existing `RevokeDialog`.
+   - Forbidden: warning toast, no state change.
+
+3. **Click-after-drag bug fix.** After a successful drag, the browser still synthesizes a click on the released element — that click was bubbling into `CertificateCard.onClick` and opening the detail sheet ON TOP of whatever the drop did, feeling like "the drag did nothing + the sheet randomly appeared." Fixed with a `justDragged` ref set in `onDragEnd` (cleared on the next macrotask via `setTimeout(0)`) consulted by `onClickCapture` on the wrapper to suppress the synthesized click. Also switched collision detection from default `rectIntersection` to `pointerWithin` so a column lights up if and only if the drop will register there — eliminated silent cancels where the user thought they were over a column but the algorithm picked something else.
+
+4. **Dialog-below-sheet bug fix.** The original revoke flow did `setOpenCert(cert) + setDialog('revoke')` — opening the detail sheet AND the dialog at the same time. The sheet's overlay buried the dialog visually, and cancelling the dialog left the sheet stuck open. Fixed by introducing a separate `dialogCert: Certificate | null` state decoupled from `openCert`: drag-triggered dialogs set `dialogCert` only (no sheet), sheet-triggered dialogs set both (sheet stays visible behind dialog for context). Added a `closeDialog()` helper that clears both `dialog` and `dialogCert` for clean teardown.
+
+5. **Cancel/cancel button label collision fix.** In Uzbek, "bekor qilish" means both "cancel" (dismiss action) and "revoke" (cert lifecycle term). RevokeDialog's footer ended up with two buttons reading identically — `[Bekor qilish] [Bekor qilish]`. Changed `dashboard:certificates.revoke.confirm` to `Ha, bekor qiling` (affirmative-confirmation pattern, matching `Ha, bo'shatish` from step 11's terminate dialog). Dismiss stays `Bekor qilish` via `common:actions.cancel`. Now reads `[Bekor qilish] [Ha, bekor qiling]` — distinct verbs.
+
+6. **Order persistence across reload.** First attempted fix: change the `setCerts` optimistic patch to put the cert at the END of the array (bottom of destination column). Problem: `reload()` then pulled the mock-backend's insertion-order data and the card snapped back to its original position. Root-cause fix: updated [`approveCertificate`](../dashboard/src/lib/mock-backend/index.ts) and [`revokeCertificate`](../dashboard/src/lib/mock-backend/index.ts) to `splice` the cert out of its current slot and `unshift` it to the FRONT of the certs table. Also flipped the optimistic-patch convention from "bottom" to "top" so the cert lands at the TOP of the destination column (Linear / GitHub Issues convention — newest activity surfaces first). Now the drop position is consistent before AND after `reload()`.
+
+7. **Within-column reorder via `@dnd-kit/sortable`.** User asked for the missing "drag cards up/down within a column to change their order" feature. Installed `@dnd-kit/sortable@^9.0.0`. Wrapped each PENDING / ACTIVE column's cards in `<SortableContext id={status} items={cardIds} strategy={verticalListSortingStrategy}>` so cards animate to make room as a card is dragged. `DraggableCard` renamed to `SortableCard`, swapped `useDraggable` for `useSortable` (which returns a `transform` for the make-room animation, converted to a CSS transform via `CSS.Transform.toString` from `@dnd-kit/utilities`). `onDragEnd` now distinguishes: dropped on a card in the same column → `onReorder({ activeUuid, overUuid })`; anything else → existing cross-column `onDrop` flow. Collision detection switched to `closestCenter` (standard sortable choice; `pointerWithin` was too strict for per-card hit-testing). New `reorderCertificates(orderedUuids)` mock-backend mutation persists the new array order so `reload()` doesn't snap back. No audit entry — reordering is cosmetic, not auditable. Terminal columns skip `SortableContext` entirely (their cards stay static, no reorder, no cross-column move).
+
+8. **Dev-server "Invalid hook call" debugging.** After installing `@dnd-kit/sortable`, the dev server crashed with `Cannot read properties of null (reading 'useContext')` from inside `SortableContext`. Classic "React is null in the bundled sortable" symptom. Three rounds of investigation:
+   - Round 1: Cleared `node_modules/.vite` cache + added `optimizeDeps.include: ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities']` to [`vite.config.ts`](../dashboard/vite.config.ts) so Vite pre-bundles all three together and they share one React instance.
+   - Round 2: Crash persisted with the same `?v=ae686338` bundle hash. Downgraded `@dnd-kit/sortable` from `^10.0.0` to `^9.0.0` (the v10 release has a Vite-incompatible bundle).
+   - Round 3: Discovered a stray `package.json` + `package-lock.json` + `node_modules/` had been created at the project root (`/Users/sardorallaberganov/Desktop/Projects/Devon/`) when some earlier `npm install` commands accidentally ran from the wrong CWD. The dashboard's missing `@dnd-kit/sortable` entry was resolving via Node's parent-dir fallback — but with React not available in the stray parent's tree, the pre-bundled sortable ended up with `React = null`. Root-cause fix: edited `dashboard/package.json` directly to add `@dnd-kit/sortable` + `@dnd-kit/utilities`, ran `npm install` from inside `dashboard/`, materialized both packages into `dashboard/node_modules/@dnd-kit/`. Closest-wins resolution now picks the local copies, React is findable, sortable loads cleanly. The user verified the dev server still showed `?v=ae686338` after my fixes, indicating their browser was loading a stale cached bundle — recommended a hard refresh + dev-server kill-restart. Background-process dev server probe confirmed `/certificates` returned 200 with no bundler errors on the fixed setup.
+
+9. **Drag UX polish:** added `select-none` to the `SortableCard` wrapper so the browser's native blue text-selection highlight doesn't paint underneath cards during drag (pointerdown + mousemove on text content used to register as a selection gesture).
+
+10. **Disabled cursor for terminal cards:** non-draggable cards (EXPIRED / REVOKED) get `cursor-not-allowed **:cursor-not-allowed` (using Tailwind v4's universal-descendant variant `**:` to override the inner Card primitive's `cursor-pointer`). Draggable cards keep `cursor-grab active:cursor-grabbing`. The disabled-cursor signal lands on every interior element of the terminal card, so the affordance reads correctly regardless of where the cursor lands inside.
+
+**Build state notes (action item for the user):**
+
+- A stray `package.json`, `package-lock.json`, and `node_modules/` exist at `/Users/sardorallaberganov/Desktop/Projects/Devon/` (project root). They were accidentally created when some `npm install` commands ran from the parent directory instead of `dashboard/`. The stray `package.json` lists only `@dnd-kit/sortable@^9.0.0` and is unrelated to the real dashboard build. **They are inert** because `dashboard/node_modules` now has its own sortable install that wins via Node's closest-wins resolution. They can be removed for tidiness via:
+  ```bash
+  rm -rf /Users/sardorallaberganov/Desktop/Projects/Devon/{package.json,package-lock.json,node_modules}
+  ```
+  but the app works without removing them. None are in any git-tracked location (the real project lives under `dashboard/`).
+
+**Deviations from the prior session's stated direction:**
+
+- **Reversed step 12's "no DnD" decision.** Step 12 deliberately shipped the Kanban as static (click → sheet → action dialog) per the `status-machines.md` rule that "the user never picks a status." After user pushback for demo polish, added DnD with the rule's spirit preserved: revoke still requires a reason dialog (no shortcut), forbidden transitions are blocked visually + via toast, terminal states are read-only. Approve via drag is direct-action (the drag itself is the confirmation since there's no reason field) — that's the only place DnD bypasses an explicit click, and it matches the Trello / Linear DnD idiom.
+- **Sortable extracted to PENDING + ACTIVE only.** Terminal columns (EXPIRED / REVOKED) don't get sortable — they're truly read-only, no drag affordance, not-allowed cursor. REJECTED never had its own column on the board (intentional from step 12, rejected uploads are dead ends).
+- **Cross-column drop always lands at top of destination.** No within-column drop-position targeting for cross-column moves — too much complexity for marginal UX value. Within-column drag picks up the cursor's exact position via `useSortable`'s built-in shift animation; cross-column drag always inserts at index 0 of the destination.
+
+**Lessons respected:**
+
+- `status-machines.md` rule preserved by reason-gating REVOKE and forbidding system-only transitions.
+- No `backdrop-blur` on `DragOverlay` (uses plain `opacity-90 shadow-lg`).
+- No new shadcn primitives — DnD lives at the page/feature layer.
+- `closestCenter` for sortable (standard) instead of `pointerWithin` (too strict for cards).
+- Tailwind v4 canonical-class suggestions accepted (`[&_*]:cursor-not-allowed` → `**:cursor-not-allowed`, `[-1px]` → `-bottom-px`, `[2px]` → `h-0.5`) — they're real core utilities, not the `tw-animate-css` `slide-in-from-<side>-full` trap.
+- No `SEED_VERSION` bump — no fixture changes.
+
+**Verification:**
+
+- `npm run build` → **2895 modules** (+10 over step 12), **115.75 KB CSS** (+1.14 KB — drop-hint utilities + select-none + cursor variants), **896.09 KB JS / 261.83 KB gzip** (+52 KB JS / +18 KB gzip — `@dnd-kit/core` + `@dnd-kit/sortable@9` + `@dnd-kit/utilities` runtimes). Clean compile.
+- Background dev server probe on the fixed setup: `GET /Devon/dashboard/certificates` → 200. No bundler errors after the stray-node_modules + sortable@9 fix.
+
+**Not browser-tested.** Worth eyeballing once the dev server picks up the new bundle:
+1. **Drag a PENDING card to ACTIVE column** — card lands at top of ACTIVE + toast. Sheet does NOT open after the drag (justDragged click suppression).
+2. **Drag an ACTIVE card to REVOKED** — RevokeDialog opens alone (no sheet behind), two distinct button labels (`Bekor qilish` / `Ha, bekor qiling`). Confirm → card lands at top of REVOKED + toast.
+3. **Drag an ACTIVE card UP/DOWN within ACTIVE column** — other cards make room as you drag; drop commits the new order; order persists across browser refresh.
+4. **Hover over an EXPIRED or REVOKED card** — `cursor-not-allowed` shows (no grab affordance). Click still opens the detail sheet (terminal cards remain inspectable, just non-draggable).
+5. **Drag any card across cards** — no blue text selection highlight paints underneath (`select-none`).
+6. **Drag to a forbidden column** (e.g. PENDING → EXPIRED) — destination column shows destructive ring during drag; on drop, warning toast appears; no state change.
+7. **Tap (no drag) any card** — detail sheet opens. Sheet button → Approve/Reject/Revoke spawns the dialog on top of the sheet.
+
+**Files touched:** `dashboard/package.json` + `dashboard/package-lock.json` (+ `@dnd-kit/core`, `@dnd-kit/sortable@^9`, `@dnd-kit/utilities`), `dashboard/vite.config.ts` (+ `optimizeDeps.include` for all three `@dnd-kit/*` packages), `dashboard/src/features/certificates/CertificatesKanban.tsx` (DnD rewrite + sortable migration + select-none + disabled-cursor), `dashboard/src/features/certificates/CertificatesPage.tsx` (onDrop + onReorder handlers + dialogCert state decouple), `dashboard/src/lib/mock-backend/index.ts` (approve/revoke `unshift` reorder + `reorderCertificates` mutation), `dashboard/src/i18n/locales/uz.json` (`dashboard.certificates.dnd.forbidden` key + `revoke.confirm` rename), `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md`
+
+---
+
+## 2026-05-26 — Certificates Kanban gains drag-and-drop (PENDING→ACTIVE, ACTIVE→REVOKED)
+
+Reversed the step 12 design decision to keep the certs Kanban static after a back-and-forth with the user. Two productive transitions are now drag-actionable: PENDING_APPROVAL → ACTIVE (drag is the confirmation, no dialog) and ACTIVE → REVOKED (drop spawns the existing RevokeDialog targeted at the dragged cert). All other drops surface a quiet `Bunday o'tkazish ruxsat etilmagan` warning toast — no visual move. Terminal-state cards (EXPIRED / REVOKED) are not draggable at all.
+
+**Why this reverses my recommendation against DnD:** The original argument stood on three legs — every transition needs a reason dialog (so drag→dialog is no faster than click→dialog), the state machine has many forbidden edges, and the `status-machines.md` rule forbids "user picks status" UI. The user opted to add DnD anyway for demo polish. The implementation preserves the rule's spirit by gating REVOKE behind the existing reason dialog and forbidding all status-machine-invalid transitions with visual + toast feedback. APPROVE is direct-action on drop since the drag itself signals intent and the existing AlertDialog's body line ("{name}ning sertifikatini tasdiqlaysizmi?") is value-free at this point (no reason field).
+
+**What landed:**
+
+- **New dep:** `@dnd-kit/core ^6.3.1` (just core — no `@dnd-kit/sortable`, since we're moving cards between columns rather than reordering within one). +30 KB minified / +6 KB gzip on the bundle. Drop-in choice over `react-beautiful-dnd` (abandoned/unmaintained) and HTML5 native (too primitive for cross-column drag with visual feedback).
+- **[`src/features/certificates/CertificatesKanban.tsx`](../dashboard/src/features/certificates/CertificatesKanban.tsx)** — rewritten:
+  - Wrapped the 4-column grid in `<DndContext>` with `PointerSensor` (activation distance 8 px so taps still open the detail sheet) + `KeyboardSensor` (Space to grab, arrow keys to move, Space to drop — accessible by default).
+  - Each column factored into a `DroppableColumn` sub-component using `useDroppable({ id: status, data: { status } })`. Active drop-hint styling: emerald ring + emerald-soft tint when the destination accepts the drag's source (`ALLOWED_TRANSITIONS` lookup); destructive ring + 60% opacity when not.
+  - Each card factored into a `DraggableCard` sub-component using `useDraggable({ id: cert.uuid, data: { fromStatus }, disabled: !DRAGGABLE_FROM.includes(status) })`. Terminal-state cards (EXPIRED / REVOKED) have `disabled: true` — `useDraggable` returns no-op listeners, the card behaves like step 12's static version. The source card fades to `opacity-30` while dragging so the `<DragOverlay>` ghost reads as the moving card.
+  - `<DragOverlay dropAnimation={null}>` renders a `w-72 opacity-90 shadow-lg` `CertificateCard` preview that follows the cursor. Without it, the original card would stay put during drag, looking awkward at the source column.
+  - Exports a typed `DnDDropInput` interface (`{ certUuid, fromStatus, toStatus }`) so the parent's `onDrop` handler stays type-safe end-to-end.
+  - The transition matrix lives in a small `ALLOWED_TRANSITIONS: Partial<Record<CertStatus, CertStatus[]>>` map at the top of the file — `PENDING_APPROVAL: ['ACTIVE']` and `ACTIVE: ['REVOKED']`. Helper `isAllowed(from, to)` is exported via behavior (used by `DroppableColumn`'s hint styling and consulted indirectly in the parent's `onDrop`).
+- **[`src/features/certificates/CertificatesPage.tsx`](../dashboard/src/features/certificates/CertificatesPage.tsx)** — new `onDrop({ certUuid, fromStatus, toStatus })` handler:
+  - `from === to` → no-op (releasing in the source column).
+  - `PENDING_APPROVAL → ACTIVE` → **optimistic UI patch** (`setCerts` mutates local state to move the cert to ACTIVE *before* the network call), then `approveCertificate(certUuid, actor)`, toast on success, `reload()` to sync the canonical state. On failure (`MockNetworkError` or unknown) the optimistic patch rolls back (`setCerts` mutates back to PENDING_APPROVAL) + error toast. This keeps the UI feeling instant; the 3% mock-network failure rate isn't enough to make the rollback visible most of the time.
+  - `ACTIVE → REVOKED` → **defer the move until the dialog confirms**. Pre-targets the existing `RevokeDialog` at the dragged cert by setting `setOpenCert(cert)` + `setDialog('revoke')`. The user picks a reason (EXPIRED / COMPROMISED / REPLACED / MANUAL) and confirms; the dialog's existing `onDone` callback closes everything and reloads. If the user cancels, the card visually stayed in ACTIVE the whole time — no rollback needed.
+  - **Any other transition** → `toast.warning(t('dashboard:certificates.dnd.forbidden'))`. No visual move, no backend call. Covers e.g. dragging an ACTIVE card to EXPIRED (system-only transition), PENDING to REVOKED (you reject pending certs, not revoke them — and REJECTED isn't a column anyway), or terminal-state cards being dropped anywhere (already guarded by `disabled` on the draggable, but the handler defends-in-depth).
+- **i18n** — single new key under `dashboard.certificates.dnd.forbidden: "Bunday o'tkazish ruxsat etilmagan"`. Step 12's existing `toast.approved` / `toast.revoked` are reused for the drag-driven actions (intentionally — the audit-trail outcome is the same regardless of trigger, no reason to surface "via drag" specifically in the user-facing copy).
+
+**Deviations from the obvious / first-pass approaches:**
+
+- **Approve drop is direct-action, not dialog-then-execute.** A spawned confirmation dialog after drop defeats the speed advantage of DnD — same number of clicks as click → sheet → button. The previously-shipped `ApproveDialog` doesn't carry any user input (no reason field), so the dialog body is just a name-interpolated "are you sure?" line. Trusting the drag itself as the confirmation matches the Trello / Linear / Jira DnD idiom. If a buyer pushes back, easy to swap to dialog-then-execute by spawning `ApproveDialog` instead of calling `approveCertificate` directly.
+- **Revoke drop IS dialog-then-execute.** Two non-negotiable reasons: (1) `revokeCertificate` requires a typed `revocationReason` arg, so the dialog isn't optional; (2) the `status-machines.md` rule explicitly says "always require a reason note" on admin-driven transitions. Even if we wanted to skip it, the typed signature would force us back.
+- **Optimistic UI for approve, deferred-move for revoke.** Approve: visual move happens before the await — feels instant; rollback on failure is a 1-line `setCerts` patch. Revoke: card visually stays in ACTIVE until the dialog confirms — no need to roll back if the user cancels, and the dialog spawn already provides the visual feedback that "something is happening."
+- **Activation distance 8 px** (not larger) so the gesture still feels responsive. Distance 5 was too easy to trigger accidentally during sloppy clicks; distance 12 added perceptible lag between mousedown and grab. 8 is the `@dnd-kit` docs' recommendation and matches Linear's feel.
+- **`<DragOverlay dropAnimation={null}>`** rather than the default snap-back animation. Snap-back makes sense for sortable lists (the card visually settles into its new slot). For cross-column moves with optimistic UI, the original card already faded to 30% and the new card is in the destination column — animating the ghost back to source would compete with the optimistic patch.
+- **Terminal-state cards use `useDraggable({ disabled: true })` instead of not rendering the draggable wrapper at all.** Uniform render tree, simpler conditionals. `useDraggable` returns no listeners when disabled — the card stays interactive for the existing click-to-open-detail behavior.
+- **Drop-hint colors keyed to `isAllowed`**, not to whether the column is `isOver`. Means every potential destination column shows its accept/reject signal the moment a drag starts — the user knows where they can drop before they hover. Linear does this; Trello doesn't, and Trello's UX is worse for it.
+- **Mobile (`<lg`) Kanban stays as tabs, not DnD.** Touch DnD is fragile (especially with the existing checkbox shoulder for bulk-approve), and the mobile single-column-tabs view doesn't have a "drop here" target anyway since only one column is visible. The `useMediaQuery('(min-width: 1024px)')` split in `CertificatesPage` keeps mobile on the tab-driven flow.
+- **No drag-handle icon.** Considered a `GripVertical` icon on the card to make draggability discoverable, but it would clutter the card and the cursor's `grab` → `grabbing` flip already signals it. Tooltips on first visit could surface the affordance — a step-15 onboarding polish item if needed.
+- **No `aria-live` announcement for drop outcome.** `@dnd-kit/core`'s built-in screen-reader announcements cover the drag lifecycle (grabbed / over / dropped). Custom outcome announcements (approved / forbidden) would be additive — left for the step-15 a11y pass.
+
+**Lessons respected:**
+
+- Per `status-machines.md`: every productive transition still requires admin action; system-set states (EXPIRED) and audit-protected terminals (REVOKED / REJECTED) can't be moved-from. The "user never picks a status" rule is preserved by gating revoke behind a reason dialog and forbidding system-only transitions visually + via toast.
+- No `backdrop-blur` on the DragOverlay (uses plain `opacity-90 shadow-lg`).
+- No new shadcn primitives needed (DnD lives at the page/feature layer).
+- `@dnd-kit/core` ships its own keyboard sensor — no custom a11y wiring.
+
+**Verification:**
+
+- `npm run build` → **2895 modules** (+3 over step 12 baseline — `@dnd-kit/core`'s three internal modules), **115.68 KB CSS** (+1.07 KB — drop-hint utilities), **887.11 KB JS / 259.04 KB gzip** (+43 KB JS / +15 KB gzip — the `@dnd-kit/core` runtime). Clean TS compile first try.
+- New UZ string `Bunday o'tkazish ruxsat etilmagan` confirmed in production bundle.
+- Dev server: `GET /Devon/dashboard/certificates` → 200.
+
+**Not browser-tested.** Worth eyeballing once the dev server is up:
+1. **Drag a PENDING card across columns** — destination columns should light up the moment the drag starts (emerald ring on ACTIVE, destructive ring on EXPIRED / REVOKED). Drop on ACTIVE → card moves instantly + toast. Drop on EXPIRED → no move + warning toast.
+2. **Drag an ACTIVE card to REVOKED** — RevokeDialog opens immediately with the cert pre-targeted. Pick a reason, confirm → toast + card flips to REVOKED column. Cancel → card stays in ACTIVE.
+3. **Drag a REVOKED or EXPIRED card** — should not engage. Cursor stays default, no grab affordance, no drag preview.
+4. **Tap (don't drag) a card** — detail sheet still opens. Activation distance 8 px should let a clean tap fall through.
+5. **Click the checkbox on a PENDING card** — selection toggles without triggering a drag. Bulk-approve bar still appears.
+6. **Keyboard: tab into a card, press Space, arrow-key to another column, Space again** — should fire the same `onDrop` handler. (@dnd-kit's KeyboardSensor.)
+7. **Mobile (<lg)** — tab layout, no DnD. Behaves identically to step 12.
+
+**Files touched:** `dashboard/package.json` + `package-lock.json` (+ `@dnd-kit/core`), `dashboard/src/features/certificates/CertificatesKanban.tsx` (rewritten with DnD primitives), `dashboard/src/features/certificates/CertificatesPage.tsx` (+ `onDrop` handler), `dashboard/src/i18n/locales/uz.json` (+ `dashboard.certificates.dnd.forbidden`), `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md`
+
+---
+
 ## 2026-05-26 — `/doc_sync` checkpoint (post step 12)
 
 Ran `/doc_sync` after step 12. AI_CONTEXT.md was already brought current during the step 12 turn itself — Status flipped to "Steps 01–12 landed", a full Flow 4 paragraph was added under the dashboard build section covering Kanban / mobile underline tabs / bulk approve / detail sheet / 3 dialogs / upload flow + FakePfxParser, the `?upload=1` auto-bounce + `CERTIFICATE_REJECTED` audit-action expansion were called out, Build state bumped to 2892 modules / 114.61 KB CSS / 843.63 KB JS / 243.86 KB gzip, and Next pointer redirected to step 13 (`/audit` + `/profile`). HISTORY.md already carries the comprehensive step 12 entry with deviations + verification + 6 browser-eyeball checks. No `docs/*` updates needed — same reasoning as the two prior doc_sync checkpoints: the `docs/product_states.md` / `docs/models.md` / `docs/product_requirements_document.md` / `docs/mermaid_schemas/` paths in the `/doc_sync` template don't exist in Devon's tree (template carries over from a different project). Devon's product canon (`product-specification.md` / `business-processes.md` / `use-cases.md` / `glossary.md` / `competitive-analysis.md`) describes v1.0 product semantics — Flow 4 / Module 3 (Electronic Digital Signature) was already in the v1.0 module list, so its implementation in the dashboard demo doesn't change the product canon. The audit-action expansion (`CERTIFICATE_REJECTED`) is an implementation-detail addition to the TypeScript union and the i18n verb dictionary, not a product-level state-machine change. **Files touched:** `ai_context/HISTORY.md`
