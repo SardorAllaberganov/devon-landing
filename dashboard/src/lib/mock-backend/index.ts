@@ -738,7 +738,13 @@ export async function approveCertificate(
     approvedByUuid: actorUuid,
     approvedAt: NOW(),
   };
-  certs[idx] = updated;
+  // Reorder: pull the cert out of its existing slot and prepend so it
+  // surfaces at the TOP of the destination column. Without the reorder,
+  // listCertificates would keep returning the cert in its original
+  // insertion position — the optimistic UI's "card lands at the top"
+  // would visually snap back to the middle of the column after reload.
+  certs.splice(idx, 1);
+  certs.unshift(updated);
   writeTable(Tables.certificates, certs);
   const emp = readEmployees().find((e) => e.uuid === updated.employeeUuid);
   await appendAudit({
@@ -780,6 +786,32 @@ export async function rejectCertificate(
   return updated;
 }
 
+/**
+ * Persist a new display order for certificates. UI-cosmetic operation
+ * (no audit entry): the order in the table drives the column rendering
+ * order in CertificatesPage, so writing the reordered array makes the
+ * within-column drag-and-drop reorder stick across reload.
+ *
+ * Any cert UUIDs not present in `orderedUuids` (e.g. seeded between the
+ * UI read and write) are appended at the end so we never drop rows.
+ */
+export async function reorderCertificates(orderedUuids: string[]): Promise<void> {
+  await simulatedDelay();
+  maybeFail();
+  const certs = readCertificates();
+  const byUuid = new Map(certs.map((c) => [c.uuid, c]));
+  const reordered: Certificate[] = [];
+  for (const id of orderedUuids) {
+    const cert = byUuid.get(id);
+    if (cert) {
+      reordered.push(cert);
+      byUuid.delete(id);
+    }
+  }
+  for (const remaining of byUuid.values()) reordered.push(remaining);
+  writeTable(Tables.certificates, reordered);
+}
+
 export async function revokeCertificate(
   uuid: string,
   reason: Certificate['revocationReason'],
@@ -796,7 +828,11 @@ export async function revokeCertificate(
     revokedAt: NOW(),
     revocationReason: reason,
   };
-  certs[idx] = updated;
+  // Reorder (see approveCertificate for rationale): prepend so the revoked
+  // cert surfaces at the TOP of the REVOKED column, matching the optimistic
+  // visual move from the drag-and-drop flow.
+  certs.splice(idx, 1);
+  certs.unshift(updated);
   writeTable(Tables.certificates, certs);
   const emp = readEmployees().find((e) => e.uuid === updated.employeeUuid);
   await appendAudit({
