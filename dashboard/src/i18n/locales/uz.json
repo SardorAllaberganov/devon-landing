@@ -184,6 +184,47 @@
       }
     },
     "audit": {
+      "title": "Audit jurnali",
+      "subtitle": "Tizimdagi barcha o'zgarishlar tarixi",
+      "filters": {
+        "resource-type": "Resurs turi",
+        "resource-type-all": "Barcha resurslar",
+        "actor": "Aktor",
+        "actor-all": "Barcha aktorlar",
+        "actor-placeholder": "Aktorni tanlang",
+        "actor-search": "Aktor nomi bo'yicha qidirish...",
+        "date-from": "Sanadan",
+        "date-to": "Sanagacha",
+        "reset": "Filtrlarni tozalash"
+      },
+      "resource-types": {
+        "unit": "Bo'linma",
+        "employee": "Xodim",
+        "assignment": "Biriktirma",
+        "certificate": "ERI",
+        "user": "Foydalanuvchi",
+        "profile-request": "Profil so'rovi"
+      },
+      "col": {
+        "time": "Vaqt",
+        "actor": "Aktor",
+        "action": "Harakat",
+        "resource": "Resurs",
+        "details": "Tafsilot"
+      },
+      "diff": {
+        "header": "O'zgarishlar",
+        "arrow": "→",
+        "unit": "Bo'linma",
+        "position": "Lavozim"
+      },
+      "context": {
+        "reason": "Sabab",
+        "workload": "Ish yuki",
+        "assignment-type": "Biriktirma turi",
+        "decision": "Qaror"
+      },
+      "empty": "Bu shartlarga mos yozuvlar yo'q",
       "actions": {
         "CREATE": "yaratdi",
         "UPDATE": "yangiladi",
@@ -199,6 +240,77 @@
         "CERTIFICATE_REVOKED": "ERIni bekor qildi",
         "PROFILE_CHANGE_REQUESTED": "profil o'zgarishini so'radi",
         "PROFILE_CHANGE_APPROVED": "profil o'zgarishini tasdiqladi"
+      }
+    },
+    "profile": {
+      "title": "Mening profilim",
+      "subtitle": "Shaxsiy ma'lumotlar va xavfsizlik sozlamalari",
+      "tabs": {
+        "info": "Asosiy ma'lumotlar",
+        "password": "Parolni o'zgartirish",
+        "requests": "Tahrirlash so'rovlari"
+      },
+      "not-found": "Profil ma'lumotlari topilmadi. Demo ma'lumotlarni qayta tiklang.",
+      "info": {
+        "heading": "Shaxsiy ma'lumotlar",
+        "edit": "Tahrirlash",
+        "edit-direct-hint": "Sizning rolingiz tahrirlashni darhol qo'llaydi — qo'shimcha tasdiqlash talab etilmaydi.",
+        "edit-request-hint": "Tahrirlash so'rovingiz kadrlar bo'limi tomonidan ko'rib chiqiladi.",
+        "save-success-direct": "Ma'lumotlar yangilandi",
+        "save-success-request": "Tahrirlash so'rovi yuborildi",
+        "fields": {
+          "full-name": "FIO",
+          "position": "Lavozim",
+          "unit": "Bo'linma",
+          "mobile-phone": "Mobil telefon",
+          "corporate-email": "Korporativ pochta",
+          "personal-email": "Shaxsiy pochta"
+        },
+        "empty-value": "—"
+      },
+      "edit-form": {
+        "title": "Profilni tahrirlash",
+        "description": "Mobil telefon va shaxsiy pochta darhol o'zgartiriladi.",
+        "mobile-phone": "Mobil telefon",
+        "personal-email": "Shaxsiy pochta",
+        "submit": "Saqlash",
+        "cancel": "Bekor qilish"
+      },
+      "password": {
+        "heading": "Parolni o'zgartirish",
+        "hint": "Yangi parol kamida 8 belgi, katta va kichik harf, raqam va maxsus belgini o'z ichiga olishi shart.",
+        "current-label": "Joriy parol",
+        "current-placeholder": "Joriy parolingizni kiriting",
+        "next-label": "Yangi parol",
+        "next-placeholder": "Yangi parol",
+        "confirm-label": "Yangi parolni qaytaring",
+        "confirm-placeholder": "Yangi parolni qaytaring",
+        "submit": "Parolni o'zgartirish",
+        "show": "Parolni ko'rsatish",
+        "hide": "Parolni yashirish",
+        "last-changed": "So'nggi marta {{when}} o'zgartirilgan",
+        "never-changed": "Hali o'zgartirilmagan",
+        "must-change-banner": "Xavfsizlik uchun standart demo parolini yangilang.",
+        "toast": {
+          "changed": "Parol muvaffaqiyatli o'zgartirildi"
+        },
+        "errors": {
+          "weak": "Parol kamida 8 belgi, katta va kichik harf, raqam va maxsus belgi bo'lishi kerak",
+          "current-wrong": "Joriy parol noto'g'ri",
+          "same-as-old": "Yangi parol joriy paroldan farq qilishi kerak"
+        }
+      },
+      "requests": {
+        "heading": "Tahrirlash so'rovlari",
+        "empty-title": "Tahrirlash so'rovlari yo'q",
+        "empty-body": "Kadrlar administratori sifatida sizning o'zgarishlaringiz darhol qo'llaniladi. Bu jurnal oddiy xodimlarning so'rovlari uchun mo'ljallangan.",
+        "submitted-at": "Yuborilgan: {{when}}",
+        "reviewed-at": "Ko'rib chiqilgan: {{when}}",
+        "status": {
+          "PENDING": "Kutilmoqda",
+          "APPROVED": "Tasdiqlangan",
+          "REJECTED": "Rad etilgan"
+        }
       }
     },
     "pagination": {

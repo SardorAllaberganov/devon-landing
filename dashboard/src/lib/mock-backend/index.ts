@@ -9,6 +9,7 @@ import {
   CertificateValidationError,
   EmployeeValidationError,
   maybeFail,
+  PasswordValidationError,
   UnitValidationError,
 } from './errors';
 import { readTable, writeTable, Tables } from './storage';
@@ -181,6 +182,10 @@ export interface AuditFilters {
   resourceType?: AuditEntry['resourceType'];
   resourceUuid?: string;
   actorUuid?: string;
+  /** Inclusive lower bound (ISO date or datetime string). */
+  dateFrom?: string;
+  /** Inclusive upper bound (ISO date or datetime string). */
+  dateTo?: string;
   limit?: number;
 }
 
@@ -191,6 +196,17 @@ export async function listAudit(filters?: AuditFilters): Promise<AuditEntry[]> {
   if (filters?.resourceType) rows = rows.filter((r) => r.resourceType === filters.resourceType);
   if (filters?.resourceUuid) rows = rows.filter((r) => r.resourceUuid === filters.resourceUuid);
   if (filters?.actorUuid) rows = rows.filter((r) => r.actorUuid === filters.actorUuid);
+  if (filters?.dateFrom) {
+    const from = filters.dateFrom;
+    rows = rows.filter((r) => r.createdAt >= from);
+  }
+  if (filters?.dateTo) {
+    // Date inputs yield `YYYY-MM-DD`; treat the upper bound as inclusive
+    // through end-of-day so a same-day pick still returns rows from that day.
+    const to =
+      filters.dateTo.length === 10 ? `${filters.dateTo}T23:59:59.999Z` : filters.dateTo;
+    rows = rows.filter((r) => r.createdAt <= to);
+  }
   if (filters?.limit) rows = rows.slice(0, filters.limit);
   return rows;
 }
@@ -846,6 +862,138 @@ export async function revokeCertificate(
   return updated;
 }
 
+// === Mutations — profile change requests + password ===
+
+export interface SubmitProfileChangeInput {
+  employeeUuid: string;
+  fields: Record<string, { from: unknown; to: unknown }>;
+}
+
+/**
+ * File a profile-change request for asynchronous HR review (TZ §4.6). Used
+ * by `ROLE_EMPLOYEE` whose self-edits don't auto-apply. HR_ADMIN's own
+ * edits skip this path and call `updateEmployee` directly.
+ */
+export async function submitProfileChangeRequest(
+  input: SubmitProfileChangeInput,
+  actorUuid: string,
+): Promise<ProfileChangeRequest> {
+  await simulatedDelay();
+  maybeFail();
+  const requests = readProfileRequests();
+  const employee = readEmployees().find((e) => e.uuid === input.employeeUuid);
+  const request: ProfileChangeRequest = {
+    uuid: uid(),
+    employeeUuid: input.employeeUuid,
+    fields: input.fields,
+    status: 'PENDING',
+    createdAt: NOW(),
+  };
+  requests.push(request);
+  writeTable(Tables.profileRequests, requests);
+  await appendAudit({
+    actorUuid,
+    action: 'PROFILE_CHANGE_REQUESTED',
+    resourceType: 'profile-request',
+    resourceUuid: request.uuid,
+    resourceLabel: employee?.fullNameGenerated ?? input.employeeUuid,
+    changes: input.fields,
+  });
+  return request;
+}
+
+/**
+ * HR review of a pending profile-change request. APPROVED → field patch
+ * applied to the employee record; REJECTED → request is closed with a
+ * reason. Both write a `PROFILE_CHANGE_APPROVED` audit entry (the
+ * `REJECTED` outcome rides on the same action; the `context.decision`
+ * field disambiguates if needed — kept compact since the demo doesn't
+ * surface rejected requests in a separate filter yet).
+ */
+export async function approveProfileRequest(
+  uuid: string,
+  actorUuid: string,
+  decision: 'APPROVED' | 'REJECTED',
+  rejectionReason?: string,
+): Promise<ProfileChangeRequest> {
+  await simulatedDelay();
+  maybeFail();
+  const requests = readProfileRequests();
+  const idx = requests.findIndex((r) => r.uuid === uuid);
+  if (idx === -1) throw new Error(`Profile-change request not found: ${uuid}`);
+  const before = requests[idx]!;
+  const updated: ProfileChangeRequest = {
+    ...before,
+    status: decision,
+    rejectionReason: decision === 'REJECTED' ? rejectionReason : undefined,
+    reviewedAt: NOW(),
+    reviewedByUuid: actorUuid,
+  };
+  requests[idx] = updated;
+  writeTable(Tables.profileRequests, requests);
+
+  // Apply the patch when approved. The `fields` shape is
+  // `{ key: { from, to } }` — pull `to` into the employee patch.
+  if (decision === 'APPROVED') {
+    const patch: Partial<Employee> = {};
+    for (const [key, change] of Object.entries(before.fields)) {
+      (patch as Record<string, unknown>)[key] = change.to;
+    }
+    if (Object.keys(patch).length > 0) {
+      await updateEmployee(before.employeeUuid, patch, actorUuid);
+    }
+  }
+
+  const employee = readEmployees().find((e) => e.uuid === before.employeeUuid);
+  await appendAudit({
+    actorUuid,
+    action: 'PROFILE_CHANGE_APPROVED',
+    resourceType: 'profile-request',
+    resourceUuid: uuid,
+    resourceLabel: employee?.fullNameGenerated ?? before.employeeUuid,
+    context: { decision, rejectionReason },
+  });
+  return updated;
+}
+
+/**
+ * Change the current user's password. Throws `PasswordValidationError`
+ * with code `'current-wrong'` when the supplied current password
+ * doesn't match the stored hash. On success: updates the hash, stamps
+ * `passwordChangedAt`, clears `mustChangePassword`, and writes a
+ * `PASSWORD_CHANGED` audit entry.
+ */
+export async function changePassword(
+  userUuid: string,
+  current: string,
+  next: string,
+): Promise<void> {
+  await simulatedDelay();
+  maybeFail();
+  const users = readUsers();
+  const idx = users.findIndex((u) => u.uuid === userUuid);
+  if (idx === -1) throw new Error(`User not found: ${userUuid}`);
+  const before = users[idx]!;
+  const currentHash = await sha256Hex(current);
+  if (before.passwordHash !== currentHash) {
+    throw new PasswordValidationError('current-wrong');
+  }
+  users[idx] = {
+    ...before,
+    passwordHash: await sha256Hex(next),
+    passwordChangedAt: NOW(),
+    mustChangePassword: false,
+  };
+  writeTable(Tables.users, users);
+  await appendAudit({
+    actorUuid: userUuid,
+    action: 'PASSWORD_CHANGED',
+    resourceType: 'user',
+    resourceUuid: userUuid,
+    resourceLabel: before.email,
+  });
+}
+
 // === Re-exports ===
 
 export { seedIfEmpty, resetAndSeed } from './seed';
@@ -854,11 +1002,13 @@ export {
   CertificateValidationError,
   EmployeeValidationError,
   MockNetworkError,
+  PasswordValidationError,
   UnitValidationError,
 } from './errors';
 export type {
   AssignmentValidationCode,
   CertificateValidationCode,
   EmployeeValidationCode,
+  PasswordValidationCode,
   UnitValidationCode,
 } from './errors';

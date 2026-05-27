@@ -49,6 +49,17 @@ export class CertificateValidationError extends Error {
   }
 }
 
+export type PasswordValidationCode = 'current-wrong';
+
+export class PasswordValidationError extends Error {
+  readonly code: PasswordValidationCode;
+  constructor(code: PasswordValidationCode) {
+    super(`Password validation failed: ${code}`);
+    this.name = 'PasswordValidationError';
+    this.code = code;
+  }
+}
+
 export function maybeFail(probability = 0.03): void {
   if (Math.random() < probability) throw new MockNetworkError();
 }

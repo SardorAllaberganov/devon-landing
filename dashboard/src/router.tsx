@@ -1,11 +1,10 @@
 import type { ReactElement } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 
 import LoginPage from '@/features/auth/LoginPage';
 import { RequireAuth } from '@/features/auth/RequireAuth';
 import AppShell from '@/components/layout/AppShell';
-import PageHeader from '@/components/common/PageHeader';
+import AuditLogPage from '@/features/audit/AuditLogPage';
 import DashboardHome from '@/features/dashboard-home/DashboardHome';
 import CertificatesPage from '@/features/certificates/CertificatesPage';
 import CertificateUploadPage from '@/features/certificates/CertificateUploadPage';
@@ -13,6 +12,7 @@ import EmployeeListPage from '@/features/employees/list/EmployeeListPage';
 import EmployeeWizardPage from '@/features/employees/wizard/EmployeeWizardPage';
 import EmployeeProfilePage from '@/features/employees/profile/EmployeeProfilePage';
 import EmployeeTransferPage from '@/features/employees/assignments/EmployeeTransferPage';
+import ProfilePage from '@/features/profile/ProfilePage';
 import UnitsPage from '@/features/units/UnitsPage';
 
 function Protected({ children }: { children: ReactElement }) {
@@ -28,11 +28,6 @@ function Protected({ children }: { children: ReactElement }) {
 // would double the topbar + waste vertical room. Auth gate still required.
 function ProtectedNoShell({ children }: { children: ReactElement }) {
   return <RequireAuth>{children}</RequireAuth>;
-}
-
-function Placeholder({ titleKey }: { titleKey: string }) {
-  const { t } = useTranslation(['dashboard', 'common']);
-  return <PageHeader title={t(titleKey)} subtitle={t('common:labels.coming-soon')} />;
 }
 
 export default function Router() {
@@ -108,7 +103,7 @@ export default function Router() {
         path="/profile"
         element={
           <Protected>
-            <Placeholder titleKey="dashboard:sidebar.nav-profile" />
+            <ProfilePage />
           </Protected>
         }
       />
@@ -116,7 +111,7 @@ export default function Router() {
         path="/audit"
         element={
           <Protected>
-            <Placeholder titleKey="dashboard:sidebar.nav-audit" />
+            <AuditLogPage />
           </Protected>
         }
       />
