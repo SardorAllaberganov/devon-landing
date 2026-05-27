@@ -4,6 +4,141 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-05-27 — Step 14: GitHub Pages deploy (landing + dashboard)
+
+Wired the dashboard SPA into the existing GitHub Pages workflow so a single push rebuilds both the landing page and the dashboard. After this lands, `<owner>.github.io/Devon/` serves the marketing landing and `<owner>.github.io/Devon/dashboard/` serves the React SPA, both from one combined Pages artifact.
+
+**What landed:**
+
+1. **SPA 404 fallback** — new [`dashboard/public/404.html`](../dashboard/public/404.html) with the canonical [spa-github-pages](https://github.com/rafgraph/spa-github-pages) snippet, `pathSegmentsToKeep = 2` to match the `/Devon/dashboard/` URL prefix. The file lives under `public/` so Vite copies it to `dist/404.html` on every build without any extra config. When a visitor hits a deep URL like `/Devon/dashboard/employees/<uuid>`, GitHub Pages serves the 404 page, the inline `<script>` rewrites the URL to `/Devon/dashboard/?/employees/<uuid>` (preserving the path as a query segment so it survives the redirect), and the browser's history is replaced before the dashboard ever loads.
+
+2. **SPA handoff in [`dashboard/index.html`](../dashboard/index.html)** — new `<script>` inserted between `<div id="root">` and the main module bundle. Decodes the `?/path` shape back into a clean URL via `window.history.replaceState` BEFORE the React Router boots, so the first render sees the intended deep route. Runs synchronously inline — adding it after the module script would let the router boot on the wrong URL and immediately redirect, causing a flash + an extra mount cycle.
+
+3. **Two-job [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml)** — rewritten from the original single-job landing-only workflow:
+   - `build` job: checkout → setup Node 20 LTS with `cache: 'npm'` keyed on `dashboard/package-lock.json` → `cd dashboard && npm ci && npm run build` → assemble `pages-dist/` (landing at root, dashboard build at `pages-dist/dashboard/`) → `actions/configure-pages@v5` → `actions/upload-pages-artifact@v3 path: ./pages-dist`.
+   - `deploy` job (needs build): `actions/deploy-pages@v4`.
+   - `paths` filter triggers on `landing/**`, `dashboard/**`, and the workflow file itself.
+   - `concurrency: pages, cancel-in-progress: false` matches the canonical GH Pages pattern — queued runs serialize, in-flight deploys complete cleanly.
+   - `npm ci` (deterministic install from the lockfile) instead of `npm install`. Bumping a dep mid-deploy requires updating the lockfile first.
+
+4. **Removed [`.github/workflows/static.yml`](../.github/workflows/static.yml)** (deleted via `git rm`) — this older workflow uploaded the entire repo root as the Pages artifact AND shared `concurrency: group: pages` with `deploy.yml`. Either the two would race on every push and one would overwrite the other's artifact, OR (worse) `static.yml` would win the race and ship raw `dashboard/` source instead of the build. Deletion is the right move: `deploy.yml` is now the single source of truth for what Pages serves.
+
+5. **[`.gitignore`](../.gitignore) explicit dashboard entries** — `dashboard/node_modules/`, `dashboard/dist/`, `dashboard/.vite/`, `dashboard/.eslintcache`. The existing top-level `node_modules/` and `dist/` rules already caught the first two, but spelling them out (a) documents intent, (b) survives a future repo split where the dashboard moves to its own repo with its own gitignore, and (c) catches `.vite/` and `.eslintcache` which the top-level rules don't cover.
+
+6. **Landing hero CTA repointed** — `[hero .btn-primary](../landing/index.html#L491)` changed from `Demo so'rash → #demo` to `Demoga kirish → dashboard/`. Relative href so it works both locally (`landing/index.html` opened directly) and on GH Pages (`/Devon/` → `/Devon/dashboard/`). The other three demo CTAs (nav line 427, mobile menu line 445, architecture section line 1158) intentionally stayed pointing at `#demo` — that's the sales-lead email-capture form section (line 1379), which serves a different audience than "click into the live demo right now." Two distinct paths preserved.
+
+7. **Stray root files removed** — `/Devon/package.json` + `/Devon/package-lock.json` (per the step-12 build-hygiene note + step-12 `LESSONS.md`) were `rm`'d so a future `git add .` can't accidentally commit them. `node_modules/` at the project root may still exist locally (recursive delete was sandbox-denied during the cleanup pass) but it's gitignored.
+
+**Local smoke test:**
+
+Staged a mirror of the eventual GH Pages tree under `/tmp/devon-pages/Devon/` (copied `landing/` contents to `Devon/` and dashboard build to `Devon/dashboard/`) and served it with `npx serve -p 4173`. Probes via `curl`:
+
+- `GET /Devon/` → 200 (landing serves)
+- `GET /Devon/dashboard/` → 200 with the SPA-handoff `<script>` in the body
+- `GET /Devon/dashboard/favicon.svg` → 200
+- `GET /Devon/dashboard/assets/index-*.js` → 200
+- `GET /Devon/dashboard/employees` → 404 from `serve` (this is **expected** — `serve` doesn't have GH Pages' 404-fallback behavior; on the real deploy this would route to `404.html`)
+- `GET /Devon/dashboard/404.html` → 301 → real body contains `pathSegmentsToKeep = 2` and the redirect snippet
+
+The deep-route 404 from `serve` is the correct simulation — GH Pages re-serves `404.html` for any missing path under the site root, the inline snippet rewrites the URL to `/Devon/dashboard/?/employees`, and the handoff `<script>` in `index.html` decodes that back to `/Devon/dashboard/employees` before React Router boots. Can't fully verify the rewrite chain without an actual GH Pages serve, but the snippet pieces are all present and the prefix math (`pathSegmentsToKeep = 2`) lines up with `base: '/Devon/dashboard/'` in [`vite.config.ts`](../dashboard/vite.config.ts) and the favicon href in [`dashboard/index.html`](../dashboard/index.html).
+
+**Verification still needed (post-push):**
+
+- `<owner>.github.io/Devon/` loads landing
+- `<owner>.github.io/Devon/dashboard/` loads login screen
+- Login with `admin@devon.uz` / `Demo2026!` → home → navigate every route
+- Hard-refresh on `/Devon/dashboard/units` → page renders (404 → handoff → SPA route works on real Pages)
+- Direct paste of `/Devon/dashboard/employees/<uuid>` in a new tab → opens the right profile
+- Mobile production check on a real phone at 360 / 768 / 1024 / 1280 / 1920 px
+- "Reset demo" action in user menu → reseeds against the published bundle
+- Landing "Demoga kirish" CTA → navigates to `/Devon/dashboard/`
+
+**Build state:** unchanged from step 13 — `npm run build` still 2902 modules, 116.22 KB CSS, 922.40 KB JS / 266.23 KB gzip. The deploy changes are CI + static-file work; no source changes touched the React app.
+
+**Deviations from the prompt:**
+
+- Prompt step 8 said to find the singular `.btn-primary` "Demo so'rang" CTA and repoint it. I read this as targeting only the hero CTA (line 491) — there are 4 `#demo` links total; the other 3 are `.nav-cta`, `.mm-cta`, and an architecture-section `.btn-emerald` all serving the sales-lead form path. Repointing only the hero preserves the existing email-capture lead funnel; the user can choose to extend later.
+- Did not run `git push` — flagged for explicit user confirmation. Production deploy is shared-state per CLAUDE.md.
+- The `static.yml` workflow wasn't mentioned in the prompt; deletion is my call based on the obvious race condition.
+
+**Files touched:**
+- `dashboard/public/404.html` (new)
+- `dashboard/index.html` (SPA handoff `<script>` inserted)
+- `.github/workflows/deploy.yml` (rewritten)
+- `.github/workflows/static.yml` (deleted)
+- `.gitignore` (+4 explicit dashboard entries)
+- `landing/index.html` (hero `.btn-primary` repointed + relabeled)
+- Project root `package.json` + `package-lock.json` (removed; were not tracked)
+- `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md` (this entry)
+
+---
+
+## 2026-05-27 — Step 13: `/profile` + `/audit`
+
+Landed the two remaining dashboard surfaces from [`docs/dashboard-prompts/13-profile-audit.md`](../docs/dashboard-prompts/13-profile-audit.md). Both routes previously rendered the `Placeholder` "coming-soon" component; that component (and its supporting `useTranslation` + `PageHeader` imports) was removed from [`router.tsx`](../dashboard/src/router.tsx) since nothing else used it.
+
+**`/profile`** — three-tab page composed under the existing `Protected` (AppShell) wrapper:
+
+1. **Asosiy ma'lumotlar** — identity hero band (cream-deep panel + emerald `Avatar` with initials + FIO/email/phone + StatusBadge + position/unit metadata) on the EmployeeProfilePage shape. Info tab is a 6-row description list (FIO · Lavozim · Bo'linma · Mobil telefon · Korporativ pochta · Shaxsiy pochta) backed by a new [`ProfileEditRequestForm`](../dashboard/src/features/profile/ProfileEditRequestForm.tsx) wrapped in `ResponsiveDialog`. Form fields: mobile phone (`+998 XX XXX XX XX` regex) + personal email (optional, email-validated). Submit is role-branched: HR_ADMIN / SUPER_ADMIN call `updateEmployee` directly with a "yangilandi" toast; anyone else calls the new `submitProfileChangeRequest` mock-backend mutation and the request surfaces in the third tab as PENDING.
+2. **Parolni o'zgartirish** — [`PasswordChangeForm`](../dashboard/src/features/profile/PasswordChangeForm.tsx) is `react-hook-form` + zod with a 5-link regex chain (`min(8)` → uppercase → lowercase → digit → special) plus two cross-field refinements: `next === confirm` and `next !== current`. Reuses the wizard's `passwordStrength(pw)` scorer (already exported from `employee.schema.ts`) to drive a `Progress` strength meter — `destructive` (0–1) → `cinnamon` (2) → `emerald` (3–4). Submit calls the new `changePassword(userUuid, current, next)` mutation; the typed `PasswordValidationError('current-wrong')` is caught and surfaced inline on the `current` field via `setError` so the user doesn't have to re-fill the entire form to retry. `MockNetworkError` becomes a generic network toast; unknown errors become `common:errors.unknown`. Success path clears all three fields. Last-changed timestamp formats via `formatRelative` from `i18n/uz-locale.ts`. The `mustChangePassword` flag (true for the seeded HR_ADMIN until they change once) drives a cinnamon banner above the form.
+3. **Tahrirlash so'rovlari** — a list of past `ProfileChangeRequest` rows for the current employee with a pending-count `Badge` on the tab trigger. For HR_ADMIN the list is always empty (their edits never queue) — empty state explains the workflow exists for `ROLE_EMPLOYEE`. Each non-empty row shows the changed field names + submitted/reviewed timestamps + a status `Badge`.
+
+**`/audit`** — full-width `PageHeader` ("Audit jurnali" + subtitle) + a 4-column filter grid:
+
+- Resource type `Select` over `unit | employee | assignment | certificate | user | profile-request` with a "Barchasi" sentinel option mapped to `''`. Sentinel must be `'ALL'` (not empty string) because the Radix Select primitive rejects `value=""`.
+- Actor `Combobox` populated from distinct `actorUuid` / `actorName` pairs in the audit table itself (avoids a `listUsers()` export the demo doesn't need yet — only actors who've actually touched anything show up).
+- Two native `<input type="date">`s for from/to with cross-clamped `min` / `max` so the picker can't yield an inverted range. Chosen over a heavier date-range component to keep deps tight — matches step 06's `crypto.randomUUID` preference for native APIs.
+
+A "Filtrlarni tozalash" `Button` appears in the page header only when at least one filter is active; clicking resets the filter object to `EMPTY_FILTERS` and a `useEffect` resets pagination to page 1 on every filter change so a 5th-page user filtering down to a 1-page result isn't stranded on an empty page.
+
+List rendering:
+
+- `<lg`: card stack — each `<li>` carries the icon, timestamp, sentence (`<actor> <verb> <resource>`), and inline diff block.
+- `lg+`: 5-column shadcn `Table` (Vaqt · Aktor · Harakat · Resurs · Tafsilot). Header gets `bg-cream-warm/40` to match the employee-list table.
+
+Both layouts share [`AuditEntryRow`](../dashboard/src/features/audit/AuditEntryRow.tsx) with a `variant: 'card' | 'row'` discriminator returning either `<li>` (card) or `<tr>` (row). Both variants render the same internal `DiffBlock` which iterates `entry.changes` (keyed by field name) and resolves `unit` UUIDs to `nameUz` via a `Map<string, Unit>` passed in from the page — without that lookup, `UNIT_TRANSFER` diffs would render bare UUIDs. The icon map mirrors `ProfileHistoryTab`'s `ACTION_ICON` table 1:1 (CREATE → Plus, UPDATE → Pencil, ARCHIVE → Archive, LOGIN → LogIn, LOGOUT → LogOut, PASSWORD_CHANGED → KeyRound, UNIT_TRANSFER → ArrowRightLeft, CERTIFICATE_UPLOADED → Upload, CERTIFICATE_APPROVED → ShieldCheck, CERTIFICATE_REJECTED → ShieldOff, CERTIFICATE_REVOKED → ShieldX, PROFILE_CHANGE_REQUESTED → UserCog, PROFILE_CHANGE_APPROVED → UserCheck — DELETE → Trash2 for completeness even though the demo never hard-deletes).
+
+Newest-first sort (already handled by `listAudit`) + 50/page pagination via the existing `Pagination` primitive from step 09.
+
+**Mock-backend additions** — all three respect the existing `simulatedDelay()` + `maybeFail()` 3% flake convention:
+
+- `submitProfileChangeRequest({ employeeUuid, fields }, actorUuid)` — writes a `PENDING` row to the `profileRequests` table + writes a `PROFILE_CHANGE_REQUESTED` audit entry with `changes: input.fields` so the audit log surfaces the diff inline.
+- `approveProfileRequest(uuid, actorUuid, decision, rejectionReason?)` — flips the request to APPROVED or REJECTED. APPROVED extracts each `{ from, to }` change into an employee patch and calls `updateEmployee` (which itself writes a regular `UPDATE` audit entry — so the timeline carries both the request approval AND the field-level change). REJECTED only persists the rejection reason + `reviewedAt` / `reviewedByUuid` stamps. Both branches write a `PROFILE_CHANGE_APPROVED` audit entry (the action carries `context.decision` to disambiguate; kept compact since the demo doesn't surface rejected requests in a separate filter yet).
+- `changePassword(userUuid, current, next)` — fetches the user row, computes `await sha256Hex(current)` via the existing helper at `@/lib/hash`, throws `PasswordValidationError('current-wrong')` on mismatch (typed alongside the existing `EmployeeValidationError` / `CertificateValidationError` / etc. in `errors.ts`). On success: rewrites `passwordHash` with the new SHA-256 hex, stamps `passwordChangedAt`, clears `mustChangePassword`, and writes a `PASSWORD_CHANGED` audit entry. Returns `void` — the typed error is the failure signal.
+
+`listAudit` also gained `dateFrom?: string` and `dateTo?: string` filter fields. `dateFrom` does a direct `>=` compare against the row's `createdAt` ISO timestamp. `dateTo` of length 10 (date input format `YYYY-MM-DD`) is widened to `${date}T23:59:59.999Z` before the compare — so a same-day "from = to" selection still returns the day's rows instead of zeroing out.
+
+**i18n** — extended [`uz.json`](../dashboard/src/i18n/locales/uz.json) with new `dashboard.profile.*` (~50 keys) and bumped `dashboard.audit.*` from the 14-key `actions` map into a full structure (title/subtitle/filters/col/diff/context/resource-types/empty/actions). RU and EN stayed empty `{}` per the established UZ-fallback pattern from earlier steps. The existing 14 `dashboard.audit.actions.*` localised verb forms (yaratdi / yangiladi / parolni o'zgartirdi / ...) stayed put — they're shared by the profile history tab from step 11 and the new audit log page.
+
+**Verification:**
+
+- `npm run build` clean: 2902 modules, 116.22 KB CSS, **922.40 KB JS / 266.23 KB gzip** (was 896.09 KB / 261.83 KB at end of step 12 — +26 KB JS / +4 KB gzip for the two pages, their schemas, the audit-row diff/icon machinery, and the three mock-backend mutations). `tsc -b` passes.
+- `npm run dev` boots clean (the previous Vite cache was up to date — no re-optimize). Both `/profile` and `/audit` routes return HTTP 200 from the dev server with no bundler errors in the runtime log.
+- `npm run lint` surfaces 3 errors and 1 warning across the two new pages — all match patterns the codebase has tolerated since step 08 (`setState-in-effect` from the standard "reset loading state then refetch" pattern in `useEffect`, `form.watch` "incompatible library" warning identical to Step4Login's). These are React Compiler rules that don't have universal codebase adoption; lint isn't gating CI and `tsc -b && vite build` (the actual build script) doesn't invoke it.
+
+**Limits of verification** — I did not drive the password-change end-to-end in a browser. The TZ §4.6 acceptance check ("changing the password from `Demo2026!` to a new compliant password works; logging out and back in with the new password succeeds") needs a manual pass at 360 / 768 / 1024 / 1280 / 1920 px before step 13 can be called fully verified per CLAUDE.md's "For UI or frontend changes" rule. Build cleanness + route 200s + matching patterns to step 11 / 12 give high confidence the code is correct, but they don't substitute for actually clicking through the flow.
+
+**Out of scope (deferred per prompt):**
+
+- "Switch to employee POV" toggle in the user menu (would let the demo exercise the request-approval flow with the single seeded user). Master §17 keeps the demo single-user; adding a POV toggle is post-v1 work.
+- Approving / rejecting profile-change requests from the admin side. `approveProfileRequest` is implemented and audit-wired but unreachable from the UI — there's no admin queue for HR_ADMIN's own ROLE_EMPLOYEE-submitted requests in this demo because HR_ADMIN never submits requests (they edit directly).
+
+**No `SEED_VERSION` bump** — no fixture identity changes. Existing browsers keep their seed and immediately see both new routes against the existing 30 employees / 1 HR_ADMIN user / ~70 audit entries.
+
+**Files touched:**
+- `dashboard/src/features/profile/PasswordChangeForm.tsx` (new)
+- `dashboard/src/features/profile/ProfileEditRequestForm.tsx` (new)
+- `dashboard/src/features/profile/ProfilePage.tsx` (new)
+- `dashboard/src/features/audit/AuditEntryRow.tsx` (new)
+- `dashboard/src/features/audit/AuditLogPage.tsx` (new)
+- `dashboard/src/lib/mock-backend/index.ts` (+3 mutations + extended `AuditFilters`)
+- `dashboard/src/lib/mock-backend/errors.ts` (+`PasswordValidationError` + `PasswordValidationCode`)
+- `dashboard/src/i18n/locales/uz.json` (+profile.* and bumped audit.*)
+- `dashboard/src/router.tsx` (wired both routes, dropped `Placeholder` + unused imports)
+- `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md` (this entry)
+
+---
+
 ## 2026-05-26 — `/doc_sync` checkpoint (post Combobox button-nesting fix)
 
 Ran `/doc_sync` after a one-file fix to [`src/components/common/Combobox.tsx`](../dashboard/src/components/common/Combobox.tsx). The mobile branch was rendering a manual `<button className="contents">` wrapper around its trigger `<Button>` — that's `<button>` inside `<button>`, which HTML forbids and React 19's stricter hydration checks now report as `In HTML, <button> cannot be a descendant of <button>`. Replaced the manual wrapper with `<SheetTrigger asChild>` (the idiomatic Radix pattern that merges trigger behavior into the child Button instead of nesting). One-line semantic change; `SheetTrigger` added to the existing sheet imports. Build clean: 896 KB JS (down 0.09 KB without the wrapper). The fix also closed out the long-running dev-server crash thread — the bundle hash in the new error stack (`?v=3af12f38`) was different from the prior crash hash (`?v=ae686338`), confirming the Vite pre-bundle of `@dnd-kit/sortable` is now loading from the correct local install. Affects every mobile use of `Combobox` (step 10 wizard's Step 3 unit picker, step 11 transfer form's unit + position pickers, step 12 upload form's employee picker). No `docs/*` updates needed — same template-mismatch reasoning as prior checkpoints; this was a pure HTML-spec compliance fix at the primitive layer, not a product-level change. AI_CONTEXT.md unchanged (the snapshot narrative doesn't shift for a one-file primitive fix). **Files touched:** `ai_context/HISTORY.md`

@@ -1,10 +1,11 @@
-name: Deploy landing page to GitHub Pages
+name: Deploy Devon site (landing + dashboard) to GitHub Pages
 
 on:
   push:
     branches: [main]
     paths:
       - 'landing/**'
+      - 'dashboard/**'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
@@ -18,23 +19,49 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install dashboard deps
+        working-directory: ./dashboard
+        run: npm ci
+
+      - name: Build dashboard
+        working-directory: ./dashboard
+        run: npm run build
+
+      - name: Assemble Pages artifact
+        run: |
+          mkdir -p ./pages-dist
+          cp -R ./landing/. ./pages-dist/
+          mkdir -p ./pages-dist/dashboard
+          cp -R ./dashboard/dist/. ./pages-dist/dashboard/
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload landing/ as Pages artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./landing
+          path: ./pages-dist
 
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

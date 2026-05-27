@@ -12,6 +12,25 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Single Page Apps for GitHub Pages — redirect handoff.
+      // MIT License — https://github.com/rafgraph/spa-github-pages
+      // Decodes the `/?/path?query` shape written by `public/404.html` back
+      // into a clean URL the React Router can route. Must run BEFORE the main
+      // module bundle below so the first render sees the rewritten location.
+      (function (l) {
+        if (l.search[1] === '/') {
+          var decoded = l.search.slice(1).split('&').map(function (s) {
+            return s.replace(/~and~/g, '&');
+          }).join('?');
+          window.history.replaceState(
+            null,
+            null,
+            l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location));
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

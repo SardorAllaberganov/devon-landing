@@ -20,6 +20,13 @@ build/
 .env
 .env.local
 
+# Dashboard build artefacts (explicit — top-level rules above also catch these,
+# but spelling them out documents intent and makes future repo splits trivial)
+dashboard/node_modules/
+dashboard/dist/
+dashboard/.vite/
+dashboard/.eslintcache
+
 # OS / temp
 Thumbs.db
 .cache/
