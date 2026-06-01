@@ -5,6 +5,7 @@ import { ClipboardList, KeyRound, Pencil, User } from 'lucide-react';
 import EmptyState from '@/components/common/EmptyState';
 import LoadingState from '@/components/common/LoadingState';
 import StatusBadge from '@/components/common/StatusBadge';
+import TabLabel from '@/components/common/TabLabel';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -182,15 +183,15 @@ export default function ProfilePage() {
         >
           <TabsTrigger value="info" className={TAB_TRIGGER_CN}>
             <User className="mr-2 h-4 w-4" />
-            {t('dashboard:profile.tabs.info')}
+            <TabLabel>{t('dashboard:profile.tabs.info')}</TabLabel>
           </TabsTrigger>
           <TabsTrigger value="password" className={TAB_TRIGGER_CN}>
             <KeyRound className="mr-2 h-4 w-4" />
-            {t('dashboard:profile.tabs.password')}
+            <TabLabel>{t('dashboard:profile.tabs.password')}</TabLabel>
           </TabsTrigger>
           <TabsTrigger value="requests" className={TAB_TRIGGER_CN}>
             <ClipboardList className="mr-2 h-4 w-4" />
-            {t('dashboard:profile.tabs.requests')}
+            <TabLabel>{t('dashboard:profile.tabs.requests')}</TabLabel>
             {pendingCount > 0 && (
               <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">
                 {pendingCount}

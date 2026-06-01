@@ -5,6 +5,7 @@ import { ArrowLeft, History, KeyRound, UserPlus, User } from 'lucide-react';
 
 import LoadingState from '@/components/common/LoadingState';
 import StatusBadge from '@/components/common/StatusBadge';
+import TabLabel from '@/components/common/TabLabel';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -134,19 +135,19 @@ export default function EmployeeProfilePage() {
         >
           <TabsTrigger value="info" className={TAB_TRIGGER_CN}>
             <User className="mr-2 h-4 w-4" />
-            {t('dashboard:employees.profile.tabs.info')}
+            <TabLabel>{t('dashboard:employees.profile.tabs.info')}</TabLabel>
           </TabsTrigger>
           <TabsTrigger value="units" className={TAB_TRIGGER_CN}>
             <UserPlus className="mr-2 h-4 w-4" />
-            {t('dashboard:employees.profile.tabs.units')}
+            <TabLabel>{t('dashboard:employees.profile.tabs.units')}</TabLabel>
           </TabsTrigger>
           <TabsTrigger value="certs" className={TAB_TRIGGER_CN}>
             <KeyRound className="mr-2 h-4 w-4" />
-            {t('dashboard:employees.profile.tabs.certs')}
+            <TabLabel>{t('dashboard:employees.profile.tabs.certs')}</TabLabel>
           </TabsTrigger>
           <TabsTrigger value="history" className={TAB_TRIGGER_CN}>
             <History className="mr-2 h-4 w-4" />
-            {t('dashboard:employees.profile.tabs.history')}
+            <TabLabel>{t('dashboard:employees.profile.tabs.history')}</TabLabel>
           </TabsTrigger>
         </TabsList>
         <TabsContent value="info">
