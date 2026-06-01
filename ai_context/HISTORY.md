@@ -4,6 +4,118 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-06-01 — `/doc_sync` checkpoint (post-QA tab-width-shift fix)
+
+Small follow-up after the step-15 automated QA pass. User reported that the underline tabs on the profile page "shift" when the active tab changes — clicking a new tab makes it visibly wider, pushing every sibling tab around it. Root cause: the shared `TAB_TRIGGER_CN` class string used by [`ProfilePage`](../dashboard/src/features/profile/ProfilePage.tsx) and [`EmployeeProfilePage`](../dashboard/src/features/employees/profile/EmployeeProfilePage.tsx) carries `data-active:font-semibold`. Bold characters are intrinsically wider than regular weight; the active tab grew on every state change.
+
+Fix: new [`TabLabel`](../dashboard/src/components/common/TabLabel.tsx) common component renders each label twice inside the same single-cell CSS grid (`grid` + `col-start-1 row-start-1` on both children). The first child is permanently `font-semibold invisible` and reserves the bold-width footprint. The second child paints on top at the live `data-active`-resolved weight (regular for inactive, semibold for active). `aria-hidden="true"` on the invisible copy keeps screen readers from double-announcing. Width is now identical regardless of active state; no layout shift.
+
+Applied to all 7 tab triggers across the two profile pages (3 on `/profile`: info · password · requests; 4 on `/employees/:uuid`: info · units · certs · history). The `CertificatesTabsMobile` underline tabs from step 12 don't use the same class string and weren't affected — that surface only renders one column at a time so a width shift would only affect the tab bar, not the content below; revisiting if a third underline-tab consumer surfaces in v1.1.
+
+No `docs/` updates needed — same template-mismatch reasoning as prior `/doc_sync` checkpoints; this is component-layer polish, not a product-canon change.
+
+**Build state:** `npm run build` → 2903 modules (+1 for `TabLabel.tsx`), 116.22 KB CSS, **922.90 KB JS / 266.44 KB gzip** (+0.44 KB JS / +0.16 KB gzip for the helper). Build hash: `index-F41-Fzxp.js`.
+
+**Files touched:**
+- `dashboard/src/components/common/TabLabel.tsx` (new)
+- `dashboard/src/features/profile/ProfilePage.tsx` (wrapped 3 labels)
+- `dashboard/src/features/employees/profile/EmployeeProfilePage.tsx` (wrapped 4 labels)
+- `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md` (this entry; step-15 QA paragraph in AI_CONTEXT.md gained a third inline-fix bullet)
+
+---
+
+## 2026-06-01 — Dashboard MVP launched on GitHub Pages (step 15 automated QA pass)
+
+Built the Devon Dashboard as a Vite + React 19 + TypeScript + Tailwind v4 + shadcn/ui SPA covering all four flows from [`docs/Plyma TZ xodim kiritish.docx`](../docs/Plyma%20TZ%20xodim%20kiritish.docx): structural-unit tree CRUD (`/units`) · employee 4-step creation wizard + list (`/employees`, `/employees/new`) · assignment transfers + timeline (`/employees/:uuid`, `/employees/:uuid/transfer`) · ERI certificate Kanban with drag-and-drop + fake PFX upload (`/certificates`, `/certificates/upload`). Plus the rounding-out surfaces: dashboard home with greeting + stats + quick actions + recent activity (`/`), HR_ADMIN self-service profile (`/profile`), read-only audit log with resource/actor/date filters (`/audit`). Mobile-first throughout — sidebar drawer, tables-to-cards, full-screen wizard on mobile, certs Kanban collapses to underline-tabs below `lg`. i18n via react-i18next with UZ filled, RU/EN files stubbed (UZ-fallback). Mock backend in `localStorage` with realistic seed data (~25 units, 30 employees, 25 certificates, ~70 audit entries) + 3 % `maybeFail()` network-flake simulation + versioned seed flag (`SEED_VERSION = '3'`) that silently reseeds existing browsers on identity changes. Single HR_ADMIN demo user (`admin@devon.uz` / `Demo2026!`). Deployed alongside the existing landing page via the rewritten [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) (two-job build/deploy, npm-cached, combined `pages-dist/` artifact); landing hero CTA + both Kirish nav buttons now route to the live dashboard at `sardorallaberganov.github.io/devon-landing/dashboard/`.
+
+**Step 15 automated QA pass** — observational portion (six-viewport sweep, Lighthouse, real-device testing) handed off to the human operator via [`dashboard/QA_NOTES.md`](../dashboard/QA_NOTES.md). Automated portion run during this session:
+
+- **i18n grep audit** — clean. No Cyrillic literals in source (excl. locale files), no hardcoded `toast.<level>("literal")` calls, no raw JSX text outside the intentional `DEVON` brand wordmarks and shadcn `sr-only` accessibility labels.
+- **Static content scans** — clean. No `PLYMA` / `PLYMO` legacy names in user-facing strings, no tech-stack leaks (`Laravel` / `PostgreSQL` / `React` / `Vite` etc.) in i18n or landing, no `Date.toString` / `toLocaleDateString` bypasses of the `formatDate*` helpers, no raw 4-digit numeric literals in JSX.
+- **Bundle size** — `npm run build` produces a single 922.46 KB JS chunk that gzips to **266.28 KB**. Well under the prompt's `< 500 KB gzipped` target. Eight zero-import shadcn primitives sit in `components/ui/` (breadcrumb, drawer, form, input-group, pagination, scroll-area, switch, tooltip) — tree-shaking already excludes them; cosmetic dead code only, logged in `QA_NOTES.md` as a backlog tidiness item.
+- **Console-error sweep** — boot a dev server, `curl`-probe all 9 routes (200 across the board), grep the dev log: the only pre-fix warnings were two React Router v6 → v7 future-flag warns. Silenced by opting into `v7_startTransition` + `v7_relativeSplatPath` via `<BrowserRouter future={...}>` in [`App.tsx`](../dashboard/src/App.tsx). Post-fix boot is **zero warnings**.
+
+**Fixes landed during the pass:**
+
+1. **React Router future flags** ([`App.tsx`](../dashboard/src/App.tsx)) — added `future={{ v7_startTransition: true, v7_relativeSplatPath: true }}` on `<BrowserRouter>` to silence the per-boot warnings AND opt-in to the forward-compatible v7 behaviors (state updates wrapped in `startTransition` during navigations; relative-route resolution inside splat routes normalised).
+2. **Uzbek-first sr-only Close labels** ([`sheet.tsx`](../dashboard/src/components/ui/sheet.tsx), [`dialog.tsx`](../dashboard/src/components/ui/dialog.tsx)) — every Sheet's + every Dialog's corner-X close button announced as `Close` to screen readers despite the Uzbek-first UI. Replaced with `Yopish` directly in the primitives per `LESSONS.md`'s "edit shadcn primitives only when the default is wrong for every call site" rule — both files have the same string, both fix every consumer with one edit.
+
+**Quality bar items deferred to human operator** (per `QA_NOTES.md` "Pending observational sweep"):
+- Six-viewport sweep at 360 / 390 / 768 / 1024 / 1280 / 1920 px
+- Lighthouse mobile + desktop on all routes (placeholders in `QA_NOTES.md` to fill)
+- Throttled-network skeleton check
+- Forced-failure error-state sweep
+- Offline check
+- Keyboard-only wizard completion
+- `prefers-reduced-motion` check
+- Focus-ring visibility, contrast spot-checks, status-badge colour-only check
+- Real-phone safe-area + hardware-back check
+- Deep-link hard-refresh on the live deploy
+- "Reset demo" against the published bundle
+
+**Build state (post-fix):** `npm run build` → 2902 modules, 116.22 KB CSS, **922.46 KB JS / 266.28 KB gzip**. Build hash: `index-lH-HdBtO.js`.
+
+**Files touched:**
+- `dashboard/src/App.tsx` (RR future flags)
+- `dashboard/src/components/ui/sheet.tsx`, `dashboard/src/components/ui/dialog.tsx` (Uzbek sr-only labels)
+- `dashboard/QA_NOTES.md` (new — scaffold + automated-check results + observational checklist)
+- `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md` (this entry)
+
+---
+
+## 2026-06-01 — `/doc_sync` checkpoint (post-deploy fixes: base-path rename + landing CTA unification)
+
+Ran `/doc_sync` after three follow-on commits that landed once the step-14 deploy went live and asset-load 404s + CTA inconsistencies surfaced. None of these touched product canon (`docs/product-specification.md` / `docs/business-processes.md` / `docs/use-cases.md` / `docs/glossary.md` / `docs/competitive-analysis.md` unchanged); all three are deploy hygiene + landing-content polish.
+
+**1. `5aae692` — `fix(deploy): align base path to the actual repo name (devon-landing)`**
+
+First production deploy of the dashboard 404'd on every asset:
+```
+/Devon/dashboard/assets/index-vNh6T4A_.css → 404
+/Devon/dashboard/assets/index-wzJ8si0u.js  → 404
+/Devon/dashboard/favicon.svg               → 404
+```
+
+The GitHub repo is named `SardorAllaberganov/devon-landing` (legacy — predates the dashboard scope) so GH Pages serves under `/devon-landing/...`, but the build prompts (and therefore `vite.config.ts` `base`, the favicon `href` in `dashboard/index.html`, and the comment in `dashboard/public/404.html`) were written against `/Devon/dashboard/`. Vite bakes the configured `base` into every asset URL in the built `index.html`, so the bundle was unreachable.
+
+Aligned three files in lockstep:
+- [`dashboard/vite.config.ts`](../dashboard/vite.config.ts) — `base: '/devon-landing/dashboard/'`, dev-server `open: '/devon-landing/dashboard/'`. Added an inline comment spelling out that if the repo ever gets renamed back to `Devon`, all three files flip together.
+- [`dashboard/index.html`](../dashboard/index.html) — favicon `href="/devon-landing/dashboard/favicon.svg"`.
+- [`dashboard/public/404.html`](../dashboard/public/404.html) — comment-only update; `pathSegmentsToKeep = 2` stays correct since `/devon-landing/dashboard/` is still two segments before SPA routes.
+
+`BrowserRouter basename` reads from `import.meta.env.BASE_URL` ([`App.tsx:10`](../dashboard/src/App.tsx#L10)), so React Router's routing automatically tracks whatever `vite.config.ts` `base` is — no other code paths needed updating. `npm run build` post-fix confirmed `dist/index.html` now references `/devon-landing/dashboard/assets/index-Ce9T6iHF.js` + `/devon-landing/dashboard/favicon.svg`.
+
+**2. `863d26b` — `content(landing): point Kirish nav buttons at the dashboard login`**
+
+`Kirish` (Sign in) links in both the desktop nav (`landing/index.html:426` `.signin`) and the mobile menu (`landing/index.html:444` `.mm-secondary`) were `href="#"` placeholders. Updated both to `href="dashboard/login"` — direct route to the SPA's login screen, relative href so it works locally and on Pages.
+
+**3. `7452b03` — `content(landing): unify Kirish + Demoga kirish hrefs on dashboard/`**
+
+User noted that `Kirish` and `Demoga kirish` should land on the same place. Re-pointed all three entry CTAs to a shared `href="dashboard/"`:
+- Desktop nav `Kirish` (`.signin`)
+- Mobile menu `Kirish` (`.mm-secondary`)
+- Hero `Demoga kirish` (`.btn-primary`)
+
+`dashboard/` is the better shared target than `dashboard/login`:
+- New visitor → `RequireAuth` on the `/` route bounces to `/login` automatically (the prior target of `Kirish`).
+- Returning **authenticated** visitor → lands on home directly with no redundant login screen.
+- Pointing at `dashboard/login` would have re-shown the login screen even to already-authenticated users since [`LoginPage`](../dashboard/src/features/auth/LoginPage.tsx) has no already-authenticated guard (it only handles the post-login `navigate(from)` redirect).
+
+The other three landing CTAs (nav `Demo so'rash` `.nav-cta`, mobile menu `Demo so'rash` `.mm-cta`, architecture section `Modullar bilan tanishish` `.btn-emerald`) intentionally keep pointing at `#demo` so the sales-lead email-capture funnel (the `<section id="demo">` at line 1379) stays distinct from the live-demo path. Two separate user journeys, two distinct CTAs.
+
+**Live state confirmed:**
+- `sardorallaberganov.github.io/devon-landing/` → landing serves
+- `sardorallaberganov.github.io/devon-landing/dashboard/` → SPA login screen
+- Asset 404s resolved by commit 1; CTA paths consistent after commit 3
+
+**Files touched (`/doc_sync` only):**
+- `ai_context/AI_CONTEXT.md` (live URLs, `/devon-landing/` references, post-step-14 fix paragraph, repo-name note in the dashboard section)
+- `ai_context/HISTORY.md` (this entry)
+
+No `docs/` updates needed — same template-mismatch reasoning as the prior `/doc_sync` checkpoints. The CTA changes are landing-page chrome, not product behavior; the base-path rename is build configuration, not a product fact. Neither shifts modules, roles, business processes, glossary entries, or competitive positioning.
+
+---
+
 ## 2026-05-27 — Step 14: GitHub Pages deploy (landing + dashboard)
 
 Wired the dashboard SPA into the existing GitHub Pages workflow so a single push rebuilds both the landing page and the dashboard. After this lands, `<owner>.github.io/Devon/` serves the marketing landing and `<owner>.github.io/Devon/dashboard/` serves the React SPA, both from one combined Pages artifact.
