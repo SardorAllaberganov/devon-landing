@@ -30,7 +30,7 @@ const SEED_FLAG = 'devon.dashboard.seeded';
 // distributions, hierarchy reshapes). Mismatched versions in localStorage
 // trigger a silent reseed on next app load — keeps demos consistent without
 // asking users to hit "Reset demo" after every change.
-const SEED_VERSION = '3';
+const SEED_VERSION = '4';
 
 const uuid = () => crypto.randomUUID();
 const NOW = () => new Date().toISOString();
@@ -499,6 +499,15 @@ async function buildEmployeesAndUsers(byCode: Map<string, Unit>): Promise<{
   const users: User[] = [];
   const assignments: Assignment[] = [];
 
+  // Mostly PDFs with a few scans, picked deterministically per employee.
+  const extractMimes = [
+    'application/pdf',
+    'application/pdf',
+    'application/pdf',
+    'image/jpeg',
+    'image/png',
+  ] as const;
+
   for (const assign of fioToUnit) {
     const fio = fios[assign.fioIdx]!;
     const unit = byCode.get(assign.unitCode);
@@ -508,6 +517,10 @@ async function buildEmployeesAndUsers(byCode: Map<string, Unit>): Promise<{
     const hireDate = DAYS_AGO(assign.hireDaysAgo);
     const hireYear = new Date(hireDate).getUTCFullYear();
     const fullNameGenerated = `${fio.lastName} ${fio.firstName} ${fio.middleName}`;
+
+    const extractMime = extractMimes[assign.fioIdx % extractMimes.length]!;
+    const extractExt =
+      extractMime === 'application/pdf' ? 'pdf' : extractMime === 'image/png' ? 'png' : 'jpg';
 
     const employeeUuid = uuid();
     const userUuid = isHrAdmin ? HR_ADMIN_USER_UUID : uuid();
@@ -532,6 +545,12 @@ async function buildEmployeesAndUsers(byCode: Map<string, Unit>): Promise<{
       positionId: assign.positionId,
       employmentType: assign.employmentType ?? 'FULL_TIME',
       hireDate,
+      employmentOrderExtract: {
+        fileName: `buyruq_${hireYear}-${10 + assign.fioIdx * 3 + randInt(0, 2)}_kochirma.${extractExt}`,
+        fileSize: randInt(180, 1200) * 1024,
+        mimeType: extractMime,
+        uploadedAt: hireDate,
+      },
       status: assign.status ?? 'ACTIVE',
       createdAt: hireDate,
       updatedAt: DAYS_AGO(Math.max(1, assign.hireDaysAgo - randInt(10, 60))),

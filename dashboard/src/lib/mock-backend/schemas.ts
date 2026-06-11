@@ -129,6 +129,13 @@ export const unitSchema = z.object({
   updatedBy: z.string(),
 });
 
+export const employmentOrderExtractSchema = z.object({
+  fileName: z.string().min(1),
+  fileSize: z.number().int().positive(),
+  mimeType: z.string().min(1),
+  uploadedAt: z.string(),
+});
+
 export const employeeSchema = z.object({
   uuid: z.string().uuid(),
   userUuid: z.string().uuid(),
@@ -149,6 +156,7 @@ export const employeeSchema = z.object({
   positionId: z.string(),
   employmentType: employmentTypeSchema,
   hireDate: z.string(),
+  employmentOrderExtract: employmentOrderExtractSchema.optional(),
   terminationDate: z.string().optional(),
   status: employeeStatusSchema,
   avatarUrl: z.string().optional(),

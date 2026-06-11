@@ -53,6 +53,18 @@ export type EmployeeStatus =
   | 'TERMINATED';
 export type Gender = 'M' | 'F';
 
+/**
+ * Certified extract of the hiring order ("buyruqdan ko'chirma") signed by the
+ * Director — required at employee creation. Metadata only: the demo's mock
+ * backend never stores file bytes (same convention as ERI certificates).
+ */
+export interface EmploymentOrderExtract {
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedAt: string;
+}
+
 export interface Employee {
   uuid: string;
   userUuid: string;
@@ -73,6 +85,7 @@ export interface Employee {
   positionId: string;
   employmentType: EmploymentType;
   hireDate: string;
+  employmentOrderExtract?: EmploymentOrderExtract;
   terminationDate?: string;
   status: EmployeeStatus;
   avatarUrl?: string;

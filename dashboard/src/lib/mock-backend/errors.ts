@@ -16,7 +16,7 @@ export class UnitValidationError extends Error {
   }
 }
 
-export type EmployeeValidationCode = 'pinfl-taken' | 'email-taken';
+export type EmployeeValidationCode = 'pinfl-taken' | 'email-taken' | 'order-extract-missing';
 
 export class EmployeeValidationError extends Error {
   readonly code: EmployeeValidationCode;
