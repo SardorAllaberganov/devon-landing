@@ -34,6 +34,7 @@ export default function EmployeeWizardPage() {
   const actor = useAuthStore((s) => s.user?.uuid ?? '');
   const current = useWizardStore((s) => s.current);
   const data = useWizardStore((s) => s.data);
+  const setCurrent = useWizardStore((s) => s.setCurrent);
   const prev = useWizardStore((s) => s.prev);
   const isDirty = useWizardStore((s) => s.isDirty);
   const reset = useWizardStore((s) => s.reset);
@@ -49,6 +50,14 @@ export default function EmployeeWizardPage() {
   }
 
   async function onSubmit() {
+    const orderExtract = data.step3.employmentOrderExtract;
+    if (!orderExtract) {
+      // Step 3's zod gate makes this unreachable in practice; if the store is
+      // ever in a bad state, bounce back instead of failing the create.
+      toast.error(t('common:errors.order-extract-missing'));
+      setCurrent(2);
+      return;
+    }
     setBusy(true);
     try {
       const result = await createEmployeeFull(
@@ -71,6 +80,7 @@ export default function EmployeeWizardPage() {
             employmentType: data.step3.employmentType,
             hireDate: data.step3.hireDate,
           },
+          orderExtract,
           password: data.step4.password,
           role: data.step3.role,
         },

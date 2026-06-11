@@ -40,6 +40,7 @@ import type {
   AuditResourceType,
   Certificate,
   Employee,
+  EmploymentOrderExtract,
   Position,
   ProfileChangeRequest,
   Unit,
@@ -386,8 +387,16 @@ export async function archiveUnit(uuid: string, actorUuid: string): Promise<void
 export interface CreateEmployeeFullInput {
   employee: Omit<
     Employee,
-    'uuid' | 'userUuid' | 'fullNameGenerated' | 'createdAt' | 'updatedAt' | 'status'
+    | 'uuid'
+    | 'userUuid'
+    | 'fullNameGenerated'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'status'
+    | 'employmentOrderExtract'
   >;
+  /** Pick-time metadata from the wizard; `uploadedAt` is stamped here. */
+  orderExtract: Omit<EmploymentOrderExtract, 'uploadedAt'>;
   password: string;
   role: User['roles'][number];
 }
@@ -403,6 +412,12 @@ export async function createEmployeeFull(
   const assignments = readAssignments();
 
   const e = input.employee;
+
+  // The certified hiring-order extract is required before the profile can be
+  // created. Enforced here (policy layer), not just by the wizard UI.
+  if (!input.orderExtract?.fileName) {
+    throw new EmployeeValidationError('order-extract-missing');
+  }
 
   // Uniqueness checks per TZ §4.4 — fail before any writes so a partial
   // create can't strand orphan records.
@@ -423,6 +438,7 @@ export async function createEmployeeFull(
     uuid: employeeUuid,
     userUuid,
     fullNameGenerated,
+    employmentOrderExtract: { ...input.orderExtract, uploadedAt: NOW() },
     status: 'ACTIVE',
     createdAt: NOW(),
     updatedAt: NOW(),
@@ -461,6 +477,7 @@ export async function createEmployeeFull(
     resourceType: 'employee',
     resourceUuid: employeeUuid,
     resourceLabel: fullNameGenerated,
+    context: { orderExtractFileName: input.orderExtract.fileName },
   });
 
   return { employee, user, assignment };
@@ -468,7 +485,11 @@ export async function createEmployeeFull(
 
 export async function updateEmployee(
   uuid: string,
-  patch: Partial<Omit<Employee, 'uuid' | 'userUuid' | 'createdAt' | 'fullNameGenerated'>>,
+  // employmentOrderExtract is immutable post-creation (legal document signed
+  // at hire time) — same lock as PINFL.
+  patch: Partial<
+    Omit<Employee, 'uuid' | 'userUuid' | 'createdAt' | 'fullNameGenerated' | 'employmentOrderExtract'>
+  >,
   actorUuid: string,
 ): Promise<Employee> {
   await simulatedDelay();

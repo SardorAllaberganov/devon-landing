@@ -49,6 +49,7 @@
       "invalid-phone": "Telefon raqami noto'g'ri (+998 XX XXX XX XX)",
       "email-must-be-corporate": "Korporativ pochta @devon.uz bilan tugashi kerak",
       "email-taken": "Bu email allaqachon ro'yxatdan o'tgan",
+      "order-extract-missing": "Buyruqdan ko'chirma biriktirilmagan",
       "min-length": "Kamida {{count}} ta belgi kerak",
       "max-length": "Maksimum {{count}} ta belgi",
       "passwords-dont-match": "Parollar mos kelmadi",
