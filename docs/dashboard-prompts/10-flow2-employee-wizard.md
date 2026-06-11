@@ -633,3 +633,18 @@ export async function createEmployeeFull(payload: {
 ## What "done" looks like
 
 The HR_ADMIN can create an employee end-to-end on a phone without ever zooming in. The wizard feels like a polished mobile app, not a desktop form crammed onto small glass. On submit, the new employee appears immediately in the list (step 09) and in the org tree's counts (step 08).
+
+---
+
+## Addendum — 2026-06-11: required "Buyruqdan ko'chirma" attachment (Step 3)
+
+Step 3 (Ish o'rni) gained a required file-attachment field after the original build:
+
+- **Field:** `employmentOrderExtract` — the certified extract of the hiring order signed by the Director.
+- **Formats:** PDF, JPG, PNG; max 10 MB (`MAX_ORDER_EXTRACT_SIZE_BYTES` in `employee.schema.ts`).
+- **Storage:** metadata only (`{ fileName, fileSize, mimeType, uploadedAt }`) — the mock backend never stores bytes, matching the certificate convention. `uploadedAt` is stamped by `createEmployeeFull`.
+- **Validation:** pick-time type/size checks in `OrderExtractField.tsx`; zod-required in `step3Schema`; `createEmployeeFull` throws `EmployeeValidationError('order-extract-missing')` if absent.
+- **Surfaces:** review-screen row, profile Info tab row. Immutable post-creation (excluded from `updateEmployee`'s patch type and `UpdateEmployeeSheet`).
+- **Seed:** all seeded employees carry extract metadata; `SEED_VERSION` bumped `'3' → '4'`.
+
+See `docs/superpowers/specs/2026-06-11-employee-order-extract-attachment-design.md`.

@@ -36,7 +36,7 @@
 |---|---|---|---|
 | 1 | Admin | Create the structural unit (if it doesn't already exist) | Departament / Boshqarma / Bo'lim / Sho'ba node in the org tree |
 | 2 | Admin | Create sub-units within the structural unit | Same operation, one level deeper |
-| 3 | HR | Enter employee data | Required fields: full name, position, phone, internal extension, department assignment (dropdown), email, login |
+| 3 | HR | Enter employee data and attach the employment-order extract | Required fields: full name, position, phone, internal extension, department assignment (dropdown), email, login, certified extract of the hiring order ("buyruqdan ko'chirma", PDF/JPG/PNG) signed by the Director |
 | 4 | Platform | Create employee profile and issue a one-time password | Profile is in `pending-first-login` state |
 | 5 | Employee | First login and password change | Password meets the configured complexity policy |
 | 6 | Employee | Review their own profile | Reads the employee directory entry as it will appear to others |
@@ -44,7 +44,7 @@
 | 7.1 | Employee | Submit correction request to HR | Captures: which fields, what they should be |
 | 7.1.1 | HR | Edit the profile per the request | Audit log records the field-level diff |
 | 8 | Employee | Submit profile for confirmation | Marks the profile as ready |
-| 9 | HR | Confirm the profile and attach supporting documents | Position instructions ("lavozim yo'riqnomasi"), employment contract reference, etc. |
+| 9 | HR | Confirm the profile and attach supporting documents | Position instructions ("lavozim yo'riqnomasi"), employment contract reference, etc. The employment-order extract ("buyruqdan ko'chirma") is not attached here — it is already required at step 3, before the profile exists. |
 | 10 | Employee | Begin working in Devon | Profile is `active`; appears in directory; eligible for task assignment and approval chains |
 
 ### Failure modes

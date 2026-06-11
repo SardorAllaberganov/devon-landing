@@ -614,15 +614,16 @@
 **Main flow:**
 1. HR opens the employee-creation form.
 2. Fills in: name, position, department (drill-down through the four-level org tree), email, phone, internal extension.
-3. Attaches the position instructions ("lavozim yo'riqnomasi").
-4. Saves.
-5. Devon creates the profile in `pending-first-login` state.
-6. Devon issues a one-time password.
-7. HR communicates the credentials to the new hire (via the organization's standard onboarding channel).
-8. New hire logs in (UC-01 A3 forces password change).
-9. New hire reviews their profile (UC-02).
-10. New hire confirms profile or requests corrections.
-11. Profile transitions to `active`.
+3. Attaches the certified extract of the hiring order ("buyruqdan ko'chirma") signed by the Director — required; PDF, JPG, or PNG. The form cannot be saved without it.
+4. Attaches the position instructions ("lavozim yo'riqnomasi").
+5. Saves.
+6. Devon creates the profile in `pending-first-login` state.
+7. Devon issues a one-time password.
+8. HR communicates the credentials to the new hire (via the organization's standard onboarding channel).
+9. New hire logs in (UC-01 A3 forces password change).
+10. New hire reviews their profile (UC-02).
+11. New hire confirms profile or requests corrections.
+12. Profile transitions to `active`.
 
 **Alternate flows:**
 - **A1:** The new hire is rejoining (was archived previously) — Devon flags the name match; admin reviews; a new profile is created (no record reuse); audit log links the records.
@@ -634,6 +635,7 @@
 **Acceptance criteria:**
 - [ ] From HR submit to employee active: ≤ 1 business day median.
 - [ ] One-time password is single-use and expires after a configurable window.
+- [ ] Profile creation is rejected without the certified hiring-order extract ("buyruqdan ko'chirma").
 - [ ] Position instructions are attached and retrievable.
 
 ---

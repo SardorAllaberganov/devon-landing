@@ -150,6 +150,7 @@ The product is organized into eight modules. They share one data model, one audi
 - **Login** — email + password authentication. Session lifetime configurable by the customer's security policy.
 - **Three primary roles** — Super Admin, Department Head (boshliq), Employee (xodim). The role determines coarse permissions; the org-hierarchy assignment determines scope.
 - **Employee profile** — full name, department assignment, position title, internal phone extension, external phone, email, photograph.
+- **Employment-order extract ("buyruqdan ko'chirma")** — the certified extract of the hiring order signed by the Director, attached as a required document (PDF, JPG, or PNG) when HR creates the employee profile. Distinct from the position instructions below, which are attached after the profile exists.
 - **Position instructions ("lavozim yo'riqnomasi")** — every employee has the document defining their job duties attached to their profile. Both the document author (typically HR) and the employee can reference it. When the position is updated, the version history is preserved.
 - **Employee directory** — searchable by name, department, or position. Returns profile + current task load summary + current responsibilities in approval chains.
 - **First-login flow** — when HR creates a new employee, Devon issues a one-time password; on first login the employee is required to set their own password and verify profile data.
