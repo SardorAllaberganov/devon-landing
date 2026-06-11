@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { formatDate } from '@/i18n/uz-locale';
+import { formatBytes } from '@/lib/format';
 import {
   CertificateValidationError,
   listEmployees,
@@ -35,11 +36,6 @@ import {
 } from './FakePfxParser';
 
 type CertType = Certificate['certificateType'];
-
-function formatBytes(n: number): string {
-  if (n < 1024) return `${n} B`;
-  return `${(n / 1024).toFixed(1)} KB`;
-}
 
 export default function CertificateUploadPage() {
   const { t } = useTranslation(['dashboard', 'common']);
