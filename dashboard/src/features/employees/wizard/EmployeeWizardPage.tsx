@@ -141,8 +141,8 @@ export default function EmployeeWizardPage() {
         </Button>
       </header>
 
-      <div className="flex flex-1 flex-col md:items-center md:py-8">
-        <div className="flex w-full flex-1 flex-col md:max-w-3xl md:rounded-xl md:border md:border-line md:bg-surface md:shadow-sm">
+      <div className="flex flex-1 flex-col md:px-6 md:py-8">
+        <div className="flex w-full flex-1 flex-col md:rounded-xl md:border md:border-line md:bg-surface md:shadow-sm">
           <WizardStepper current={current} />
 
           <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8">
