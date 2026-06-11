@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { EmploymentType, Gender, Role } from '@/types/domain';
 
+import type { OrderExtractMeta } from './employee.schema';
+
 export interface WizardStep1 {
   lastName: string;
   firstName: string;
@@ -25,6 +27,7 @@ export interface WizardStep3 {
   employmentType: EmploymentType;
   hireDate: string;
   role: Extract<Role, 'ROLE_EMPLOYEE' | 'ROLE_UNIT_HEAD' | 'ROLE_HR_OPERATOR' | 'ROLE_AUDITOR'>;
+  employmentOrderExtract: OrderExtractMeta | null;
 }
 
 export interface WizardStep4 {
@@ -65,6 +68,7 @@ function emptyData(): WizardData {
       employmentType: 'FULL_TIME',
       hireDate: new Date().toISOString().slice(0, 10),
       role: 'ROLE_EMPLOYEE',
+      employmentOrderExtract: null,
     },
     step4: {
       login: '',

@@ -38,12 +38,36 @@ export const step2Schema = z.object({
     .optional(),
 });
 
+// "Buyruqdan ko'chirma" — certified extract of the hiring order. Required at
+// creation; PDF/JPG/PNG only; 10 MB cap. The schema layer owns these facts so
+// the picker component and any future consumer share one source of truth.
+export const MAX_ORDER_EXTRACT_SIZE_BYTES = 10 * 1024 * 1024;
+export const ORDER_EXTRACT_MIME_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+] as const;
+export const ORDER_EXTRACT_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png'] as const;
+
+export const orderExtractMetaSchema = z.object({
+  fileName: z.string().min(1),
+  fileSize: z.number().positive(),
+  mimeType: z.string().min(1),
+});
+export type OrderExtractMeta = z.infer<typeof orderExtractMetaSchema>;
+
 export const step3Schema = z.object({
   primaryUnitUuid: z.string().uuid('common:errors.required'),
   positionId: z.string().min(1, 'common:errors.required'),
   employmentType: z.enum(['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN']),
   hireDate: z.string().min(1, 'common:errors.required'),
   role: z.enum(['ROLE_EMPLOYEE', 'ROLE_UNIT_HEAD', 'ROLE_HR_OPERATOR', 'ROLE_AUDITOR']),
+  // The explicit `: boolean` return keeps TS 5.5+ from inferring a type
+  // predicate, which would make zod's refine narrow the output type to
+  // non-null and break the react-hook-form Resolver input/output match.
+  employmentOrderExtract: orderExtractMetaSchema
+    .nullable()
+    .refine((v): boolean => v !== null, 'common:errors.required'),
 });
 
 export const step4Schema = z.object({

@@ -19,6 +19,7 @@ import type { EmploymentType, Position, Unit, UnitType } from '@/types/domain';
 import { cn } from '@/lib/utils';
 
 import { step3Schema, type Step3Values } from './employee.schema';
+import OrderExtractField from './OrderExtractField';
 import { useWizardStore } from './wizard-store';
 
 const FORM_ID = 'wizard-step-3';
@@ -100,6 +101,7 @@ export default function Step3Work() {
   const { errors } = form.formState;
   const employmentType = form.watch('employmentType');
   const role = form.watch('role');
+  const employmentOrderExtract = form.watch('employmentOrderExtract');
 
   return (
     <form
@@ -245,6 +247,21 @@ export default function Step3Work() {
           </Select>
         </div>
       </div>
+
+      <OrderExtractField
+        value={employmentOrderExtract}
+        errorKey={errors.employmentOrderExtract?.message as string | undefined}
+        onChange={(meta) => {
+          form.clearErrors('employmentOrderExtract');
+          form.setValue('employmentOrderExtract', meta, {
+            shouldDirty: true,
+            shouldValidate: meta !== null,
+          });
+        }}
+        onError={(key) =>
+          form.setError('employmentOrderExtract', { type: 'manual', message: key })
+        }
+      />
     </form>
   );
 }

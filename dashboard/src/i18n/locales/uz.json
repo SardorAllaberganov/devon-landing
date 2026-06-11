@@ -368,6 +368,7 @@
           "employment-type": "Ish turi",
           "hire-date": "Ishga qabul sanasi",
           "role": "Tizimdagi roli",
+          "order-extract": "Buyruqdan ko'chirma",
           "login": "Login",
           "password": "Parol",
           "notify-sms": "SMS orqali yuborish",
@@ -382,7 +383,8 @@
         },
         "hints": {
           "corporate-email": "Pochta @devon.uz bilan tugashi shart",
-          "derived-login": "Login korporativ pochtadan avtomatik olinadi. O'zgartirish uchun yuqoridagi tugmani bosing."
+          "derived-login": "Login korporativ pochtadan avtomatik olinadi. O'zgartirish uchun yuqoridagi tugmani bosing.",
+          "order-extract": "Direktor tomonidan imzolangan ishga qabul qilish buyrug'ining tasdiqlangan ko'chirmasi (PDF, JPG yoki PNG, maks. 10 MB)"
         },
         "actions": {
           "show-password": "Parolni ko'rsatish",
@@ -390,7 +392,10 @@
           "copy-password": "Nusxalash",
           "regenerate-password": "Yangi parol yaratish",
           "use-derived-login": "Avtomatik loginni qaytarish",
-          "copied": "Nusxalandi"
+          "copied": "Nusxalandi",
+          "choose-file": "Fayl tanlash",
+          "replace-file": "Almashtirish",
+          "remove-file": "O'chirish"
         },
         "password-strength": {
           "0": "Parol juda zaif",
@@ -406,7 +411,9 @@
           "age-18": "Xodim 18 yoshdan katta bo'lishi kerak",
           "password-weak": "Parol kamida 8 belgi, katta va kichik harflar, raqam va maxsus belgini o'z ichiga olishi kerak",
           "no-units": "Faol bo'linmalar topilmadi",
-          "no-positions-for-unit": "Bu bo'linma turiga mos lavozim yo'q"
+          "no-positions-for-unit": "Bu bo'linma turiga mos lavozim yo'q",
+          "order-extract-format": "Faqat PDF, JPG yoki PNG formatdagi fayllar qabul qilinadi",
+          "order-extract-too-large": "Fayl hajmi 10 MB dan oshmasligi kerak"
         }
       },
       "profile": {

@@ -4,6 +4,7 @@ import { Pencil } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { formatBytes } from '@/lib/format';
 import { listPositions, listUnits } from '@/lib/mock-backend';
 import type { Position, Unit } from '@/types/domain';
 
@@ -157,6 +158,16 @@ export default function ReviewScreen() {
         <Row
           label={t('dashboard:employees.wizard.fields.role')}
           value={t(`common:roles.${data.step3.role}`)}
+        />
+        <Row
+          label={t('dashboard:employees.wizard.fields.order-extract')}
+          value={
+            data.step3.employmentOrderExtract
+              ? `${data.step3.employmentOrderExtract.fileName} (${formatBytes(
+                  data.step3.employmentOrderExtract.fileSize,
+                )})`
+              : undefined
+          }
         />
       </Section>
 
