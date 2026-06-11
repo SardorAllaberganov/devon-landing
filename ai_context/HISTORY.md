@@ -4,6 +4,29 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-06-11 — Required "Buyruqdan ko'chirma" attachment in the employee wizard
+
+Added the required hiring-order-extract attachment field to wizard Step 3 (Ish o'rni) per the approved spec (`docs/superpowers/specs/2026-06-11-employee-order-extract-attachment-design.md`) and plan (`docs/superpowers/plans/2026-06-11-employee-order-extract-attachment.md`). Metadata-only storage (`{ fileName, fileSize, mimeType, uploadedAt }` — no bytes, certificate convention); pick-time type/size validation (PDF/JPG/PNG, ≤ 10 MB) in the new [`OrderExtractField.tsx`](../dashboard/src/features/employees/wizard/OrderExtractField.tsx); zod-required gate in `step3Schema`; policy-layer enforcement via `EmployeeValidationError('order-extract-missing')` in `createEmployeeFull` (which stamps `uploadedAt` and writes the file name into the CREATE audit entry's `context`). Field is immutable post-creation (excluded from `updateEmployee`'s patch type; not in `UpdateEmployeeSheet`). New rows on the wizard review screen and the profile Info tab. Shared `formatBytes` helper extracted to [`src/lib/format.ts`](../dashboard/src/lib/format.ts) (B/KB/MB; certificate upload page switched to it). All 30 seeded employees carry extract metadata; `SEED_VERSION` bumped `'3' → '4'` (existing browsers silently reseed on next load — demo-session edits are wiped, correct per LESSONS). Doc cascade: product-specification §User/Auth capability list, UC-17 main flow + acceptance criterion, BP-1 steps 3/9 (order extract is in-wizard pre-creation; lavozim yo'riqnomasi stays post-creation), glossary "Buyruqdan ko'chirma" entry, README profile line, prompt-set addendum in 10-flow2.
+
+**Implementation note:** the plan's `step3Schema` refine (`.refine((v) => v !== null, ...)`) tripped TS 5.5+ inferred type predicates — zod picked the narrowing overload and output-typed the field non-null, breaking the react-hook-form Resolver match. Fixed with an explicit `(v): boolean =>` return annotation; comment in `employee.schema.ts` explains it.
+
+**Verification:** `npm run build` clean; dev-server sweep — all 7 routes 200, zero errors in the runtime log. Browser-observational checks (oversize/wrong-format pick, chip persistence across step navigation, 360 px wrap, reseed against a stale-session browser) remain for the human operator, consistent with the step-15 QA split.
+
+**Build state:** `npm run build` → 2905 modules (+2: `format.ts`, `OrderExtractField.tsx`), 116.28 KB CSS, **927.21 KB JS / 267.63 KB gzip** (+4.3 KB JS / +1.2 KB gzip). Build hash: `index-DWkPmnLj.js`.
+
+**Files touched:**
+- `dashboard/src/lib/format.ts` (new)
+- `dashboard/src/features/certificates/CertificateUploadPage.tsx`
+- `dashboard/src/types/domain.ts`
+- `dashboard/src/lib/mock-backend/schemas.ts`, `errors.ts`, `seed.ts`, `index.ts`
+- `dashboard/src/features/employees/wizard/employee.schema.ts`, `wizard-store.ts`, `OrderExtractField.tsx` (new), `Step3Work.tsx`, `ReviewScreen.tsx`, `EmployeeWizardPage.tsx`
+- `dashboard/src/features/employees/profile/ProfileInfoTab.tsx`
+- `dashboard/src/i18n/locales/uz.json`
+- `docs/product-specification.md`, `docs/use-cases.md`, `docs/business-processes.md`, `docs/glossary.md`, `README.md`, `docs/dashboard-prompts/10-flow2-employee-wizard.md`
+- `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md` (this entry)
+
+---
+
 ## 2026-06-01 — `/doc_sync` checkpoint (post-QA tab-width-shift fix)
 
 Small follow-up after the step-15 automated QA pass. User reported that the underline tabs on the profile page "shift" when the active tab changes — clicking a new tab makes it visibly wider, pushing every sibling tab around it. Root cause: the shared `TAB_TRIGGER_CN` class string used by [`ProfilePage`](../dashboard/src/features/profile/ProfilePage.tsx) and [`EmployeeProfilePage`](../dashboard/src/features/employees/profile/EmployeeProfilePage.tsx) carries `data-active:font-semibold`. Bold characters are intrinsically wider than regular weight; the active tab grew on every state change.
