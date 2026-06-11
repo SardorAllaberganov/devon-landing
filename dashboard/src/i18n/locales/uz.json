@@ -450,6 +450,7 @@
             "hire-date": "Ishga qabul sanasi",
             "termination-date": "Ishdan bo'shatilgan sana",
             "employment-type": "Ish turi",
+            "order-extract": "Buyruqdan ko'chirma",
             "status": "Holat"
           },
           "gender": {

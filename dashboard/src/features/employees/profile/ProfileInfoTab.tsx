@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/i18n/uz-locale';
+import { formatBytes } from '@/lib/format';
 import { MockNetworkError, terminateEmployee } from '@/lib/mock-backend';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { Employee } from '@/types/domain';
@@ -99,6 +100,15 @@ export default function ProfileInfoTab({ employee, onChanged }: Props) {
       key: 'employmentType',
       label: t('dashboard:employees.profile.info.fields.employment-type'),
       value: t(`dashboard:employees.profile.info.employment.${employee.employmentType}`),
+    },
+    {
+      key: 'orderExtract',
+      label: t('dashboard:employees.profile.info.fields.order-extract'),
+      value: employee.employmentOrderExtract
+        ? `${employee.employmentOrderExtract.fileName} (${formatBytes(
+            employee.employmentOrderExtract.fileSize,
+          )})`
+        : null,
     },
   ];
 
