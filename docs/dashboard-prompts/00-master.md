@@ -20,7 +20,9 @@
 
 ## 2. What you are building
 
-A **Vite + React + TypeScript single-page application** that demonstrates the **HR & User Management module** from the source-of-truth technical specification `docs/Plyma TZ xodim kiritish.docx`. The module covers four business flows:
+A **Vite + React + TypeScript single-page application** that demonstrates Devon's modules to prospective customers. The demo grows in milestones:
+
+**Milestone 1 (steps 01–15, shipped)** — the **HR & User Management module** from `docs/Plyma TZ xodim kiritish.docx`:
 
 | # | Flow | Uzbek term |
 |---|---|---|
@@ -28,6 +30,15 @@ A **Vite + React + TypeScript single-page application** that demonstrates the **
 | 2 | Employee onboarding via 4-step wizard | Xodimni tizimga kiritish |
 | 3 | Employee ↔ unit assignment, transfers, history | Biriktirish va o'tkazma |
 | 4 | ERI (digital certificate) management | Elektron raqamli imzo (ERI) kalitlari |
+
+**Milestone 2 (steps 16–22)** — the **Electronic Document Management flows** from the updated TLH `docs/Plyma 19.03.2026.docx` (BPMN §3.3 + §3.4, requirements §2.2–2.4, §2.7; text canon in `docs/business-processes.md` BP-3 / BP-4):
+
+| # | Flow | Uzbek term | BPMN |
+|---|---|---|---|
+| 5 | Document creation (template/upload) + approval sheet + ERI signing + archive | Hujjat yaratish va kelishuv | BP-4 (`docs/bpmn/bp4-hujjat-yaratish-kelishish.png`) |
+| 6 | Incoming/outgoing official letters with routing, execution and dispatch | Keluvchi va chiquvchi xatlar | BP-3 (`docs/bpmn/bp3-xatlar-boshqaruvi.png`) |
+
+Milestone 2 also adds two cross-cutting capabilities: a **POV switcher** (act as different personas without logout — see §10) and an **in-app notification centre** (see step 16). Task delegation (BPMN §3.2) is milestone 3 — do not build it.
 
 **This is a frontend-only demo deployed to GitHub Pages.** There is no real backend. All "API" interactions are mocked via `localStorage` with realistic Uzbek seed data. The point is to show prospective customers (Uzbek decision-makers in government / banking / SOE) what the system looks and feels like.
 
@@ -52,7 +63,10 @@ Relevant existing files to be aware of:
 | `landing/favicon.svg` | Brand mark, re-use for dashboard |
 | `.github/workflows/deploy.yml` | Existing Pages deploy (will be extended in step 14) |
 | `.claude/rules/*.md` | Design discipline rules (some Devon, some legacy ZhiPay — apply selectively) |
-| `docs/Plyma TZ xodim kiritish.docx` | The TZ (Uzbek). Treat as the canonical functional spec |
+| `docs/Plyma TZ xodim kiritish.docx` | The TZ (Uzbek). Canonical functional spec for milestone 1 |
+| `docs/Plyma 19.03.2026.docx` | The updated TLH (Uzbek). Canonical spec for milestone 2: requirements §2.2–2.4, §2.7 + BPMN §3.3/§3.4 |
+| `docs/bpmn/` | The four BPMN swim-lane diagrams extracted from the TLH (see `docs/bpmn/README.md`) |
+| `docs/business-processes.md` | Text canon for the business processes; BP-3/BP-4 carry the canonical state names for milestone 2 |
 | `docs/product-specification.md` | Higher-level product spec |
 | `docs/glossary.md` | Uzbek terminology + pronunciation |
 
@@ -362,6 +376,15 @@ devon.dashboard.profile-requests   JSON: ProfileChangeRequest[]
 - Audit log seeded with 60–80 entries covering CREATE, UPDATE, TRANSFER, ERI_UPLOAD events
 - 1 demo HR_ADMIN user: `admin@devon.uz` / `Demo2026!`
 
+**Milestone 2 additions (each seed-changing step bumps `SEED_VERSION`: step 16 → `'5'`, step 17 → `'6'`, step 20 → `'7'`):**
+
+- 5 document templates: Buyruq · Xizmat xati · Ma'lumotnoma · Ariza · Bildirishnoma
+- ~12 documents spread across `DRAFT / IN_REVIEW / REJECTED / APPROVED / SIGNED / CLOSED` (several with `archivedAt` so the Arxiv tab is non-empty)
+- Approval steps + signature records consistent with each seeded document's status
+- ~10 letters: 7 incoming across all letter states (at least 1 overdue vs `deadline`), 3 outgoing replies in `DISPATCHED`
+- ~20 notifications across the personas (mix of read/unread)
+- 1 "Devonxona" unit + a devonxona employee; POV persona designations (see §10)
+
 ---
 
 ## 10. Authentication model (demo)
@@ -381,6 +404,17 @@ devon.dashboard.profile-requests   JSON: ProfileChangeRequest[]
 - `<RequireAuth>` wrapper: if no session or session expired, redirect to `/login?from=<current-path>`.
 - The single user has `roles: ['ROLE_HR_ADMIN']`. The sidebar shows everything HR_ADMIN can access.
 - Code is structured so adding more roles later is a data change (extend the seeded users + the role-gating helper), not a refactor.
+
+### POV switcher (milestone 2, step 16)
+
+The login stays single-user (`admin@devon.uz`), but milestone 2's approval/letter flows are multi-actor. The demo handles this with a **POV (point-of-view) switcher**:
+
+- `useAuthStore` gains `actingAsEmployeeUuid: string | null` (null = the session user's own employee). A `useActingEmployee()` helper resolves the full acting persona (employee + roles + headed units).
+- The user menu gains a "Rol almashtirish" submenu listing **5 seeded personas** (designated by UUID constants exported from `seed.ts` as `PERSONAS`): HR admin (default) · Rahbar (head of a root Departament) · Bo'lim boshlig'i (head of a Bo'lim) · Devonxona xodimi · Oddiy xodim.
+- A persistent topbar chip shows the non-default POV (e.g. `Siz: Rahbar sifatida`) with a one-tap reset.
+- **Every mutation passes the acting persona's employee UUID as `actorUuid`** — audit entries, approvals, signatures and queues all reflect the persona, so one demo session can walk an entire approval chain end-to-end.
+- Queue visibility and action availability are computed from the acting persona in the mock-backend **policy layer** (not just hidden in the UI): only the current-order approval participant can decide, only the designated signer can sign, only Devonxona can register/dispatch letters.
+- Switching POV writes a `POV_SWITCHED` audit entry (actor = the real session user).
 
 ---
 
@@ -418,6 +452,12 @@ export default defineConfig({
 | `/certificates/upload` | `CertificateUploadPage` | required | PFX upload + fake metadata extract |
 | `/profile` | `ProfilePage` | required | Self-service edit |
 | `/audit` | `AuditLogPage` | required | Read-only |
+| `/documents` | `DocumentsPage` | required | **M2.** Registry tabs: Mening hujjatlarim · Menga kelgan · Kelishuvda · Arxiv |
+| `/documents/new` | `DocumentWizardPage` | required | **M2.** 4-step creation wizard; full-screen (`ProtectedNoShell`, wizard chrome like `/employees/new`) |
+| `/documents/:uuid` | `DocumentDetailPage` | required | **M2.** A4 preview · kelishuv varaqasi · signature history · status-aware actions |
+| `/approvals` | `ApprovalsQueuePage` | required | **M2.** Acting persona's pending decisions + signatures; bell deep-links here |
+| `/letters` | `LettersPage` | required | **M2.** Keluvchi/Chiquvchi registry + register-incoming dialog (Devonxona POV) |
+| `/letters/:uuid` | `LetterDetailPage` | required | **M2.** Routing/execution timeline + status-aware actions per role |
 | `*` | `NotFoundPage` | depends | "Sahifa topilmadi" |
 
 ### SPA fallback for GitHub Pages
@@ -536,6 +576,47 @@ dashboard/
         ProfilePage.tsx
       audit/
         AuditLogPage.tsx
+      documents/                                M2 (steps 17–19)
+        DocumentsPage.tsx                       registry with tabs
+        registry/
+          DocumentsTable.tsx                    desktop
+          DocumentsCardsMobile.tsx              mobile card stack
+          DocumentFilters.tsx
+        wizard/
+          DocumentWizardPage.tsx                full-screen, ProtectedNoShell
+          Step1Type.tsx                         template gallery / upload toggle
+          Step2Content.tsx                      metadata + template fields / file pick
+          Step3Approvers.tsx                    ordered kelishuv participants
+          Step4Review.tsx
+          document.schema.ts
+          doc-wizard-store.ts                   zustand for in-flight wizard state
+        detail/
+          DocumentDetailPage.tsx
+          A4Preview.tsx                         rendered template body / upload meta card
+          ApprovalSheetCard.tsx                 kelishuv varaqasi timeline
+          SignatureHistoryCard.tsx
+          DocumentActions.tsx                   status- and persona-aware action bar
+          DecideDialog.tsx                      approve / approve-with-comment / reject
+          SignDialog.tsx                        cert picker + fake E-IMZO PIN flow
+        ApprovalsQueuePage.tsx
+        renderTemplate.ts                       {{PLACEHOLDER}} substitution helper
+        FakeEriSigner.ts                        fake challenge-response, mirrors FakePfxParser
+      letters/                                  M2 (steps 20–21)
+        LettersPage.tsx                         Keluvchi / Chiquvchi tabs
+        RegisterLetterDialog.tsx                Devonxona-only incoming registration
+        LettersTable.tsx
+        LetterCardMobile.tsx
+        letter.schema.ts
+        detail/
+          LetterDetailPage.tsx
+          LetterTimeline.tsx                    BP-3 routing/execution rail
+          RouteDialog.tsx                       Rahbar → unit
+          AssignDialog.tsx                      unit head → employee
+          ExecuteDialog.tsx                     comment or response attachment
+          DispatchDialog.tsx                    Devonxona outbound registration
+      notifications/                            M2 (step 16)
+        NotificationsBell.tsx                   topbar bell + unread badge
+        NotificationsList.tsx                   dropdown (desktop) / sheet (mobile)
       _shared/
         constants.ts                            unit types, employment types, role keys
 
@@ -743,6 +824,166 @@ export interface ProfileChangeRequest {
   reviewedAt?: string;
   reviewedByUuid?: string;
 }
+
+// ════════════════ MILESTONE 2 — Document management (steps 16–22) ════════════════
+// State names follow docs/business-processes.md BP-3 / BP-4 (canonical). Never invent states in the UI.
+
+export type DocumentSource = 'TEMPLATE' | 'UPLOAD';
+
+// BP-4 canon: draft → in-review → (rejected → rework) → approved → signed | closed
+// `closed` = accepted without ERI ("Qabul qilish" branch 11.2 of BPMN 3.4).
+// Archival is NOT a status — it's the `archivedAt` stamp (nightly-job simulation).
+export type DocumentStatus = 'DRAFT' | 'IN_REVIEW' | 'REJECTED' | 'APPROVED' | 'SIGNED' | 'CLOSED';
+
+export type Confidentiality = 'ODDIY' | 'MAXFIY';   // display-only badge in the demo (TLH 4-BLOK)
+
+// Metadata-only file convention — identical shape to Employee.employmentOrderExtract. No bytes stored.
+export interface FileMeta {
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedAt: string;
+}
+
+export interface TemplateField {
+  key: string;                   // placeholder token inside bodyTemplate, e.g. "ASOS"
+  labelKey: string;              // i18n key for the field label
+  kind: 'text' | 'textarea' | 'date' | 'employee';   // 'employee' = Combobox, resolves to FIO
+  required: boolean;
+}
+
+export interface DocumentTemplate {
+  uuid: string;
+  code: 'BUYRUQ' | 'XIZMAT_XATI' | 'MALUMOTNOMA' | 'ARIZA' | 'BILDIRISHNOMA';
+  nameUz: string;
+  descriptionUz: string;
+  bodyTemplate: string;          // Uzbek body text with {{PLACEHOLDER}} tokens
+  fields: TemplateField[];
+}
+
+export interface DocumentViewRecord { employeeUuid: string; viewedAt: string; }
+
+// Named DocumentEntity because `Document` collides with lib.dom's global type.
+export interface DocumentEntity {
+  uuid: string;
+  number: string;                // auto: 'HJ-2026/0001'
+  title: string;
+  source: DocumentSource;
+  templateUuid?: string;         // source = TEMPLATE
+  renderedBody?: string;         // source = TEMPLATE — placeholders resolved at creation
+  fileMeta?: FileMeta;           // source = UPLOAD
+  confidentiality: Confidentiality;
+  creatorUuid: string;           // employee uuid (BPMN: hujjat yaratuvchi)
+  recipientUuid: string;         // "Kimga"
+  signerUuid?: string;           // "Kim imzolaydi" — undefined ⇒ recipient accepts without ERI → CLOSED
+  requiresApproval: boolean;     // "Kelishuv varaqasi kerakmi?"
+  status: DocumentStatus;
+  round: number;                 // approval round; increments on resubmit after REJECTED
+  viewedBy: DocumentViewRecord[];// §2.2 "who viewed" audit requirement — one record per employee
+  sentForReviewAt?: string;
+  approvedAt?: string;
+  signedAt?: string;
+  closedAt?: string;
+  archivedAt?: string;           // stamped when the simulated nightly job would have run; drives Arxiv grouping
+  emailedTo?: string[];          // mock email-export log (§2.7)
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ApprovalDecision = 'PENDING' | 'APPROVED' | 'APPROVED_WITH_COMMENT' | 'REJECTED';
+
+export interface ApprovalStep {
+  uuid: string;
+  documentUuid: string;
+  round: number;                 // matches DocumentEntity.round when the step was created
+  order: number;                 // 1-based; the demo chain is strictly sequential
+  employeeUuid: string;
+  decision: ApprovalDecision;
+  comment?: string;              // REQUIRED when decision = REJECTED (BP-4 failure-mode rule)
+  decidedAt?: string;
+}
+
+export interface SignatureRecord {
+  uuid: string;
+  resourceType: 'document' | 'letter';
+  resourceUuid: string;
+  employeeUuid: string;
+  certificateUuid: string;       // must be an ACTIVE certificate belonging to that employee
+  algorithm: 'RSA-PKCS7';        // cosmetic — mirrors the TLH's phpseclib stack line
+  signatureHex: string;          // fake hex via crypto.getRandomValues (FakePfxParser convention)
+  signedAt: string;
+}
+
+export type LetterDirection = 'INCOMING' | 'OUTGOING';
+
+// BP-3 canon (extended 2026-06-12 per BPMN 3.3's explicit acceptance + signature gates):
+// registered → routed → assigned → in-progress → executed → [on-signature →] responded → dispatched → closed
+//                                       ↘ closed-without-response (comment-only execution, accepted)
+export type LetterStatus =
+  | 'REGISTERED' | 'ROUTED' | 'ASSIGNED' | 'IN_PROGRESS'
+  | 'EXECUTED'             // executor submitted; awaiting unit-head acceptance
+  | 'ON_SIGNATURE'         // accepted; awaiting Rahbar ERI (only when requiresSignature)
+  | 'RESPONDED'            // response ready for dispatch
+  | 'DISPATCHED' | 'CLOSED' | 'CLOSED_NO_RESPONSE';
+
+export type LetterChannel = 'POCHTA' | 'EMAIL' | 'KURYER' | 'QOGOZ';
+
+export interface Letter {
+  uuid: string;
+  direction: LetterDirection;
+  number: string;                // auto: incoming 'K-2026/0001' · outgoing 'CH-2026/0001'
+  externalOrg: string;           // sender (incoming) / addressee (outgoing)
+  subject: string;
+  channel: LetterChannel;
+  fileMeta?: FileMeta;           // scanned original (incoming) / dispatch package (outgoing)
+  receivedAt?: string;           // incoming only
+  deadline?: string;             // ijro muddati — optional; drives the overdue badge
+  routedToUnitUuid?: string;
+  assignedEmployeeUuid?: string;
+  requiresSignature: boolean;    // "Rahbar imzo talab etiladimi?"
+  executionComment?: string;     // BPMN 7.1 path (comment-only execution)
+  responseFileMeta?: FileMeta;   // BPMN 7.2 path (ready response file attached)
+  responseDocumentUuid?: string; // BPMN 7.2 alt: response composed as an internal DocumentEntity
+  linkedIncomingUuid?: string;   // on OUTGOING replies — the incoming letter being answered
+  status: LetterStatus;
+  registeredByUuid: string;
+  dispatchedAt?: string;
+  closedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type NotificationType =
+  | 'DOC_REVIEW_REQUESTED' | 'DOC_DECIDED' | 'DOC_APPROVED' | 'DOC_REJECTED'
+  | 'DOC_SIGN_REQUESTED' | 'DOC_SIGNED' | 'DOC_CLOSED'
+  | 'LETTER_ROUTED' | 'LETTER_ASSIGNED' | 'LETTER_EXECUTED' | 'LETTER_ACCEPTED'
+  | 'LETTER_SIGN_REQUESTED' | 'LETTER_DISPATCHED';
+
+// Named AppNotification because `Notification` collides with lib.dom's global type.
+export interface AppNotification {
+  uuid: string;
+  recipientEmployeeUuid: string;
+  type: NotificationType;
+  titleKey: string;              // i18n key — body text is NEVER stored as a literal
+  params: Record<string, string>;// interpolation values: docNumber, actorName, …
+  resourceType: 'document' | 'letter';
+  resourceUuid: string;
+  isRead: boolean;
+  createdAt: string;
+}
+```
+
+**M2 union extensions** (extend the existing types in `src/types/domain.ts` — note the live file already gained `CERTIFICATE_REJECTED` during step 12):
+
+```ts
+// Role union += 'ROLE_DEVONXONA'
+// AuditEntry.resourceType += 'document' | 'letter'
+// AuditAction +=
+//   | 'DOCUMENT_CREATED' | 'DOCUMENT_SENT_FOR_REVIEW' | 'DOCUMENT_APPROVED' | 'DOCUMENT_REJECTED'
+//   | 'DOCUMENT_SIGNED' | 'DOCUMENT_CLOSED' | 'DOCUMENT_VIEWED' | 'DOCUMENT_EMAILED'
+//   | 'LETTER_REGISTERED' | 'LETTER_ROUTED' | 'LETTER_ASSIGNED' | 'LETTER_EXECUTED'
+//   | 'LETTER_ACCEPTED' | 'LETTER_SIGNED' | 'LETTER_DISPATCHED' | 'LETTER_CLOSED'
+//   | 'POV_SWITCHED'
 ```
 
 ---
@@ -788,8 +1029,19 @@ PINFL real-time dedup check in the wizard fires `ensurePinflUnique` with a 400ms
 - Unit / integration / E2E tests — skipped for the demo
 - Dark mode — single light theme only
 - Server-side i18n routing — react-i18next handles everything client-side
-- Real RBAC enforcement — single HR_ADMIN user; navigation matches their permissions
+- Real RBAC enforcement — single HR_ADMIN user; navigation matches their permissions. (M2 nuance: the POV switcher adds *policy-layer* checks against the acting persona inside the mock backend, but real login-based RBAC stays out of scope.)
 - Real Drag-and-drop tree reordering — propose it visually with up/down buttons or a "Move to..." modal; full DnD is a stretch goal
+
+**Milestone 2 additions to this list:**
+
+- Parallel approval branches and saved/predefined chains (BP-4 chain types beyond "sequential single-node") — demo ships **sequential only**
+- Document versioning (TLH 4-BLOK `versiya`) — a signed document gets no "new version" flow in the demo
+- Real PDF/Word generation or download — the A4 preview + the browser's print-to-PDF is the demo's substitute; `fileMeta` stays metadata-only
+- Auto-extracting metadata from uploaded files (BP-4 step 4.1)
+- Substitute-approver routing (DP-1) and automated deadline escalation (DP-2) — show the overdue badge only
+- Configurable numbering schemes — hardcode `HJ-2026/NNNN`, `K-2026/NNNN`, `CH-2026/NNNN`
+- Task delegation module (BPMN §3.2) — milestone 3
+- Real e-mail dispatch — "Emailga yuborish" is a toast + audit entry + `emailedTo` append
 
 ---
 
@@ -810,7 +1062,10 @@ PINFL real-time dedup check in the wizard fires `ensurePinflUnique` with a 400ms
 
 ## 19. References
 
-- **TZ** (canonical functional spec): `docs/Plyma TZ xodim kiritish.docx`
+- **TZ — milestone 1** (canonical functional spec): `docs/Plyma TZ xodim kiritish.docx`
+- **TLH — milestone 2** (canonical spec: §2.2–2.4, §2.7 requirements + §3.3/§3.4 BPMN): `docs/Plyma 19.03.2026.docx`
+- **BPMN diagrams**: `docs/bpmn/` (PNG per process + index README)
+- **Business-process text canon** (BP-3/BP-4 state names): `docs/business-processes.md`
 - **Workflow rules**: `CLAUDE.md`
 - **Project state**: `ai_context/AI_CONTEXT.md`
 - **Session log**: `ai_context/HISTORY.md`

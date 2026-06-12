@@ -1,6 +1,9 @@
 # Devon Dashboard — Build Prompt Set
 
-This folder contains a structured set of prompts that drive the build of the **Devon Dashboard** — a Vite + React + TypeScript single-page application demonstrating the HR & User Management module from `../Plyma TZ xodim kiritish.docx`. The prompts are designed for execution across multiple AI sessions; each step assumes the previous steps are complete.
+This folder contains a structured set of prompts that drive the build of the **Devon Dashboard** — a Vite + React + TypeScript single-page application demo. The prompts are designed for execution across multiple AI sessions; each step assumes the previous steps are complete.
+
+- **Milestone 1 (steps 01–15, shipped 2026-06-01):** the HR & User Management module from `../Plyma TZ xodim kiritish.docx`.
+- **Milestone 2 (steps 16–22):** the Electronic Document Management flows from the updated TLH `../Plyma 19.03.2026.docx` — BPMN §3.3 (letters) + §3.4 (documents & kelishuv), requirements §2.2–2.4 / §2.7. Diagrams: [`../bpmn/`](../bpmn/).
 
 ## Files
 
@@ -22,6 +25,13 @@ This folder contains a structured set of prompts that drive the build of the **D
 | [`13-profile-audit.md`](./13-profile-audit.md) | Self-service profile + password change + audit log |
 | [`14-deploy-gh-pages.md`](./14-deploy-gh-pages.md) | Extend GH Pages workflow, SPA 404 fallback, smoke test |
 | [`15-final-qa.md`](./15-final-qa.md) | Full QA sweep: mobile, a11y, six states, copy review |
+| [`16-m2-pov-notifications.md`](./16-m2-pov-notifications.md) | **M2.** POV switcher (5 personas) + notification centre (bell, unread, deep links) |
+| [`17-m2-documents-backend.md`](./17-m2-documents-backend.md) | **M2.** Documents domain: templates, approvals, signatures, policy layer, seed |
+| [`18-m2-flow5-documents-wizard.md`](./18-m2-flow5-documents-wizard.md) | **M2.** Flow 5 part A: documents registry (4 tabs incl. Arxiv) + creation wizard |
+| [`19-m2-flow5-document-detail.md`](./19-m2-flow5-document-detail.md) | **M2.** Flow 5 part B: A4 preview, kelishuv varaqasi, ERI signing, `/approvals` queue |
+| [`20-m2-flow6-letters-registry.md`](./20-m2-flow6-letters-registry.md) | **M2.** Flow 6 part A: letters domain + Keluvchi/Chiquvchi registry + auto-numbering |
+| [`21-m2-flow6-letter-execution.md`](./21-m2-flow6-letter-execution.md) | **M2.** Flow 6 part B: letter detail, BP-3 timeline, execution → signature → dispatch |
+| [`22-m2-home-qa.md`](./22-m2-home-qa.md) | **M2.** Home integration, i18n/QA sweep, doc cascade, live verification |
 
 ## How to use this set
 
@@ -71,6 +81,18 @@ These decisions came out of a brainstorming session and are encoded throughout t
 | **Mobile-first** | Sidebar drawer, tables→cards, full-screen wizard on mobile, sticky CTAs | Master §7 |
 | **Mock backend** | localStorage + zod schemas + 3% failure simulation + seeded data | Master §9, step 06 |
 | **Tests** | Skipped for the demo; can be added later | Master §17 |
+
+Milestone-2 decisions (brainstormed 2026-06-12, same non-relitigation rule):
+
+| Decision | Choice | Where it lives |
+|---|---|---|
+| **M2 scope** | BPMN 3.4 (documents + kelishuv) + BPMN 3.3 (letters); tasks (3.2) deferred to M3 | Master §2 |
+| **Multi-actor demo** | POV switcher with 5 seeded personas — no extra logins | Master §10, step 16 |
+| **Kelishuv chain** | Strictly sequential; parallel branches + saved chains out of scope | Master §15/§17, step 17 |
+| **State names** | Follow `docs/business-processes.md` BP-3/BP-4 canon; archive is a stamp, not a status | Master §15 |
+| **Files** | Metadata-only (`FileMeta`), no bytes; print-to-PDF of the A4 preview substitutes downloads | Master §15/§17 |
+| **Daily archival** | Simulated: `archivedAt` stamped at sign/close; Arxiv tab groups by day | Steps 17–18 |
+| **Numbering** | Hardcoded `HJ-2026/NNNN` · `K-2026/NNNN` · `CH-2026/NNNN` | Master §17, steps 17/20 |
 
 If a decision needs to change mid-build, update `00-master.md` first, then propagate to the affected step prompts.
 
