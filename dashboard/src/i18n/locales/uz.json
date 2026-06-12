@@ -321,6 +321,7 @@
         "col-creator": "Yaratuvchi",
         "col-status": "Holat",
         "col-date": "Sana",
+        "type-template": "Shablon asosida",
         "type-upload": "Yuklangan fayl",
         "empty-title": "Hujjatlar topilmadi",
         "empty-body": "Qidiruv yoki filtr shartlarini o'zgartiring, yoki yangi hujjat yarating",
@@ -330,6 +331,8 @@
       "wizard": {
         "title": "Yangi hujjat",
         "subtitle": "Shablon yoki tayyor fayl asosida hujjat yarating",
+        "edit-title": "Hujjatni tahrirlash",
+        "edit-subtitle": "{{number}} hujjatini yangilang va qayta yuboring",
         "stepper-label": "Hujjat yaratish bosqichlari",
         "confirm-close": "Kiritilgan ma'lumotlar saqlanmaydi. Chiqishni xohlaysizmi?",
         "step-1": {
@@ -350,7 +353,8 @@
             "file-required": "Davom etish uchun fayl tanlang",
             "file-format": "Faqat PDF, DOC yoki DOCX fayllar qabul qilinadi",
             "file-too-large": "Fayl hajmi 10 MB dan oshmasligi kerak"
-          }
+          },
+          "edit-locked": "Hujjat turi va shabloni tahrirlashda o'zgartirilmaydi"
         },
         "step-2": {
           "title": "Mazmun",
@@ -377,7 +381,8 @@
           "remove-participant": "Ro'yxatdan olib tashlash",
           "errors": {
             "min-participants": "Kamida bitta ishtirokchi qo'shing"
-          }
+          },
+          "edit-locked": "Kelishuv talabi tahrirlashda o'zgartirilmaydi — qatnashchilar ro'yxatini yangilash mumkin"
         },
         "review": {
           "title": "Ko'rib chiqish",
@@ -397,7 +402,120 @@
         "submit-review": "Kelishuvga yuborish",
         "toast-draft-saved": "{{number}} qoralama sifatida saqlandi",
         "toast-sent-for-review": "{{number}} kelishuvga yuborildi",
-        "toast-submitted": "{{number}} yuborildi"
+        "toast-submitted": "{{number}} yuborildi",
+        "toast-updated": "{{number}} yangilandi"
+      },
+      "detail": {
+        "back": "Hujjatlar ro'yxatiga",
+        "not-found": "Hujjat topilmadi",
+        "badge-maxfiy": "Maxfiy",
+        "label-creator": "Yaratuvchi",
+        "label-recipient": "Qabul qiluvchi",
+        "label-created": "Yaratilgan",
+        "label-updated": "Yangilangan",
+        "turn-hint": "Hozir {{name}} navbati",
+        "preview": {
+          "print": "Chop etish / PDF saqlash",
+          "upload-no-preview": "Fayl namoyishi demo rejimida mavjud emas",
+          "stamp-line": "ERI bilan imzolangan"
+        },
+        "approval-sheet": {
+          "title": "Kelishuv varaqasi",
+          "round": "{{n}}-davra",
+          "no-approval": "Kelishuvsiz yuborilgan",
+          "empty-round": "Bu davrada qadamlar yo'q",
+          "queue-here": "Navbat shu yerda",
+          "decision": {
+            "PENDING": "Kutilmoqda",
+            "APPROVED": "Kelishildi",
+            "APPROVED_WITH_COMMENT": "Izoh bilan kelishildi",
+            "REJECTED": "Rad etildi"
+          }
+        },
+        "signatures": {
+          "title": "Imzolar tarixi",
+          "empty": "Hujjat hali imzolanmagan",
+          "verify": "Tekshirish",
+          "verify-ok": "Imzo haqiqiy"
+        },
+        "viewed": {
+          "title": "Kimlar ko'rgan"
+        },
+        "meta": {
+          "title": "Ma'lumotlar",
+          "type": "Turi",
+          "signer": "Imzolovchi",
+          "no-signer": "ERI imzo talab qilinmaydi",
+          "sent": "Kelishuvga yuborilgan",
+          "approved": "Kelishilgan",
+          "signed": "Imzolangan",
+          "closed": "Qabul qilingan",
+          "archived": "Arxivlangan",
+          "emailed": "Emailga yuborilgan"
+        },
+        "actions": {
+          "approve": "Tasdiqlash",
+          "approve-with-comment": "Izoh bilan tasdiqlash",
+          "sign": "ERI bilan imzolash",
+          "accept": "Qabul qilish",
+          "email": "Emailga yuborish",
+          "print": "Chop etish"
+        },
+        "decide": {
+          "title": "Qaror qabul qilish",
+          "description": "Kelishuv varaqasidagi navbatingiz bo'yicha qaror bildiring",
+          "cta": "Qarorni yuborish",
+          "option": {
+            "APPROVED": "Tasdiqlash",
+            "APPROVED_WITH_COMMENT": "Izoh bilan tasdiqlash",
+            "REJECTED": "Rad etish"
+          },
+          "option-hint": {
+            "APPROVED": "Hujjat keyingi qatnashchiga o'tadi",
+            "APPROVED_WITH_COMMENT": "Tasdiq izohingiz bilan birga saqlanadi",
+            "REJECTED": "Kelishuv to'xtaydi va hujjat qaytariladi"
+          },
+          "comment-label": "Izoh",
+          "comment-placeholder": "Qaroringizga izoh yozing",
+          "comment-required": "Rad etish uchun kamida 5 ta belgidan iborat izoh kiriting",
+          "reject-consequence": "Rad etilganda hujjat yaratuvchiga qayta ishlash uchun qaytariladi"
+        },
+        "sign": {
+          "title": "ERI bilan imzolash",
+          "description": "Faol sertifikatingizni tanlang va PIN-kodni kiriting",
+          "cta": "Imzolash",
+          "cert-validity": "Amal qilish muddati: {{from}} — {{to}}",
+          "pin-label": "PIN-kod",
+          "pin-hint": "PIN-kod serverga uzatilmaydi",
+          "pin-invalid": "PIN-kod 6 ta raqamdan iborat bo'lishi kerak",
+          "signing": "E-IMZO bilan imzolanmoqda…",
+          "signing-hint": "Iltimos kuting — sertifikat tekshirilmoqda",
+          "success": "Hujjat muvaffaqiyatli imzolandi",
+          "no-certs": "Sizda faol ERI sertifikati yo'q. Imzolash uchun avval sertifikat yuklang.",
+          "upload-cert": "ERI sertifikat yuklash"
+        },
+        "email": {
+          "title": "Emailga yuborish",
+          "description": "Hujjat ko'rsatilgan manzilga yuboriladi (demo)",
+          "label": "Email manzili",
+          "invalid": "Email manzilini to'g'ri kiriting",
+          "cta": "Yuborish"
+        },
+        "delete": {
+          "title": "Qoralamani o'chirish",
+          "body": "{{number}} qoralamasi butunlay o'chiriladi. Bu amalni ortga qaytarib bo'lmaydi."
+        },
+        "accept": {
+          "title": "Hujjatni qabul qilish",
+          "body": "{{number}} hujjatini qabul qilasizmi? Hujjat yopiladi va arxivlanadi."
+        },
+        "toast": {
+          "approved": "Qaroringiz saqlandi",
+          "rejected": "Hujjat rad etildi va yaratuvchiga qaytarildi",
+          "deleted": "{{number}} o'chirildi",
+          "accepted": "Hujjat qabul qilindi va arxivlandi",
+          "emailed": "Yuborildi (demo)"
+        }
       },
       "errors": {
         "wrong-status": "Bu amal hujjatning joriy holatida bajarilmaydi",
@@ -425,6 +543,16 @@
         "SABAB": "Sabab",
         "MASUL_FIO": "Mas'ul shaxs"
       }
+    },
+    "approvals": {
+      "title": "Kelishuvlar",
+      "subtitle": "Qaroringiz, imzoingiz yoki qabulingiz kutilayotgan hujjatlar",
+      "group-decision": "Qaroringiz kutilmoqda",
+      "group-signature": "Imzolash kutilmoqda",
+      "group-acceptance": "Qabul qilish kutilmoqda",
+      "empty-title": "Sizni kutayotgan hujjatlar yo'q ✨",
+      "empty-body": "Yangi kelishuv kelganda bildirishnoma olasiz",
+      "waiting-since": "{{time}} yuborilgan"
     },
     "profile": {
       "title": "Mening profilim",
@@ -526,10 +654,18 @@
         "submit-cta": "Xodimni yaratish",
         "confirm-close": "Kiritilgan ma'lumotlar yo'qoladi. Yopishni xohlaysizmi?",
         "success": "{{name}} muvaffaqiyatli yaratildi",
-        "step-1": { "title": "Shaxsiy ma'lumotlar" },
-        "step-2": { "title": "Aloqa" },
-        "step-3": { "title": "Ish o'rni" },
-        "step-4": { "title": "Kirish ma'lumotlari" },
+        "step-1": {
+          "title": "Shaxsiy ma'lumotlar"
+        },
+        "step-2": {
+          "title": "Aloqa"
+        },
+        "step-3": {
+          "title": "Ish o'rni"
+        },
+        "step-4": {
+          "title": "Kirish ma'lumotlari"
+        },
         "review": {
           "title": "Ko'rib chiqish",
           "intro": "{{name}}ni yaratishdan oldin ma'lumotlarni tekshirib chiqing."

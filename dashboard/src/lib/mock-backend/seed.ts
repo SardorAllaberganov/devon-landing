@@ -45,7 +45,7 @@ const SEED_FLAG = 'devon.dashboard.seeded';
 // distributions, hierarchy reshapes). Mismatched versions in localStorage
 // trigger a silent reseed on next app load — keeps demos consistent without
 // asking users to hit "Reset demo" after every change.
-const SEED_VERSION = '6';
+const SEED_VERSION = '7';
 
 const uuid = () => crypto.randomUUID();
 const NOW = () => new Date().toISOString();
@@ -1244,6 +1244,11 @@ function buildDocumentDomain(certificates: Certificate[]): {
       title: spec.title,
       source: template ? 'TEMPLATE' : 'UPLOAD',
       templateUuid: template?.uuid,
+      // Raw values persist so editing a seeded DRAFT/REJECTED doc prefills the
+      // wizard (step 19). Seed specs carry final display strings (FIOs, not
+      // uuids) — resolveTemplateValues passes unknown-uuid values through
+      // unchanged, so a re-render from these stays correct.
+      values: template ? spec.values : undefined,
       renderedBody: template ? renderTemplate(template.bodyTemplate, spec.values ?? {}) : undefined,
       fileMeta: spec.fileMeta,
       confidentiality: spec.confidentiality ?? 'ODDIY',

@@ -24,6 +24,12 @@ export interface DocWizardData {
   participantUuids: string[];
 }
 
+/** Set while reworking an existing DRAFT/REJECTED document (`?edit=<uuid>`). */
+export interface DocWizardEditing {
+  uuid: string;
+  number: string;
+}
+
 function emptyData(): DocWizardData {
   return {
     source: 'TEMPLATE',
@@ -44,6 +50,9 @@ function emptyData(): DocWizardData {
 interface DocWizardState {
   current: number;
   data: DocWizardData;
+  editing: DocWizardEditing | null;
+  /** Dirty baseline — emptyData() in create mode, the hydrated snapshot in edit mode. */
+  baseline: string;
   setSource: (source: DocumentSource) => void;
   /** Switching templates drops the placeholder values — keys won't match. */
   setTemplate: (templateUuid: string) => void;
@@ -55,6 +64,8 @@ interface DocWizardState {
   next: () => void;
   prev: () => void;
   isDirty: () => boolean;
+  /** Enter edit mode prefilled; starts on step 2 (source/template are locked). */
+  hydrate: (data: DocWizardData, editing: DocWizardEditing) => void;
   reset: () => void;
 }
 
@@ -63,6 +74,8 @@ export const TOTAL_STEPS = 4; // 3 form steps + review
 export const useDocWizardStore = create<DocWizardState>((set, get) => ({
   current: 0,
   data: emptyData(),
+  editing: null,
+  baseline: JSON.stringify(emptyData()),
   setSource: (source) => set((s) => ({ data: { ...s.data, source } })),
   setTemplate: (templateUuid) =>
     set((s) => ({
@@ -84,9 +97,14 @@ export const useDocWizardStore = create<DocWizardState>((set, get) => ({
   setCurrent: (n) => set({ current: Math.max(0, Math.min(n, TOTAL_STEPS - 1)) }),
   next: () => set((s) => ({ current: Math.min(s.current + 1, TOTAL_STEPS - 1) })),
   prev: () => set((s) => ({ current: Math.max(0, s.current - 1) })),
-  isDirty: () => {
-    const empty = emptyData();
-    return JSON.stringify(get().data) !== JSON.stringify(empty);
-  },
-  reset: () => set({ current: 0, data: emptyData() }),
+  isDirty: () => JSON.stringify(get().data) !== get().baseline,
+  hydrate: (data, editing) =>
+    set({ current: 1, data, editing, baseline: JSON.stringify(data) }),
+  reset: () =>
+    set({
+      current: 0,
+      data: emptyData(),
+      editing: null,
+      baseline: JSON.stringify(emptyData()),
+    }),
 }));

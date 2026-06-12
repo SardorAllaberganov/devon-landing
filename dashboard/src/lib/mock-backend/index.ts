@@ -1260,7 +1260,12 @@ export async function listDocuments(filters?: DocumentFilters): Promise<Document
 
 export interface DocumentDetail {
   document: DocumentEntity;
-  /** Steps of the *current* round, ordered. Decided earlier rounds are immutable history. */
+  /**
+   * Steps of ALL rounds, ordered by (round, order). Halted rounds are
+   * immutable history that the detail page's round selector keeps visible
+   * (BP-4: rejected chains are never deleted); filter by `document.round`
+   * for the actionable chain.
+   */
   steps: ApprovalStep[];
   signatures: SignatureRecord[];
 }
@@ -1271,7 +1276,9 @@ export async function getDocument(uuid: string): Promise<DocumentDetail | null> 
   if (!document) return null;
   return {
     document,
-    steps: stepsOfRound(readApprovalSteps(), uuid, document.round),
+    steps: readApprovalSteps()
+      .filter((s) => s.documentUuid === uuid)
+      .sort((a, b) => a.round - b.round || a.order - b.order),
     signatures: readSignatures().filter(
       (s) => s.resourceType === 'document' && s.resourceUuid === uuid,
     ),
@@ -1384,6 +1391,7 @@ export async function createDocument(
 
   let templateUuid: string | undefined;
   let templateCode: string | undefined;
+  let values: Record<string, string> | undefined;
   let renderedBody: string | undefined;
   let fileMeta: FileMeta | undefined;
 
@@ -1394,6 +1402,9 @@ export async function createDocument(
     }
     templateUuid = template.uuid;
     templateCode = template.code;
+    // Raw values persist alongside the rendered body so the rework loop
+    // (step 19's "Tahrirlash") can re-enter the wizard prefilled.
+    values = input.values;
     renderedBody = renderTemplate(
       template.bodyTemplate,
       resolveTemplateValues(template, input.values),
@@ -1413,6 +1424,7 @@ export async function createDocument(
     title: input.title,
     source: input.source,
     templateUuid,
+    values,
     renderedBody,
     fileMeta,
     confidentiality: input.confidentiality,
@@ -1495,6 +1507,7 @@ export async function updateDraftDocument(
   if (patch.values && before.source === 'TEMPLATE' && before.templateUuid) {
     const template = readDocumentTemplates().find((t) => t.uuid === before.templateUuid);
     if (template) {
+      next.values = patch.values;
       next.renderedBody = renderTemplate(
         template.bodyTemplate,
         resolveTemplateValues(template, patch.values),

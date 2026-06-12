@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ListChecks, Mail, type LucideIcon } from 'lucide-react';
+import { Mail, type LucideIcon } from 'lucide-react';
 
 import LoginPage from '@/features/auth/LoginPage';
 import { RequireAuth } from '@/features/auth/RequireAuth';
@@ -10,6 +10,8 @@ import AuditLogPage from '@/features/audit/AuditLogPage';
 import DashboardHome from '@/features/dashboard-home/DashboardHome';
 import CertificatesPage from '@/features/certificates/CertificatesPage';
 import CertificateUploadPage from '@/features/certificates/CertificateUploadPage';
+import ApprovalsQueuePage from '@/features/documents/ApprovalsQueuePage';
+import DocumentDetailPage from '@/features/documents/detail/DocumentDetailPage';
 import DocumentsPage from '@/features/documents/DocumentsPage';
 import DocumentWizardPage from '@/features/documents/wizard/DocumentWizardPage';
 import EmployeeListPage from '@/features/employees/list/EmployeeListPage';
@@ -29,9 +31,8 @@ function Protected({ children }: { children: ReactElement }) {
   );
 }
 
-// Step-16 placeholders for the milestone-2 routes the sidebar already links
-// to. Step 18 replaced the documents one; 19 (approvals) and 20 (letters)
-// replace the rest.
+// Step-16 placeholder for the last milestone-2 route the sidebar links to —
+// step 20 replaces it with the letters registry.
 function ComingSoonPage({ titleKey, icon }: { titleKey: string; icon: LucideIcon }) {
   const { t } = useTranslation(['dashboard']);
   return (
@@ -155,10 +156,18 @@ export default function Router() {
         }
       />
       <Route
+        path="/documents/:uuid"
+        element={
+          <Protected>
+            <DocumentDetailPage />
+          </Protected>
+        }
+      />
+      <Route
         path="/approvals"
         element={
           <Protected>
-            <ComingSoonPage titleKey="dashboard:sidebar.nav-approvals" icon={ListChecks} />
+            <ApprovalsQueuePage />
           </Protected>
         }
       />

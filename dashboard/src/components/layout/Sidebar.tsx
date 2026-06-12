@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import { useEffect, type ComponentType } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -13,7 +13,10 @@ import {
   Users,
 } from 'lucide-react';
 
+import { useActingEmployee } from '@/lib/acting';
+import { listMyApprovals } from '@/lib/mock-backend';
 import { cn } from '@/lib/utils';
+import { useQueueStore } from '@/stores/useQueueStore';
 
 interface NavItem {
   to: string;
@@ -29,8 +32,7 @@ const managementNav: NavItem[] = [
   { to: '/audit', labelKey: 'dashboard:sidebar.nav-audit', icon: ScrollText },
 ];
 
-// Milestone 2 — routes are step-16 placeholders until steps 18–20 land.
-// The Kelishuvlar item gains a pending-decisions count badge in step 19.
+// Milestone 2 — letters (/letters) stays a step-16 placeholder until step 20.
 const documentsNav: NavItem[] = [
   { to: '/documents', labelKey: 'dashboard:sidebar.nav-documents', icon: FileText },
   { to: '/approvals', labelKey: 'dashboard:sidebar.nav-approvals', icon: ListChecks },
@@ -47,6 +49,29 @@ interface Props {
 
 export default function Sidebar({ onNavigate }: Props) {
   const { t } = useTranslation(['dashboard']);
+  const acting = useActingEmployee();
+  const actingUuid = acting?.employee.uuid;
+  const version = useQueueStore((s) => s.version);
+  const count = useQueueStore((s) => s.count);
+  const setCount = useQueueStore((s) => s.setCount);
+
+  // Pending-queue badge for the acting persona — refreshed on mount, POV
+  // switch, and whenever a mutation bumps the queue store's version.
+  useEffect(() => {
+    if (!actingUuid) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const items = await listMyApprovals(actingUuid);
+        if (!cancelled) setCount(items.length);
+      } catch {
+        // Read flake — keep the previous count; the next bump retries.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [actingUuid, version, setCount]);
 
   return (
     <nav className="flex h-full flex-col bg-cream-deep border-r border-line">
@@ -64,6 +89,7 @@ export default function Sidebar({ onNavigate }: Props) {
         <NavSection
           title={t('dashboard:sidebar.section-documents')}
           items={documentsNav}
+          badges={{ '/approvals': count }}
           onNavigate={onNavigate}
         />
         <NavSection
@@ -85,10 +111,12 @@ export default function Sidebar({ onNavigate }: Props) {
 interface SectionProps {
   title: string;
   items: NavItem[];
+  /** Pending counts keyed by route — null/0 hides the badge. */
+  badges?: Record<string, number | null>;
   onNavigate?: () => void;
 }
 
-function NavSection({ title, items, onNavigate }: SectionProps) {
+function NavSection({ title, items, badges, onNavigate }: SectionProps) {
   const { t } = useTranslation(['dashboard']);
   return (
     <div>
@@ -96,26 +124,43 @@ function NavSection({ title, items, onNavigate }: SectionProps) {
         {title}
       </p>
       <ul className="space-y-0.5">
-        {items.map((item) => (
-          <li key={item.to}>
-            <NavLink
-              to={item.to}
-              end={item.to === '/'}
-              onClick={onNavigate}
-              className={({ isActive }) =>
-                cn(
-                  'flex h-11 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors',
-                  isActive
-                    ? 'bg-emerald text-cream'
-                    : 'text-body hover:bg-cream/60 hover:text-ink',
-                )
-              }
-            >
-              <item.icon className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t(item.labelKey)}</span>
-            </NavLink>
-          </li>
-        ))}
+        {items.map((item) => {
+          const badge = badges?.[item.to] ?? null;
+          return (
+            <li key={item.to}>
+              <NavLink
+                to={item.to}
+                end={item.to === '/'}
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  cn(
+                    'flex h-11 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors',
+                    isActive
+                      ? 'bg-emerald text-cream'
+                      : 'text-body hover:bg-cream/60 hover:text-ink',
+                  )
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    <span className="min-w-0 flex-1 truncate">{t(item.labelKey)}</span>
+                    {badge !== null && badge > 0 && (
+                      <span
+                        className={cn(
+                          'flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold tabular-nums',
+                          isActive ? 'bg-cream text-emerald' : 'bg-cinnamon text-cream',
+                        )}
+                      >
+                        {badge > 9 ? '9+' : badge}
+                      </span>
+                    )}
+                  </>
+                )}
+              </NavLink>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

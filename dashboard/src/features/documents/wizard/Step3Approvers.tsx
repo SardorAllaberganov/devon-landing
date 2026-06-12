@@ -19,6 +19,10 @@ export default function Step3Approvers() {
   const { t } = useTranslation(['dashboard', 'common']);
   const acting = useActingEmployee();
   const data = useDocWizardStore((s) => s.data);
+  // Edit mode: updateDraftDocument cannot flip requiresApproval — the switch
+  // locks; the participant chain itself stays editable (the backend rebuilds
+  // the upcoming round's PENDING steps).
+  const locked = useDocWizardStore((s) => s.editing) !== null;
   const setRequiresApproval = useDocWizardStore((s) => s.setRequiresApproval);
   const setParticipants = useDocWizardStore((s) => s.setParticipants);
   const next = useDocWizardStore((s) => s.next);
@@ -87,18 +91,26 @@ export default function Step3Approvers() {
 
   return (
     <form id={FORM_ID} onSubmit={onSubmit} className="space-y-6" noValidate>
-      <div className="flex items-center justify-between gap-4 rounded-lg border border-line bg-surface p-4">
-        <Label htmlFor="requiresApproval" className="cursor-pointer text-sm font-medium">
-          {t('dashboard:documents.wizard.step-3.switch-label')}
-        </Label>
-        <Switch
-          id="requiresApproval"
-          checked={data.requiresApproval}
-          onCheckedChange={(on) => {
-            setRequiresApproval(on);
-            setError(false);
-          }}
-        />
+      <div className="rounded-lg border border-line bg-surface p-4">
+        <div className="flex items-center justify-between gap-4">
+          <Label htmlFor="requiresApproval" className="cursor-pointer text-sm font-medium">
+            {t('dashboard:documents.wizard.step-3.switch-label')}
+          </Label>
+          <Switch
+            id="requiresApproval"
+            checked={data.requiresApproval}
+            disabled={locked}
+            onCheckedChange={(on) => {
+              setRequiresApproval(on);
+              setError(false);
+            }}
+          />
+        </div>
+        {locked && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            {t('dashboard:documents.wizard.step-3.edit-locked')}
+          </p>
+        )}
       </div>
 
       {!data.requiresApproval && (

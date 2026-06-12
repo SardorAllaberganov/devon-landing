@@ -1,18 +1,22 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Loader2, Send, X } from 'lucide-react';
 
 import WizardStepper from '@/components/common/WizardStepper';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useActingEmployee } from '@/lib/acting';
 import {
   createDocument,
   DocumentValidationError,
+  getDocument,
   MockNetworkError,
   submitDocumentForReview,
+  updateDraftDocument,
   type CreateDocumentInput,
+  type UpdateDraftDocumentInput,
 } from '@/lib/mock-backend';
 
 import { type DocWizardData, TOTAL_STEPS, useDocWizardStore } from './doc-wizard-store';
@@ -50,27 +54,126 @@ function buildInput(data: DocWizardData): CreateDocumentInput {
   };
 }
 
+/** Edit mode — source/template/requiresApproval are locked, the rest patches. */
+function buildPatch(data: DocWizardData): UpdateDraftDocumentInput {
+  return {
+    title: data.content.title,
+    values: data.source === 'TEMPLATE' ? data.content.values : undefined,
+    fileMeta: data.source === 'UPLOAD' && data.fileMeta ? data.fileMeta : undefined,
+    recipientUuid: data.content.recipientUuid,
+    signerUuid: data.content.signerUuid || null,
+    confidentiality: data.content.confidentiality,
+    participantUuids: data.requiresApproval ? data.participantUuids : undefined,
+  };
+}
+
 export default function DocumentWizardPage() {
   const { t } = useTranslation(['dashboard', 'common']);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const acting = useActingEmployee();
   const current = useDocWizardStore((s) => s.current);
   const data = useDocWizardStore((s) => s.data);
+  const editing = useDocWizardStore((s) => s.editing);
   const prev = useDocWizardStore((s) => s.prev);
   const isDirty = useDocWizardStore((s) => s.isDirty);
+  const hydrate = useDocWizardStore((s) => s.hydrate);
   const reset = useDocWizardStore((s) => s.reset);
 
   const [busy, setBusy] = useState<'draft' | 'review' | null>(null);
   // Survives a network flake between create and submit-for-review: the retry
-  // must not create a second document.
+  // must not create a second document. (Edit mode needs no guard — repeating
+  // updateDraftDocument is harmless.)
   const [createdUuid, setCreatedUuid] = useState<string | null>(null);
+
+  const editUuid = searchParams.get('edit');
+  const actingUuid = acting?.employee.uuid;
+  const hydrating = editUuid !== null && editing?.uuid !== editUuid;
+
+  // `?edit=<uuid>` — hydrate the store from the existing document. Policy
+  // mirror of updateDraftDocument: only the creator's own DRAFT/REJECTED.
+  useEffect(() => {
+    if (!actingUuid) return;
+    if (!editUuid) {
+      // Entering create mode with a stale edit session left in the store.
+      if (useDocWizardStore.getState().editing) reset();
+      return;
+    }
+    if (useDocWizardStore.getState().editing?.uuid === editUuid) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const detail = await getDocument(editUuid);
+        if (cancelled) return;
+        const doc = detail?.document;
+        if (
+          !doc ||
+          (doc.status !== 'DRAFT' && doc.status !== 'REJECTED') ||
+          doc.creatorUuid !== actingUuid
+        ) {
+          toast.error(t('dashboard:documents.errors.not-editable'));
+          navigate('/documents', { replace: true });
+          return;
+        }
+        // The upcoming round's chain: for a DRAFT that's the current round;
+        // after a rejection it's round+1 if already re-built, else the halted
+        // round's order — exactly updateDraftDocument's semantics.
+        const ofRound = (round: number) =>
+          detail.steps
+            .filter((s) => s.round === round)
+            .sort((a, b) => a.order - b.order)
+            .map((s) => s.employeeUuid);
+        let participantUuids: string[] = [];
+        if (doc.requiresApproval) {
+          participantUuids =
+            doc.status === 'DRAFT'
+              ? ofRound(doc.round)
+              : ofRound(doc.round + 1).length > 0
+                ? ofRound(doc.round + 1)
+                : ofRound(doc.round);
+        }
+        hydrate(
+          {
+            source: doc.source,
+            templateUuid: doc.templateUuid ?? null,
+            fileMeta: doc.fileMeta
+              ? {
+                  fileName: doc.fileMeta.fileName,
+                  fileSize: doc.fileMeta.fileSize,
+                  mimeType: doc.fileMeta.mimeType,
+                }
+              : null,
+            content: {
+              title: doc.title,
+              recipientUuid: doc.recipientUuid,
+              signerUuid: doc.signerUuid ?? '',
+              confidentiality: doc.confidentiality,
+              values: doc.values ?? {},
+            },
+            requiresApproval: doc.requiresApproval,
+            participantUuids,
+          },
+          { uuid: doc.uuid, number: doc.number },
+        );
+      } catch {
+        if (!cancelled) {
+          toast.error(t('common:errors.network'));
+          navigate('/documents', { replace: true });
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [editUuid, actingUuid, hydrate, reset, navigate, t]);
 
   function onClose() {
     if (isDirty() && !window.confirm(t('dashboard:documents.wizard.confirm-close'))) {
       return;
     }
+    const target = editing ? `/documents/${editing.uuid}` : '/documents';
     reset();
-    navigate('/documents');
+    navigate(target);
   }
 
   function toastError(err: unknown) {
@@ -87,12 +190,19 @@ export default function DocumentWizardPage() {
     if (!acting) return;
     setBusy('draft');
     try {
-      const doc = await createDocument(buildInput(data), acting.employee.uuid);
-      toast.success(
-        t('dashboard:documents.wizard.toast-draft-saved', { number: doc.number }),
-      );
-      reset();
-      navigate('/documents');
+      if (editing) {
+        const doc = await updateDraftDocument(editing.uuid, buildPatch(data), acting.employee.uuid);
+        toast.success(t('dashboard:documents.wizard.toast-updated', { number: doc.number }));
+        reset();
+        navigate(`/documents/${doc.uuid}`);
+      } else {
+        const doc = await createDocument(buildInput(data), acting.employee.uuid);
+        toast.success(
+          t('dashboard:documents.wizard.toast-draft-saved', { number: doc.number }),
+        );
+        reset();
+        navigate('/documents');
+      }
     } catch (err) {
       toastError(err);
     } finally {
@@ -104,11 +214,18 @@ export default function DocumentWizardPage() {
     if (!acting) return;
     setBusy('review');
     try {
-      let uuid = createdUuid;
-      if (!uuid) {
-        const doc = await createDocument(buildInput(data), acting.employee.uuid);
-        uuid = doc.uuid;
-        setCreatedUuid(doc.uuid);
+      let uuid: string;
+      if (editing) {
+        await updateDraftDocument(editing.uuid, buildPatch(data), acting.employee.uuid);
+        uuid = editing.uuid;
+      } else {
+        let created = createdUuid;
+        if (!created) {
+          const doc = await createDocument(buildInput(data), acting.employee.uuid);
+          created = doc.uuid;
+          setCreatedUuid(doc.uuid);
+        }
+        uuid = created;
       }
       const doc = await submitDocumentForReview(uuid, acting.employee.uuid);
       toast.success(
@@ -132,6 +249,12 @@ export default function DocumentWizardPage() {
 
   const activeFormId = STEP_FORM_IDS[current];
   const isReview = current === TOTAL_STEPS - 1;
+  const title = editing
+    ? t('dashboard:documents.wizard.edit-title')
+    : t('dashboard:documents.wizard.title');
+  const subtitle = editing
+    ? t('dashboard:documents.wizard.edit-subtitle', { number: editing.number })
+    : t('dashboard:documents.wizard.subtitle');
 
   return (
     <div className="flex min-h-svh flex-col bg-background">
@@ -145,20 +268,14 @@ export default function DocumentWizardPage() {
         >
           <X className="h-5 w-5" />
         </Button>
-        <h1 className="truncate text-base font-semibold text-ink">
-          {t('dashboard:documents.wizard.title')}
-        </h1>
+        <h1 className="truncate text-base font-semibold text-ink">{title}</h1>
       </header>
 
       {/* Desktop header */}
       <header className="hidden items-center justify-between border-b border-line bg-surface px-6 py-4 md:flex">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-ink">
-            {t('dashboard:documents.wizard.title')}
-          </h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            {t('dashboard:documents.wizard.subtitle')}
-          </p>
+          <h1 className="text-xl font-bold tracking-tight text-ink">{title}</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>
         </div>
         <Button variant="ghost" onClick={onClose}>
           {t('common:actions.cancel')}
@@ -174,10 +291,20 @@ export default function DocumentWizardPage() {
           />
 
           <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8">
-            {current === 0 && <Step1Type />}
-            {current === 1 && <Step2Content />}
-            {current === 2 && <Step3Approvers />}
-            {current === 3 && <Step4Review />}
+            {hydrating ? (
+              <div className="space-y-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full rounded-lg" />
+                ))}
+              </div>
+            ) : (
+              <>
+                {current === 0 && <Step1Type />}
+                {current === 1 && <Step2Content />}
+                {current === 2 && <Step3Approvers />}
+                {current === 3 && <Step4Review />}
+              </>
+            )}
           </div>
 
           <footer className="pb-safe sticky bottom-0 flex items-center justify-between gap-3 border-t border-line bg-surface px-4 pt-4 md:px-8">
@@ -198,7 +325,9 @@ export default function DocumentWizardPage() {
                   disabled={busy !== null || !acting || createdUuid !== null}
                 >
                   {busy === 'draft' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {t('dashboard:documents.wizard.submit-draft')}
+                  {editing
+                    ? t('common:actions.save')
+                    : t('dashboard:documents.wizard.submit-draft')}
                 </Button>
                 <Button
                   type="button"
@@ -213,7 +342,7 @@ export default function DocumentWizardPage() {
                   {t('dashboard:documents.wizard.submit-review')}
                 </Button>
               </div>
-            ) : activeFormId ? (
+            ) : activeFormId && !hydrating ? (
               <Button form={activeFormId} type="submit">
                 {t('common:actions.next')}
               </Button>

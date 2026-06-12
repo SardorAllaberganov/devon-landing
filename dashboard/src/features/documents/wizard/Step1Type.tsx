@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FileText, FileUp, LayoutTemplate, Upload, X } from 'lucide-react';
+import { FileText, FileUp, Info, LayoutTemplate, Upload, X } from 'lucide-react';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -41,6 +42,9 @@ function mimeFor(file: File): string {
 export default function Step1Type() {
   const { t } = useTranslation(['dashboard', 'common']);
   const data = useDocWizardStore((s) => s.data);
+  // Edit mode: the backend's updateDraftDocument cannot change source or
+  // template, so both pickers are locked (the UPLOAD file stays replaceable).
+  const locked = useDocWizardStore((s) => s.editing) !== null;
   const setSource = useDocWizardStore((s) => s.setSource);
   const setTemplate = useDocWizardStore((s) => s.setTemplate);
   const setFileMeta = useDocWizardStore((s) => s.setFileMeta);
@@ -98,11 +102,21 @@ export default function Step1Type() {
 
   return (
     <form id={FORM_ID} onSubmit={onSubmit} className="space-y-6" noValidate>
+      {locked && (
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            {t('dashboard:documents.wizard.step-1.edit-locked')}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Source toggle — two large cards (BPMN 3.4 nodes 4–5) */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2" role="radiogroup">
         <SourceCard
           icon={LayoutTemplate}
           selected={data.source === 'TEMPLATE'}
+          disabled={locked}
           label={t('dashboard:documents.wizard.step-1.source-template')}
           hint={t('dashboard:documents.wizard.step-1.source-template-hint')}
           onSelect={() => pickSource('TEMPLATE')}
@@ -110,6 +124,7 @@ export default function Step1Type() {
         <SourceCard
           icon={FileUp}
           selected={data.source === 'UPLOAD'}
+          disabled={locked}
           label={t('dashboard:documents.wizard.step-1.source-upload')}
           hint={t('dashboard:documents.wizard.step-1.source-upload-hint')}
           onSelect={() => pickSource('UPLOAD')}
@@ -132,6 +147,7 @@ export default function Step1Type() {
                 <button
                   key={tpl.uuid}
                   type="button"
+                  disabled={locked}
                   onClick={() => {
                     setTemplate(tpl.uuid);
                     setErrorKey(null);
@@ -142,6 +158,8 @@ export default function Step1Type() {
                     data.templateUuid === tpl.uuid
                       ? 'border-emerald bg-emerald-soft/40 ring-1 ring-emerald'
                       : 'border-line bg-surface hover:bg-cream-warm/30',
+                    locked && data.templateUuid !== tpl.uuid && 'opacity-50',
+                    locked && 'cursor-not-allowed hover:bg-surface',
                   )}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -227,23 +245,27 @@ export default function Step1Type() {
 interface SourceCardProps {
   icon: typeof FileText;
   selected: boolean;
+  disabled?: boolean;
   label: string;
   hint: string;
   onSelect: () => void;
 }
 
-function SourceCard({ icon: Icon, selected, label, hint, onSelect }: SourceCardProps) {
+function SourceCard({ icon: Icon, selected, disabled, label, hint, onSelect }: SourceCardProps) {
   return (
     <button
       type="button"
       role="radio"
       aria-checked={selected}
+      disabled={disabled}
       onClick={onSelect}
       className={cn(
         'flex min-h-22 items-start gap-3 rounded-lg border p-4 text-left transition-colors',
         selected
           ? 'border-emerald bg-emerald-soft/40 ring-1 ring-emerald'
           : 'border-line bg-surface hover:bg-cream-warm/30',
+        disabled && !selected && 'opacity-50',
+        disabled && 'cursor-not-allowed hover:bg-surface',
       )}
     >
       <span

@@ -334,6 +334,7 @@ export const documentEntitySchema = z.object({
   title: z.string().min(1),
   source: documentSourceSchema,
   templateUuid: z.string().uuid().optional(),
+  values: z.record(z.string(), z.string()).optional(),
   renderedBody: z.string().optional(),
   fileMeta: fileMetaSchema.optional(),
   confidentiality: confidentialitySchema,

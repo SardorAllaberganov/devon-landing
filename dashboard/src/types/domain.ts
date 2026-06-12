@@ -340,6 +340,12 @@ export interface DocumentEntity {
   source: DocumentSource;
   /** source = TEMPLATE. */
   templateUuid?: string;
+  /**
+   * source = TEMPLATE — raw placeholder values keyed by `TemplateField.key`
+   * (employee-kind fields hold uuids). Persisted so the DRAFT/REJECTED rework
+   * loop can re-enter the wizard prefilled (BP-4 "edit + resubmit", step 19).
+   */
+  values?: Record<string, string>;
   /** source = TEMPLATE — placeholders resolved at creation. */
   renderedBody?: string;
   /** source = UPLOAD (metadata only). */

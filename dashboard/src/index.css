@@ -151,4 +151,27 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
+  /* Print isolation for the document A4 preview (step 19): window.print()
+     renders only the .print-area card — app chrome (sidebar, topbar, action
+     bars) disappears. visibility (not display) keeps the layout tree intact
+     so the card's position can be reset to the page origin. */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    .print-area,
+    .print-area * {
+      visibility: visible;
+    }
+    .print-area {
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      border: none;
+      box-shadow: none;
+    }
+  }
 }
