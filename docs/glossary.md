@@ -53,7 +53,8 @@ The four-level Uzbek corporate hierarchy Devon models natively.
 | **Yo'riqnoma** | Instruction / Manual | A formal instruction document. |
 | **Lavozim yo'riqnomasi** | Position instructions / Job description | The document defining an employee's job duties; attached to their profile in Devon. |
 | **Davonxona** | Registry / Chancellery / Clerk's office | The team that handles incoming and outgoing official correspondence. Often the entry point for citizen petitions and inter-agency letters. Owns the inbound/outbound numbering. Variants in spelling: *devonxona*, *dyevonxona*. |
-| **Kiruvchi xat** | Inbound letter / Incoming correspondence | Official letter received by the organization. Devon registers these with a unique inbound number. |
+| **Kiruvchi xat** | Inbound letter / Incoming correspondence | Official letter received by the organization. Devon registers these with a unique inbound number. Spelling variant: *keluvchi xat* (used in the 19.03.2026 TLH and the dashboard UI). |
+| **Yo'naltirish** | Routing / Forwarding | The act of routing a registered letter down the hierarchy: Devonxona → Rahbar → structural unit → executor (BP-3). |
 | **Chiquvchi xat** | Outbound letter / Outgoing correspondence | Official letter sent by the organization. Devon assigns the outbound number after the response is signed and dispatched. |
 | **Ijrochi** | Executor | The employee assigned to handle a specific inbound letter (drafting the response, gathering information). |
 | **Arxiv** | Archive | The post-active store for documents in terminal states. Searchable but moved out of the active working set. |
@@ -105,7 +106,7 @@ The product currently called **Devon** has had two prior names. Legacy artifacts
 | Name | Era | Usage today |
 |---|---|---|
 | **PLYMO** | Early concept (pre-2025) | Appears in the earliest written spec. Same product. |
-| **PLYMA** | 2025 spec phase | Appears in the v1.0 technical specification, the early landing page, and the legacy `docs/Plyma_Technical_Spec_v1.0.docx`. From Greek *plimo* — "flow." Same product. |
+| **PLYMA** | 2025 spec phase | Appears in the v1.0 technical specification, the early landing page, the legacy `docs/Plyma_Technical_Spec_v1.0.docx`, **and the updated TLH `docs/Plyma 19.03.2026.docx`** (dated 2026 but retains the legacy codename — its content is current canon). From Greek *plimo* — "flow." Same product. |
 | **Devon** | Current (2026+) | The shipping product name. All new artifacts use Devon. |
 
 When you see PLYMO or PLYMA in legacy material, mentally substitute Devon. The product hasn't changed; the naming has.

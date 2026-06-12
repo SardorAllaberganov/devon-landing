@@ -4,6 +4,8 @@
 > **Audience:** Business analysts, product designers, QA, customer-implementation teams.
 >
 > Each process below maps the actors (swim lanes), the steps each actor performs, the decision points, and the failure branches. These are the canonical processes Devon implements; deviations require an ADR.
+>
+> **Visual diagrams:** the BPMN swim-lane charts for all four processes (extracted from the TLH `Plyma 19.03.2026.docx` §III) live in [`docs/bpmn/`](./bpmn/) — see the index there. Text and diagram must agree; reconcile against the TLH if they drift.
 
 ---
 
@@ -19,6 +21,8 @@
 ---
 
 ## BP-1: Employee and structural-unit profile creation
+
+**Diagram:** [`bpmn/bp1-xodim-profil-yaratish.png`](./bpmn/bp1-xodim-profil-yaratish.png)
 
 **Trigger:** A new employee is hired, or a new department is created, or the org structure is being restructured.
 
@@ -63,6 +67,8 @@
 ---
 
 ## BP-2: Task delegation and deliverable acceptance
+
+**Diagram:** [`bpmn/bp2-vazifa-taqsimoti.png`](./bpmn/bp2-vazifa-taqsimoti.png)
 
 **Trigger:** A manager (Department Head) needs to assign work to a subordinate.
 
@@ -122,6 +128,8 @@
 
 ## BP-3: Inbound and outbound official correspondence
 
+**Diagram:** [`bpmn/bp3-xatlar-boshqaruvi.png`](./bpmn/bp3-xatlar-boshqaruvi.png)
+
 **Trigger:** A letter arrives at the organization (paper, email, courier) addressed to someone official, OR the organization is preparing to send official correspondence externally.
 
 **Goal:** Every letter is registered, routed to a responsible executor, responded to within deadline, and dispatched (or closed) with full audit trail.
@@ -159,10 +167,14 @@
 ### Inbound letter states
 
 ```
-registered → routed → assigned → in-progress → responded → dispatched → closed
+registered → routed → assigned → in-progress → executed → [on-signature →] responded → dispatched → closed
                                        ↓
                                    closed-without-response (rare; needs justification)
 ```
+
+- `executed` — the executor has submitted their work (resolution comment or response document) and it awaits the sub-unit head's acceptance. The 19.03.2026 TLH's BPMN (step 8, "Topshiriqni qabul qilish") models this acceptance gate explicitly, so it is a first-class state. *(Added 2026-06-12.)*
+- `on-signature` — acceptance is done and the response awaits the head's ERI signature; this state occurs only when a signature is required ("Rahbar imzo talab etiladimi?" = yes). *(Added 2026-06-12.)*
+- `closed-without-response` — the comment-only execution path (BPMN step 7.1), accepted by the sub-unit head with justification recorded.
 
 ### Failure modes
 
@@ -190,6 +202,8 @@ registered → routed → assigned → in-progress → responded → dispatched 
 ---
 
 ## BP-4: Internal document creation and approval
+
+**Diagram:** [`bpmn/bp4-hujjat-yaratish-kelishish.png`](./bpmn/bp4-hujjat-yaratish-kelishish.png)
 
 **Trigger:** An employee needs to formalize an internal document — order, memo, contract draft, internal directive, policy, etc.
 
