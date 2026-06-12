@@ -91,7 +91,8 @@
       "ROLE_HR_OPERATOR": "Kadrlar operatori",
       "ROLE_UNIT_HEAD": "Bo'linma rahbari",
       "ROLE_EMPLOYEE": "Xodim",
-      "ROLE_AUDITOR": "Auditor"
+      "ROLE_AUDITOR": "Auditor",
+      "ROLE_DEVONXONA": "Devonxona xodimi"
     },
     "genders": {
       "M": "Erkak",
@@ -116,15 +117,17 @@
       "nav-employees": "Xodimlar",
       "nav-certificates": "ERI kalitlari",
       "nav-audit": "Audit jurnali",
+      "nav-documents": "Hujjatlar",
+      "nav-approvals": "Kelishuvlar",
+      "nav-letters": "Xatlar",
       "nav-profile": "Mening profilim",
       "section-management": "BOSHQARUV",
+      "section-documents": "HUJJAT AYLANMASI",
       "section-personal": "SHAXSIY",
       "footer-slogan": "Rivolanish intizom bilan!"
     },
     "topbar": {
       "search-placeholder": "Xodim, bo'linma yoki sertifikat bo'yicha qidirish...",
-      "notifications": "Bildirishnomalar",
-      "no-notifications": "Yangi bildirishnomalar yo'q",
       "open-nav": "Navigatsiyani ochish"
     },
     "user-menu": {
@@ -133,6 +136,45 @@
       "reset-demo": "Demo ma'lumotlarni qayta tiklash",
       "reset-demo-toast": "Demo ma'lumotlar qayta tiklandi. Sahifa qayta yuklanadi.",
       "logout": "Chiqish"
+    },
+    "pov": {
+      "menu-label": "Rol almashtirish",
+      "persona": {
+        "HR_ADMIN": "Kadrlar bo'yicha admin",
+        "RAHBAR": "Tashkilot rahbari",
+        "BOLIM_BOSHLIGI": "Bo'lim boshlig'i",
+        "DEVONXONA": "Devonxona xodimi",
+        "XODIM": "Xodim"
+      },
+      "switched": "Endi siz \"{{persona}}\" sifatida ishlayapsiz",
+      "chip": "Siz: {{persona}} sifatida",
+      "chip-reset": "O'z rolimga qaytish"
+    },
+    "notifications": {
+      "heading": "Bildirishnomalar",
+      "open": "Bildirishnomalarni ochish",
+      "mark-all": "Barchasini o'qilgan deb belgilash",
+      "empty-title": "Bildirishnomalar yo'q",
+      "empty-body": "Yangi bildirishnomalar paydo bo'lganda shu yerda ko'rinadi.",
+      "title": {
+        "DOC_REVIEW_REQUESTED": "{{actorName}} {{docNumber}} hujjatini kelishish uchun yubordi",
+        "DOC_DECIDED": "{{actorName}} {{docNumber}} hujjati bo'yicha qaror qabul qildi",
+        "DOC_APPROVED": "{{docNumber}} hujjati kelishuvdan o'tdi",
+        "DOC_REJECTED": "{{actorName}} {{docNumber}} hujjatini rad etdi",
+        "DOC_SIGN_REQUESTED": "{{docNumber}} hujjati imzolash uchun yuborildi",
+        "DOC_SIGNED": "{{actorName}} {{docNumber}} hujjatini imzoladi",
+        "DOC_CLOSED": "{{docNumber}} hujjati qabul qilindi",
+        "LETTER_ROUTED": "{{letterNumber}} xati bo'linmangizga yo'naltirildi",
+        "LETTER_ASSIGNED": "{{letterNumber}} xati sizga ijroga biriktirildi",
+        "LETTER_EXECUTED": "{{actorName}} {{letterNumber}} xatini ijro etdi",
+        "LETTER_ACCEPTED": "{{letterNumber}} xati ijrosi qabul qilindi",
+        "LETTER_SIGN_REQUESTED": "{{letterNumber}} xatining javobi imzolash uchun yuborildi",
+        "LETTER_DISPATCHED": "{{letterNumber}} xati jo'natildi"
+      }
+    },
+    "coming-soon": {
+      "title": "Tez kunda",
+      "body": "Bu bo'lim hujjat aylanmasi bosqichida quriladi va tez orada ishga tushadi."
     },
     "login": {
       "title": "Devon platformasiga kirish",
@@ -240,7 +282,8 @@
         "CERTIFICATE_REJECTED": "ERIni rad etdi",
         "CERTIFICATE_REVOKED": "ERIni bekor qildi",
         "PROFILE_CHANGE_REQUESTED": "profil o'zgarishini so'radi",
-        "PROFILE_CHANGE_APPROVED": "profil o'zgarishini tasdiqladi"
+        "PROFILE_CHANGE_APPROVED": "profil o'zgarishini tasdiqladi",
+        "POV_SWITCHED": "rol almashtirdi"
       }
     },
     "profile": {

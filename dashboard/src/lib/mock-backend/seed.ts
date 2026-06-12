@@ -1,8 +1,9 @@
 // Devon mock-backend seed. Produces realistic Uzbek data the demo
-// can be exercised against immediately — ~25 units in the 4-level
-// hierarchy, 30 employees, 30 primary assignments, 25 certificates
-// in the 18/4/2/1 status distribution, ~70 audit entries spread
-// over the last 30 days, and the position catalogue.
+// can be exercised against immediately — ~26 units in the 4-level
+// hierarchy (+ the root-level Devonxona), 31 employees, 31 primary
+// assignments, 26 certificates in the 19/4/2/1 status distribution,
+// ~70 audit entries spread over the last 30 days, the position
+// catalogue, and ~20 milestone-2 notifications across the personas.
 //
 // Uses native `crypto.randomUUID()` — browsers ship it natively
 // since 2022. No `uuid` npm package needed.
@@ -10,6 +11,7 @@
 import { sha256Hex } from '@/lib/hash';
 import { Tables, clearAll, writeTable } from './storage';
 import type {
+  AppNotification,
   Assignment,
   AuditAction,
   AuditEntry,
@@ -19,7 +21,9 @@ import type {
   CertType,
   Employee,
   Gender,
+  NotificationType,
   Position,
+  Role,
   Unit,
   UnitType,
   User,
@@ -30,7 +34,7 @@ const SEED_FLAG = 'devon.dashboard.seeded';
 // distributions, hierarchy reshapes). Mismatched versions in localStorage
 // trigger a silent reseed on next app load — keeps demos consistent without
 // asking users to hit "Reset demo" after every change.
-const SEED_VERSION = '4';
+const SEED_VERSION = '5';
 
 const uuid = () => crypto.randomUUID();
 const NOW = () => new Date().toISOString();
@@ -83,6 +87,26 @@ function randomHex(len: number): string {
   for (let i = 0; i < len; i++) s += chars[randInt(0, 15)];
   return s;
 }
+
+// === POV personas (milestone 2, step 16) ===
+
+// Fixed literal employee UUIDs (valid v4 shape — version nibble 4, variant 8)
+// so steps 17–21 can seed documents/letters referencing the personas
+// deterministically. Everything else keeps `crypto.randomUUID()`.
+export const PERSONAS = {
+  /** Pulatov Asilbek Karimovich — Kadrlar bo'yicha admin (the login user). */
+  HR_ADMIN: '00000000-0000-4000-8000-00000000a001',
+  /** Karimov Bekzod Anvarovich — IT Departamenti rahbari (root-level head). */
+  RAHBAR: '00000000-0000-4000-8000-00000000a002',
+  /** Akhmedov Akmal Zafarbekovich — Backend Bo'limi boshlig'i. */
+  BOLIM_BOSHLIGI: '00000000-0000-4000-8000-00000000a003',
+  /** Yusupova Nilufar Baxtiyorovna — Devonxona xodimi. */
+  DEVONXONA: '00000000-0000-4000-8000-00000000a004',
+  /** Sobirova Dilnoza Murodovna — API Sho'basi dasturchisi (oddiy xodim). */
+  XODIM: '00000000-0000-4000-8000-00000000a005',
+} as const;
+
+export type PersonaKey = keyof typeof PERSONAS;
 
 // === Positions catalogue ===
 
@@ -137,7 +161,23 @@ const positions: Position[] = [
     nameUz: 'Xavfsizlik mutaxassisi',
     allowedUnitTypes: ['DIVISION', 'SECTION', 'DEPARTMENT_SUB'],
   },
+  {
+    id: 'POS-CHANCELLERY',
+    nameUz: 'Devonxona xodimi',
+    allowedUnitTypes: ['OTHER'],
+  },
 ];
+
+// Positions whose holder heads their unit — drives `headEmployeeUuid` wiring
+// (the POV switcher's `headedUnitUuids` and the M2 approval queues key off it).
+const HEAD_POSITION_IDS = new Set([
+  'POS-DIR',
+  'POS-DEP-HEAD',
+  'POS-DIRECT-HEAD',
+  'POS-DIV-HEAD',
+  'POS-SUB-HEAD',
+  'POS-HR-MANAGER',
+]);
 
 // === Unit tree builder ===
 
@@ -319,6 +359,15 @@ const unitSpecs: UnitSpec[] = [
     type: 'DIVISION',
     parentCode: 'DEP-SEC',
   },
+
+  // Devonxona (chancellery) — root-level service unit; owns incoming/outgoing
+  // letter registration + dispatch in milestone 2 (BPMN 3.3).
+  {
+    code: 'DEV-01',
+    nameUz: 'Devonxona',
+    type: 'OTHER',
+    parentCode: null,
+  },
 ];
 
 function buildUnits(): { units: Unit[]; byCode: Map<string, Unit> } {
@@ -402,6 +451,8 @@ const fios: Fio[] = [
   { lastName: 'Toshmuhammedova', firstName: 'Marjona', middleName: 'Anvarovna', gender: 'F' },
   { lastName: 'Egamberdiyeva', firstName: 'Sevinch', middleName: 'Nodirovna', gender: 'F' },
   { lastName: 'Akhmedova', firstName: 'Munisa', middleName: 'Akrambekovna', gender: 'F' },
+  // Index 30 — the Devonxona persona (milestone 2, step 16).
+  { lastName: 'Yusupova', firstName: 'Nilufar', middleName: 'Baxtiyorovna', gender: 'F' },
 ];
 
 // FIO index → { unitCode, positionId, employmentType, status, hireDaysAgo }
@@ -412,26 +463,53 @@ interface Assign {
   employmentType?: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERN';
   status?: Employee['status'];
   hireDaysAgo: number;
+  /** Fixed employee UUID — only the five POV personas pin theirs (see PERSONAS). */
+  employeeUuid?: string;
+  /** Role override — defaults to HR_ADMIN for index 0, ROLE_EMPLOYEE otherwise. */
+  roles?: Role[];
 }
 
 const fioToUnit: Assign[] = [
-  // Index 0 — Asilbek, HR_ADMIN
-  { fioIdx: 0, unitCode: 'DEP-HR-REC', positionId: 'POS-HR-MANAGER', hireDaysAgo: 1100 },
+  // Index 0 — Asilbek, HR_ADMIN (persona: HR_ADMIN)
+  {
+    fioIdx: 0,
+    unitCode: 'DEP-HR-REC',
+    positionId: 'POS-HR-MANAGER',
+    hireDaysAgo: 1100,
+    employeeUuid: PERSONAS.HR_ADMIN,
+  },
 
   // IT branch
-  { fioIdx: 1, unitCode: 'DEP-IT', positionId: 'POS-DEP-HEAD', hireDaysAgo: 1500 },
+  {
+    // Persona: RAHBAR — head of the root IT Departament.
+    fioIdx: 1,
+    unitCode: 'DEP-IT',
+    positionId: 'POS-DEP-HEAD',
+    hireDaysAgo: 1500,
+    employeeUuid: PERSONAS.RAHBAR,
+  },
   { fioIdx: 2, unitCode: 'DEP-IT-INF', positionId: 'POS-DIRECT-HEAD', hireDaysAgo: 1200 },
   { fioIdx: 3, unitCode: 'DEP-IT-INF-NET', positionId: 'POS-SPECIALIST', hireDaysAgo: 800 },
   { fioIdx: 4, unitCode: 'DEP-IT-INF-SRV', positionId: 'POS-SPECIALIST', hireDaysAgo: 700 },
   { fioIdx: 5, unitCode: 'DEP-IT-DEV', positionId: 'POS-DIRECT-HEAD', hireDaysAgo: 1300 },
-  { fioIdx: 6, unitCode: 'DEP-IT-DEV-BE', positionId: 'POS-DIV-HEAD', hireDaysAgo: 900 },
+  {
+    // Persona: BOLIM_BOSHLIGI — head of the Backend Bo'lim; sits one level
+    // above the XODIM persona so the M2 approval chain walks one branch.
+    fioIdx: 6,
+    unitCode: 'DEP-IT-DEV-BE',
+    positionId: 'POS-DIV-HEAD',
+    hireDaysAgo: 900,
+    employeeUuid: PERSONAS.BOLIM_BOSHLIGI,
+  },
   { fioIdx: 7, unitCode: 'DEP-IT-DEV-BE-API', positionId: 'POS-LEAD-DEV', hireDaysAgo: 600 },
   {
+    // Persona: XODIM — oddiy xodim inside the Backend Bo'lim's subtree.
     fioIdx: 15,
     unitCode: 'DEP-IT-DEV-BE-API',
     positionId: 'POS-DEV',
     employmentType: 'FULL_TIME',
     hireDaysAgo: 380,
+    employeeUuid: PERSONAS.XODIM,
   },
   { fioIdx: 8, unitCode: 'DEP-IT-DEV-FE', positionId: 'POS-DIV-HEAD', hireDaysAgo: 950 },
   { fioIdx: 9, unitCode: 'DEP-IT-DEV-FE-UI', positionId: 'POS-LEAD-DEV', hireDaysAgo: 500 },
@@ -488,6 +566,17 @@ const fioToUnit: Assign[] = [
   { fioIdx: 26, unitCode: 'DEP-SEC-INFO', positionId: 'POS-SECURITY-SPEC', hireDaysAgo: 250 },
   { fioIdx: 27, unitCode: 'DEP-SEC-PHYS', positionId: 'POS-SPECIALIST', hireDaysAgo: 850 },
   { fioIdx: 28, unitCode: 'DEP-SEC-PHYS', positionId: 'POS-SPECIALIST', hireDaysAgo: 180 },
+
+  // Devonxona
+  {
+    // Persona: DEVONXONA — registers and dispatches letters in M2 (BPMN 3.3).
+    fioIdx: 30,
+    unitCode: 'DEV-01',
+    positionId: 'POS-CHANCELLERY',
+    hireDaysAgo: 460,
+    employeeUuid: PERSONAS.DEVONXONA,
+    roles: ['ROLE_DEVONXONA'],
+  },
 ];
 
 async function buildEmployeesAndUsers(byCode: Map<string, Unit>): Promise<{
@@ -522,7 +611,7 @@ async function buildEmployeesAndUsers(byCode: Map<string, Unit>): Promise<{
     const extractExt =
       extractMime === 'application/pdf' ? 'pdf' : extractMime === 'image/png' ? 'png' : 'jpg';
 
-    const employeeUuid = uuid();
+    const employeeUuid = assign.employeeUuid ?? uuid();
     const userUuid = isHrAdmin ? HR_ADMIN_USER_UUID : uuid();
 
     const corporateEmail = isHrAdmin
@@ -562,11 +651,17 @@ async function buildEmployeesAndUsers(byCode: Map<string, Unit>): Promise<{
       employeeUuid,
       email: corporateEmail,
       passwordHash: await sha256Hex(isHrAdmin ? 'Demo2026!' : 'Welcome2026!'),
-      roles: isHrAdmin ? ['ROLE_HR_ADMIN'] : ['ROLE_EMPLOYEE'],
+      roles: assign.roles ?? (isHrAdmin ? ['ROLE_HR_ADMIN'] : ['ROLE_EMPLOYEE']),
       mustChangePassword: !isHrAdmin,
       createdAt: hireDate,
     };
     users.push(user);
+
+    // Head-position holders head their unit. First holder wins — the seed
+    // never places two head positions in one unit.
+    if (HEAD_POSITION_IDS.has(assign.positionId) && !unit.headEmployeeUuid) {
+      unit.headEmployeeUuid = employeeUuid;
+    }
 
     assignments.push({
       uuid: uuid(),
@@ -587,8 +682,14 @@ async function buildEmployeesAndUsers(byCode: Map<string, Unit>): Promise<{
 // === Certificates ===
 
 function buildCertificates(employees: Employee[]): Certificate[] {
-  // 18 ACTIVE / 4 PENDING_APPROVAL / 2 EXPIRED / 1 REVOKED = 25 total
-  // Distribute across ~16 employees so some have multiple, some have none.
+  // 19 ACTIVE / 4 PENDING_APPROVAL / 2 EXPIRED / 1 REVOKED = 26 total
+  // (the 19th ACTIVE belongs to the Devonxona persona, added in step 16).
+  // Distribute across ~17 employees so some have multiple, some have none.
+  //
+  // POV-persona invariant (step 16): every PERSONAS employee must be ACTIVE
+  // and hold at least one ACTIVE certificate — the ERI signing steps (19/21)
+  // depend on it. HR_ADMIN/RAHBAR/BOLIM_BOSHLIGI/XODIM sit at employee
+  // indices 0/1/6/8 of `activeOwners` below; DEVONXONA gets hers explicitly.
   const certificates: Certificate[] = [];
 
   function makeCert(
@@ -662,7 +763,256 @@ function buildCertificates(employees: Employee[]): Certificate[] {
     }),
   );
 
+  // 1 more ACTIVE — the Devonxona persona joined after the original 25-cert
+  // distribution was laid out; she signs outgoing letters in step 21.
+  const devonxonaEmp = employees.find((e) => e.uuid === PERSONAS.DEVONXONA);
+  if (devonxonaEmp) certificates.push(makeCert(devonxonaEmp, 'ACTIVE', 'SIGNING'));
+
   return certificates;
+}
+
+// === Notifications (milestone 2 rails) ===
+
+// Placeholder resource UUIDs (fixed literals, valid v4 shape). Steps 17/20
+// seed real documents/letters under these exact UUIDs so the notification
+// deep-links below start resolving retroactively. Until then a click lands
+// on the step-16 placeholder pages / home redirect — acceptable per step 16.
+const DOC_UUID = (n: number) => `00000000-0000-4000-8000-00000000d00${n}`;
+const LETTER_UUID = (n: number) => `00000000-0000-4000-8000-00000000f00${n}`;
+
+interface NotificationSpec {
+  recipient: string;
+  type: NotificationType;
+  params: Record<string, string>;
+  resourceType: AppNotification['resourceType'];
+  resourceUuid: string;
+  isRead: boolean;
+  daysAgo: number;
+}
+
+function buildNotifications(employees: Employee[]): AppNotification[] {
+  const nameOf = (employeeUuid: string) =>
+    employees.find((e) => e.uuid === employeeUuid)?.fullNameGenerated ?? '';
+  const xodim = nameOf(PERSONAS.XODIM);
+  const rahbar = nameOf(PERSONAS.RAHBAR);
+  const bolim = nameOf(PERSONAS.BOLIM_BOSHLIGI);
+  const devonxona = nameOf(PERSONAS.DEVONXONA);
+  const hrAdmin = nameOf(PERSONAS.HR_ADMIN);
+
+  // 20 rows across the five personas — every NotificationType appears at
+  // least once, read/unread mixed, timestamps spread over the last 5 days.
+  // The story follows two documents and two letters walking their BPMN
+  // chains between the personas.
+  const specs: NotificationSpec[] = [
+    // HJ-2026/0007 — XODIM's draft mid-chain: kelishuv → qaror → imzo
+    {
+      recipient: PERSONAS.BOLIM_BOSHLIGI,
+      type: 'DOC_REVIEW_REQUESTED',
+      params: { docNumber: 'HJ-2026/0007', actorName: xodim },
+      resourceType: 'document',
+      resourceUuid: DOC_UUID(1),
+      isRead: false,
+      daysAgo: 0.2,
+    },
+    {
+      recipient: PERSONAS.XODIM,
+      type: 'DOC_DECIDED',
+      params: { docNumber: 'HJ-2026/0007', actorName: bolim },
+      resourceType: 'document',
+      resourceUuid: DOC_UUID(1),
+      isRead: false,
+      daysAgo: 0.15,
+    },
+    {
+      recipient: PERSONAS.RAHBAR,
+      type: 'DOC_SIGN_REQUESTED',
+      params: { docNumber: 'HJ-2026/0007', actorName: xodim },
+      resourceType: 'document',
+      resourceUuid: DOC_UUID(1),
+      isRead: false,
+      daysAgo: 0.1,
+    },
+
+    // HJ-2026/0005 — fully approved + signed
+    {
+      recipient: PERSONAS.XODIM,
+      type: 'DOC_APPROVED',
+      params: { docNumber: 'HJ-2026/0005', actorName: bolim },
+      resourceType: 'document',
+      resourceUuid: DOC_UUID(2),
+      isRead: true,
+      daysAgo: 2.1,
+    },
+    {
+      recipient: PERSONAS.XODIM,
+      type: 'DOC_SIGNED',
+      params: { docNumber: 'HJ-2026/0005', actorName: rahbar },
+      resourceType: 'document',
+      resourceUuid: DOC_UUID(2),
+      isRead: true,
+      daysAgo: 1.8,
+    },
+    {
+      recipient: PERSONAS.HR_ADMIN,
+      type: 'DOC_SIGNED',
+      params: { docNumber: 'HJ-2026/0005', actorName: rahbar },
+      resourceType: 'document',
+      resourceUuid: DOC_UUID(2),
+      isRead: false,
+      daysAgo: 1.8,
+    },
+
+    // HJ-2026/0003 — rejected, back to rework
+    {
+      recipient: PERSONAS.XODIM,
+      type: 'DOC_REJECTED',
+      params: { docNumber: 'HJ-2026/0003', actorName: bolim },
+      resourceType: 'document',
+      resourceUuid: DOC_UUID(3),
+      isRead: true,
+      daysAgo: 4.5,
+    },
+
+    // HJ-2026/0009 — accepted without ERI (CLOSED branch)
+    {
+      recipient: PERSONAS.BOLIM_BOSHLIGI,
+      type: 'DOC_CLOSED',
+      params: { docNumber: 'HJ-2026/0009', actorName: hrAdmin },
+      resourceType: 'document',
+      resourceUuid: DOC_UUID(4),
+      isRead: true,
+      daysAgo: 3.2,
+    },
+
+    // Standalone review requests landing on RAHBAR / HR_ADMIN
+    {
+      recipient: PERSONAS.RAHBAR,
+      type: 'DOC_REVIEW_REQUESTED',
+      params: { docNumber: 'HJ-2026/0011', actorName: hrAdmin },
+      resourceType: 'document',
+      resourceUuid: DOC_UUID(5),
+      isRead: false,
+      daysAgo: 0.6,
+    },
+    {
+      recipient: PERSONAS.HR_ADMIN,
+      type: 'DOC_REVIEW_REQUESTED',
+      params: { docNumber: 'HJ-2026/0008', actorName: bolim },
+      resourceType: 'document',
+      resourceUuid: DOC_UUID(6),
+      isRead: false,
+      daysAgo: 0.4,
+    },
+    {
+      recipient: PERSONAS.HR_ADMIN,
+      type: 'DOC_DECIDED',
+      params: { docNumber: 'HJ-2026/0011', actorName: rahbar },
+      resourceType: 'document',
+      resourceUuid: DOC_UUID(5),
+      isRead: true,
+      daysAgo: 0.3,
+    },
+
+    // K-2026/0002 — incoming letter walking BPMN 3.3: route → assign →
+    // execute → accept
+    {
+      recipient: PERSONAS.BOLIM_BOSHLIGI,
+      type: 'LETTER_ROUTED',
+      params: { letterNumber: 'K-2026/0002', actorName: devonxona },
+      resourceType: 'letter',
+      resourceUuid: LETTER_UUID(1),
+      isRead: true,
+      daysAgo: 5.0,
+    },
+    {
+      recipient: PERSONAS.XODIM,
+      type: 'LETTER_ASSIGNED',
+      params: { letterNumber: 'K-2026/0002', actorName: bolim },
+      resourceType: 'letter',
+      resourceUuid: LETTER_UUID(1),
+      isRead: true,
+      daysAgo: 4.8,
+    },
+    {
+      recipient: PERSONAS.BOLIM_BOSHLIGI,
+      type: 'LETTER_EXECUTED',
+      params: { letterNumber: 'K-2026/0002', actorName: xodim },
+      resourceType: 'letter',
+      resourceUuid: LETTER_UUID(1),
+      isRead: false,
+      daysAgo: 1.2,
+    },
+    {
+      recipient: PERSONAS.DEVONXONA,
+      type: 'LETTER_EXECUTED',
+      params: { letterNumber: 'K-2026/0002', actorName: xodim },
+      resourceType: 'letter',
+      resourceUuid: LETTER_UUID(1),
+      isRead: true,
+      daysAgo: 1.1,
+    },
+    {
+      recipient: PERSONAS.XODIM,
+      type: 'LETTER_ACCEPTED',
+      params: { letterNumber: 'K-2026/0002', actorName: bolim },
+      resourceType: 'letter',
+      resourceUuid: LETTER_UUID(1),
+      isRead: false,
+      daysAgo: 0.9,
+    },
+
+    // K-2026/0004 — response awaiting the Rahbar's ERI
+    {
+      recipient: PERSONAS.RAHBAR,
+      type: 'LETTER_SIGN_REQUESTED',
+      params: { letterNumber: 'K-2026/0004', actorName: devonxona },
+      resourceType: 'letter',
+      resourceUuid: LETTER_UUID(2),
+      isRead: false,
+      daysAgo: 0.5,
+    },
+    {
+      recipient: PERSONAS.DEVONXONA,
+      type: 'LETTER_ACCEPTED',
+      params: { letterNumber: 'K-2026/0004', actorName: bolim },
+      resourceType: 'letter',
+      resourceUuid: LETTER_UUID(2),
+      isRead: false,
+      daysAgo: 0.7,
+    },
+
+    // CH-2026/0001 — outgoing reply dispatched
+    {
+      recipient: PERSONAS.DEVONXONA,
+      type: 'LETTER_DISPATCHED',
+      params: { letterNumber: 'CH-2026/0001', actorName: devonxona },
+      resourceType: 'letter',
+      resourceUuid: LETTER_UUID(3),
+      isRead: true,
+      daysAgo: 2.5,
+    },
+    {
+      recipient: PERSONAS.HR_ADMIN,
+      type: 'LETTER_DISPATCHED',
+      params: { letterNumber: 'CH-2026/0001', actorName: devonxona },
+      resourceType: 'letter',
+      resourceUuid: LETTER_UUID(3),
+      isRead: false,
+      daysAgo: 2.4,
+    },
+  ];
+
+  return specs.map((s) => ({
+    uuid: uuid(),
+    recipientEmployeeUuid: s.recipient,
+    type: s.type,
+    titleKey: `dashboard:notifications.title.${s.type}`,
+    params: s.params,
+    resourceType: s.resourceType,
+    resourceUuid: s.resourceUuid,
+    isRead: s.isRead,
+    createdAt: DAYS_AGO(s.daysAgo),
+  }));
 }
 
 // === Audit ===
@@ -764,6 +1114,7 @@ export async function resetAndSeed(): Promise<void> {
   const { employees, users, assignments } = await buildEmployeesAndUsers(byCode);
   const certificates = buildCertificates(employees);
   const audit = buildAudit(employees, units, certificates);
+  const notifications = buildNotifications(employees);
 
   writeTable(Tables.positions, positions);
   writeTable(Tables.units, units);
@@ -773,6 +1124,7 @@ export async function resetAndSeed(): Promise<void> {
   writeTable(Tables.certificates, certificates);
   writeTable(Tables.audit, audit);
   writeTable(Tables.profileRequests, []);
+  writeTable(Tables.notifications, notifications);
 
   localStorage.setItem(SEED_FLAG, SEED_VERSION);
 }

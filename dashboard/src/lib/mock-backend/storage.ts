@@ -9,6 +9,7 @@ export const Tables = {
   audit: 'audit',
   profileRequests: 'profile-requests',
   positions: 'positions',
+  notifications: 'notifications',
 } as const;
 
 export function readTable<T>(key: string, fallback: T[]): T[] {

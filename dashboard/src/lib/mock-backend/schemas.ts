@@ -9,6 +9,7 @@ export const roleSchema = z.enum([
   'ROLE_UNIT_HEAD',
   'ROLE_EMPLOYEE',
   'ROLE_AUDITOR',
+  'ROLE_DEVONXONA',
 ]);
 
 export const unitTypeSchema = z.enum([
@@ -75,9 +76,13 @@ export const auditActionSchema = z.enum([
   'UNIT_TRANSFER',
   'CERTIFICATE_UPLOADED',
   'CERTIFICATE_APPROVED',
+  // CERTIFICATE_REJECTED landed in the domain union during step 12 but was
+  // never mirrored here — synced alongside the step-16 POV_SWITCHED addition.
+  'CERTIFICATE_REJECTED',
   'CERTIFICATE_REVOKED',
   'PROFILE_CHANGE_REQUESTED',
   'PROFILE_CHANGE_APPROVED',
+  'POV_SWITCHED',
 ]);
 
 export const auditResourceTypeSchema = z.enum([
@@ -240,4 +245,32 @@ export const positionSchema = z.object({
   id: z.string(),
   nameUz: z.string(),
   allowedUnitTypes: z.array(unitTypeSchema),
+});
+
+export const notificationTypeSchema = z.enum([
+  'DOC_REVIEW_REQUESTED',
+  'DOC_DECIDED',
+  'DOC_APPROVED',
+  'DOC_REJECTED',
+  'DOC_SIGN_REQUESTED',
+  'DOC_SIGNED',
+  'DOC_CLOSED',
+  'LETTER_ROUTED',
+  'LETTER_ASSIGNED',
+  'LETTER_EXECUTED',
+  'LETTER_ACCEPTED',
+  'LETTER_SIGN_REQUESTED',
+  'LETTER_DISPATCHED',
+]);
+
+export const appNotificationSchema = z.object({
+  uuid: z.string().uuid(),
+  recipientEmployeeUuid: z.string().uuid(),
+  type: notificationTypeSchema,
+  titleKey: z.string().min(1),
+  params: z.record(z.string(), z.string()),
+  resourceType: z.enum(['document', 'letter']),
+  resourceUuid: z.string().uuid(),
+  isRead: z.boolean(),
+  createdAt: z.string(),
 });

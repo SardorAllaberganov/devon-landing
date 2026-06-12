@@ -2,8 +2,11 @@ import type { ComponentType } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
+  FileText,
   KeySquare,
   LayoutDashboard,
+  ListChecks,
+  Mail,
   Network,
   ScrollText,
   UserCircle2,
@@ -24,6 +27,14 @@ const managementNav: NavItem[] = [
   { to: '/employees', labelKey: 'dashboard:sidebar.nav-employees', icon: Users },
   { to: '/certificates', labelKey: 'dashboard:sidebar.nav-certificates', icon: KeySquare },
   { to: '/audit', labelKey: 'dashboard:sidebar.nav-audit', icon: ScrollText },
+];
+
+// Milestone 2 — routes are step-16 placeholders until steps 18–20 land.
+// The Kelishuvlar item gains a pending-decisions count badge in step 19.
+const documentsNav: NavItem[] = [
+  { to: '/documents', labelKey: 'dashboard:sidebar.nav-documents', icon: FileText },
+  { to: '/approvals', labelKey: 'dashboard:sidebar.nav-approvals', icon: ListChecks },
+  { to: '/letters', labelKey: 'dashboard:sidebar.nav-letters', icon: Mail },
 ];
 
 const personalNav: NavItem[] = [
@@ -48,6 +59,11 @@ export default function Sidebar({ onNavigate }: Props) {
         <NavSection
           title={t('dashboard:sidebar.section-management')}
           items={managementNav}
+          onNavigate={onNavigate}
+        />
+        <NavSection
+          title={t('dashboard:sidebar.section-documents')}
+          items={documentsNav}
           onNavigate={onNavigate}
         />
         <NavSection

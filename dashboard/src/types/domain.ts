@@ -8,7 +8,8 @@ export type Role =
   | 'ROLE_HR_OPERATOR'
   | 'ROLE_UNIT_HEAD'
   | 'ROLE_EMPLOYEE'
-  | 'ROLE_AUDITOR';
+  | 'ROLE_AUDITOR'
+  | 'ROLE_DEVONXONA';
 
 // === Units ===
 
@@ -179,7 +180,8 @@ export type AuditAction =
   | 'CERTIFICATE_REJECTED'
   | 'CERTIFICATE_REVOKED'
   | 'PROFILE_CHANGE_REQUESTED'
-  | 'PROFILE_CHANGE_APPROVED';
+  | 'PROFILE_CHANGE_APPROVED'
+  | 'POV_SWITCHED';
 
 export type AuditResourceType =
   | 'unit'
@@ -221,4 +223,36 @@ export interface Position {
   id: string;
   nameUz: string;
   allowedUnitTypes: UnitType[];
+}
+
+// === Notifications (milestone 2, master §15) ===
+
+export type NotificationType =
+  | 'DOC_REVIEW_REQUESTED'
+  | 'DOC_DECIDED'
+  | 'DOC_APPROVED'
+  | 'DOC_REJECTED'
+  | 'DOC_SIGN_REQUESTED'
+  | 'DOC_SIGNED'
+  | 'DOC_CLOSED'
+  | 'LETTER_ROUTED'
+  | 'LETTER_ASSIGNED'
+  | 'LETTER_EXECUTED'
+  | 'LETTER_ACCEPTED'
+  | 'LETTER_SIGN_REQUESTED'
+  | 'LETTER_DISPATCHED';
+
+// Named AppNotification because `Notification` collides with lib.dom's global type.
+export interface AppNotification {
+  uuid: string;
+  recipientEmployeeUuid: string;
+  type: NotificationType;
+  /** Fully-qualified i18n key (`dashboard:notifications.title.*`) — body text is NEVER stored as a literal. */
+  titleKey: string;
+  /** Interpolation values: docNumber, letterNumber, actorName, … */
+  params: Record<string, string>;
+  resourceType: 'document' | 'letter';
+  resourceUuid: string;
+  isRead: boolean;
+  createdAt: string;
 }

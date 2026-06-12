@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Archive,
   ArrowRightLeft,
+  Drama,
   KeyRound,
   LogIn,
   LogOut,
@@ -38,6 +39,7 @@ const ACTION_ICON: Record<AuditAction, LucideIcon> = {
   CERTIFICATE_REVOKED: ShieldX,
   PROFILE_CHANGE_REQUESTED: UserCog,
   PROFILE_CHANGE_APPROVED: UserCheck,
+  POV_SWITCHED: Drama,
 };
 
 interface Props {

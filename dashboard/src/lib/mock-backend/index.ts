@@ -34,6 +34,7 @@ function nameClashesWithSibling(
 }
 import { sha256Hex } from '@/lib/hash';
 import type {
+  AppNotification,
   Assignment,
   AuditAction,
   AuditEntry,
@@ -69,6 +70,9 @@ function readUsers(): User[] {
 }
 function readProfileRequests(): ProfileChangeRequest[] {
   return readTable<ProfileChangeRequest>(Tables.profileRequests, []);
+}
+function readNotifications(): AppNotification[] {
+  return readTable<AppNotification>(Tables.notifications, []);
 }
 
 function actorNameFor(actorUuid: string): string {
@@ -226,6 +230,12 @@ export async function findUserByEmail(email: string): Promise<User | null> {
   return readUsers().find((u) => u.email.toLowerCase() === email.toLowerCase()) ?? null;
 }
 
+/** Resolve the user (auth/roles) row backing an employee — used by the POV switcher. */
+export async function findUserByEmployee(employeeUuid: string): Promise<User | null> {
+  await simulatedDelay();
+  return readUsers().find((u) => u.employeeUuid === employeeUuid) ?? null;
+}
+
 // === Reads — profile change requests ===
 
 export async function listProfileRequests(
@@ -235,6 +245,66 @@ export async function listProfileRequests(
   let rows = readProfileRequests();
   if (status) rows = rows.filter((r) => r.status === status);
   return rows;
+}
+
+// === Notifications (milestone 2) ===
+
+export type NotificationInput = Omit<AppNotification, 'uuid' | 'isRead' | 'createdAt'>;
+
+/**
+ * Internal mutation-surface helper (like `appendAudit`): milestone-2
+ * mutations call this on every BPMN state transition. Deliberately NO
+ * `maybeFail()` and no simulated latency — a notification must never be
+ * the flaky part of the mutation it rides on. Unshifts to the front so
+ * the table stays newest-first.
+ */
+export async function appendNotification(input: NotificationInput): Promise<AppNotification> {
+  const notifications = readNotifications();
+  const notification: AppNotification = {
+    ...input,
+    uuid: uid(),
+    isRead: false,
+    createdAt: NOW(),
+  };
+  notifications.unshift(notification);
+  writeTable(Tables.notifications, notifications);
+  return notification;
+}
+
+export async function listNotifications(
+  recipientEmployeeUuid: string,
+  opts?: { unreadOnly?: boolean },
+): Promise<AppNotification[]> {
+  await simulatedDelay();
+  let rows = readNotifications().filter(
+    (n) => n.recipientEmployeeUuid === recipientEmployeeUuid,
+  );
+  if (opts?.unreadOnly) rows = rows.filter((n) => !n.isRead);
+  // Table is kept newest-first by appendNotification; re-sort defensively
+  // since seeded rows carry hand-spread timestamps.
+  rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return rows;
+}
+
+export async function markNotificationRead(uuid: string): Promise<void> {
+  await simulatedDelay();
+  maybeFail();
+  const notifications = readNotifications();
+  const idx = notifications.findIndex((n) => n.uuid === uuid);
+  if (idx === -1) return;
+  notifications[idx] = { ...notifications[idx]!, isRead: true };
+  writeTable(Tables.notifications, notifications);
+}
+
+export async function markAllNotificationsRead(recipientEmployeeUuid: string): Promise<void> {
+  await simulatedDelay();
+  maybeFail();
+  const notifications = readNotifications().map((n) =>
+    n.recipientEmployeeUuid === recipientEmployeeUuid && !n.isRead
+      ? { ...n, isRead: true }
+      : n,
+  );
+  writeTable(Tables.notifications, notifications);
 }
 
 // === Mutations — units ===
@@ -1017,7 +1087,8 @@ export async function changePassword(
 
 // === Re-exports ===
 
-export { seedIfEmpty, resetAndSeed } from './seed';
+export { seedIfEmpty, resetAndSeed, PERSONAS } from './seed';
+export type { PersonaKey } from './seed';
 export {
   AssignmentValidationError,
   CertificateValidationError,

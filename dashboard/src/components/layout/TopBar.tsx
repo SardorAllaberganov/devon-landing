@@ -1,19 +1,28 @@
-import { Bell, Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import MobileNavTrigger from './MobileNavTrigger';
 import UserMenu from './UserMenu';
-import { Button } from '@/components/ui/button';
+import NotificationsBell from '@/features/notifications/NotificationsBell';
 import { Input } from '@/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { PERSONAS, type PersonaKey } from '@/lib/mock-backend';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 export default function TopBar() {
   const { t } = useTranslation(['dashboard']);
+  const actingAsEmployeeUuid = useAuthStore((s) => s.actingAsEmployeeUuid);
+  const resetPov = useAuthStore((s) => s.resetPov);
+
+  // Chip renders only for a non-default POV. The session user IS the
+  // HR_ADMIN persona, so that key never shows a chip. The chip is a status
+  // signal with a one-tap reset — the user menu stays the canonical switch.
+  const actingKey =
+    actingAsEmployeeUuid && actingAsEmployeeUuid !== PERSONAS.HR_ADMIN
+      ? (Object.keys(PERSONAS) as PersonaKey[]).find(
+          (key) => PERSONAS[key] === actingAsEmployeeUuid,
+        )
+      : undefined;
+  const personaLabel = actingKey ? t(`dashboard:pov.persona.${actingKey}`) : '';
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-cream/85 backdrop-blur">
@@ -41,25 +50,26 @@ export default function TopBar() {
           </div>
         </div>
 
-        <div className="ml-auto flex items-center gap-1.5">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={t('dashboard:topbar.notifications')}
+        <div className="ml-auto flex min-w-0 items-center gap-1.5">
+          {actingKey && (
+            <span className="flex min-w-0 items-center gap-1 rounded-full border border-cinnamon/30 bg-cinnamon-soft py-1 pl-2.5 pr-1 text-xs font-medium text-cinnamon">
+              {/* Full sentence from sm+; persona label only at 360px */}
+              <span className="hidden truncate sm:inline">
+                {t('dashboard:pov.chip', { persona: personaLabel })}
+              </span>
+              <span className="truncate sm:hidden">{personaLabel}</span>
+              <button
+                type="button"
+                onClick={() => void resetPov()}
+                aria-label={t('dashboard:pov.chip-reset')}
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-cinnamon/15"
               >
-                <Bell className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-72">
-              <DropdownMenuLabel>{t('dashboard:topbar.notifications')}</DropdownMenuLabel>
-              <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-                {t('dashboard:topbar.no-notifications')}
-              </p>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </span>
+          )}
 
+          <NotificationsBell />
           <UserMenu />
         </div>
       </div>
