@@ -7,12 +7,14 @@ import { simulatedDelay } from './delay';
 import {
   AssignmentValidationError,
   CertificateValidationError,
+  DocumentValidationError,
   EmployeeValidationError,
   maybeFail,
   PasswordValidationError,
   UnitValidationError,
 } from './errors';
 import { readTable, writeTable, Tables } from './storage';
+import { renderTemplate } from '@/features/documents/renderTemplate';
 
 // Max nesting depth for the org tree (TZ §3.3 caps real hierarchies at 7).
 const MAX_UNIT_DEPTH = 7;
@@ -35,15 +37,25 @@ function nameClashesWithSibling(
 import { sha256Hex } from '@/lib/hash';
 import type {
   AppNotification,
+  ApprovalDecision,
+  ApprovalStep,
   Assignment,
   AuditAction,
   AuditEntry,
   AuditResourceType,
   Certificate,
+  Confidentiality,
+  DocumentEntity,
+  DocumentSource,
+  DocumentStatus,
+  DocumentTemplate,
   Employee,
   EmploymentOrderExtract,
+  FileMeta,
+  NotificationType,
   Position,
   ProfileChangeRequest,
+  SignatureRecord,
   Unit,
   User,
 } from '@/types/domain';
@@ -1085,6 +1097,779 @@ export async function changePassword(
   });
 }
 
+// === Documents (milestone 2, step 17 — BPMN 3.4 / BP-4) ===
+//
+// Policy layer per CLAUDE.md: per-document authorization is enforced HERE,
+// against the *acting* employee uuid each mutation receives — never by UI
+// hiding alone. Walking the API from the browser console hits the same
+// guards as the screens in steps 18–19.
+
+function readDocumentTemplates(): DocumentTemplate[] {
+  return readTable<DocumentTemplate>(Tables.documentTemplates, []);
+}
+function readDocuments(): DocumentEntity[] {
+  return readTable<DocumentEntity>(Tables.documents, []);
+}
+function readApprovalSteps(): ApprovalStep[] {
+  return readTable<ApprovalStep>(Tables.approvalSteps, []);
+}
+function readSignatures(): SignatureRecord[] {
+  return readTable<SignatureRecord>(Tables.signatures, []);
+}
+
+/**
+ * M2 mutations receive the acting *employee* uuid as `actorUuid` (the
+ * step-16 POV rail), not a user uuid — so the audit actor name resolves
+ * from the employees table directly instead of `actorNameFor`.
+ */
+function employeeNameFor(employeeUuid: string): string {
+  return (
+    readEmployees().find((e) => e.uuid === employeeUuid)?.fullNameGenerated ?? employeeUuid
+  );
+}
+
+function docLabel(doc: DocumentEntity): string {
+  return `${doc.number} · ${doc.title}`;
+}
+
+function stepsOfRound(
+  steps: ApprovalStep[],
+  documentUuid: string,
+  round: number,
+): ApprovalStep[] {
+  return steps
+    .filter((s) => s.documentUuid === documentUuid && s.round === round)
+    .sort((a, b) => a.order - b.order);
+}
+
+/** Fake detached-signature hex via crypto.getRandomValues (FakePfxParser convention). */
+function randomSignatureHex(bytes = 128): string {
+  const buf = new Uint8Array(bytes);
+  crypto.getRandomValues(buf);
+  return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** Year hardcoded per master §17 — the demo never crosses a year boundary. */
+function nextDocumentNumber(documents: DocumentEntity[]): string {
+  let max = 0;
+  for (const d of documents) {
+    const m = /^HJ-2026\/(\d{4})$/.exec(d.number);
+    if (m) max = Math.max(max, Number(m[1]));
+  }
+  return `HJ-2026/${String(max + 1).padStart(4, '0')}`;
+}
+
+/**
+ * Employee-kind fields arrive as employee UUIDs from the wizard's Combobox —
+ * resolve them to the FIO before substitution so the rendered body carries
+ * names, not identifiers.
+ */
+function resolveTemplateValues(
+  template: DocumentTemplate,
+  values: Record<string, string>,
+): Record<string, string> {
+  const employees = readEmployees();
+  const resolved: Record<string, string> = { ...values };
+  for (const field of template.fields) {
+    if (field.kind !== 'employee') continue;
+    const raw = resolved[field.key];
+    if (!raw) continue;
+    const employee = employees.find((e) => e.uuid === raw);
+    if (employee) resolved[field.key] = employee.fullNameGenerated;
+  }
+  return resolved;
+}
+
+async function notifyDocument(
+  recipients: string[],
+  type: NotificationType,
+  doc: DocumentEntity,
+  params: Record<string, string>,
+  titleKeyOverride?: string,
+): Promise<void> {
+  for (const recipientEmployeeUuid of new Set(recipients)) {
+    await appendNotification({
+      recipientEmployeeUuid,
+      type,
+      titleKey: titleKeyOverride ?? `dashboard:notifications.title.${type}`,
+      params,
+      resourceType: 'document',
+      resourceUuid: doc.uuid,
+    });
+  }
+}
+
+/**
+ * "Imzolash kerakmi?" branch (BPMN 3.4 node 10/11): with a signer set, ask
+ * for the ERI; with none, ask the recipient to accept. Both ride the
+ * DOC_SIGN_REQUESTED type — the stored titleKey disambiguates the copy.
+ */
+async function notifySignerOrRecipient(
+  doc: DocumentEntity,
+  actorName: string,
+): Promise<void> {
+  if (doc.signerUuid) {
+    await notifyDocument([doc.signerUuid], 'DOC_SIGN_REQUESTED', doc, {
+      docNumber: doc.number,
+      actorName,
+    });
+  } else {
+    await notifyDocument(
+      [doc.recipientUuid],
+      'DOC_SIGN_REQUESTED',
+      doc,
+      { docNumber: doc.number, actorName },
+      'dashboard:notifications.title.DOC_ACCEPT_REQUESTED',
+    );
+  }
+}
+
+// === Reads — documents ===
+
+export async function listDocumentTemplates(): Promise<DocumentTemplate[]> {
+  await simulatedDelay();
+  return readDocumentTemplates();
+}
+
+export interface DocumentFilters {
+  status?: DocumentStatus;
+  creatorUuid?: string;
+  recipientUuid?: string;
+  archivedOnly?: boolean;
+  search?: string;
+}
+
+export async function listDocuments(filters?: DocumentFilters): Promise<DocumentEntity[]> {
+  await simulatedDelay();
+  let rows = readDocuments();
+  rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  if (filters?.status) rows = rows.filter((r) => r.status === filters.status);
+  if (filters?.creatorUuid) rows = rows.filter((r) => r.creatorUuid === filters.creatorUuid);
+  if (filters?.recipientUuid) {
+    rows = rows.filter((r) => r.recipientUuid === filters.recipientUuid);
+  }
+  if (filters?.archivedOnly) rows = rows.filter((r) => Boolean(r.archivedAt));
+  if (filters?.search) {
+    const q = filters.search.toLowerCase();
+    rows = rows.filter(
+      (r) => r.number.toLowerCase().includes(q) || r.title.toLowerCase().includes(q),
+    );
+  }
+  return rows;
+}
+
+export interface DocumentDetail {
+  document: DocumentEntity;
+  /** Steps of the *current* round, ordered. Decided earlier rounds are immutable history. */
+  steps: ApprovalStep[];
+  signatures: SignatureRecord[];
+}
+
+export async function getDocument(uuid: string): Promise<DocumentDetail | null> {
+  await simulatedDelay();
+  const document = readDocuments().find((d) => d.uuid === uuid);
+  if (!document) return null;
+  return {
+    document,
+    steps: stepsOfRound(readApprovalSteps(), uuid, document.round),
+    signatures: readSignatures().filter(
+      (s) => s.resourceType === 'document' && s.resourceUuid === uuid,
+    ),
+  };
+}
+
+/** One row of the `/approvals` queue (step 19). */
+export type ApprovalQueueItem =
+  | { kind: 'decision'; document: DocumentEntity; step: ApprovalStep }
+  | { kind: 'signature'; document: DocumentEntity }
+  | { kind: 'acceptance'; document: DocumentEntity };
+
+export async function listMyApprovals(actorUuid: string): Promise<ApprovalQueueItem[]> {
+  await simulatedDelay();
+  const documents = readDocuments();
+  const steps = readApprovalSteps();
+  const items: ApprovalQueueItem[] = [];
+  for (const document of documents) {
+    if (document.status === 'IN_REVIEW') {
+      // The strictly-sequential chain means exactly one step is actionable:
+      // the first PENDING of the current round.
+      const pending = stepsOfRound(steps, document.uuid, document.round).find(
+        (s) => s.decision === 'PENDING',
+      );
+      if (pending && pending.employeeUuid === actorUuid) {
+        items.push({ kind: 'decision', document, step: pending });
+      }
+    } else if (document.status === 'APPROVED') {
+      if (document.signerUuid === actorUuid) {
+        items.push({ kind: 'signature', document });
+      } else if (!document.signerUuid && document.recipientUuid === actorUuid) {
+        items.push({ kind: 'acceptance', document });
+      }
+    }
+  }
+  items.sort((a, b) =>
+    (b.document.sentForReviewAt ?? b.document.createdAt).localeCompare(
+      a.document.sentForReviewAt ?? a.document.createdAt,
+    ),
+  );
+  return items;
+}
+
+/**
+ * §2.2 "who viewed" requirement: append to `viewedBy` once per employee.
+ * The first view also writes a DOCUMENT_VIEWED audit entry; repeat views
+ * are no-ops. Deliberately no `maybeFail()` — viewing must never error.
+ */
+export async function recordDocumentView(uuid: string, actorUuid: string): Promise<void> {
+  await simulatedDelay();
+  const documents = readDocuments();
+  const idx = documents.findIndex((d) => d.uuid === uuid);
+  if (idx === -1) return;
+  const doc = documents[idx]!;
+  if (doc.viewedBy.some((v) => v.employeeUuid === actorUuid)) return;
+  documents[idx] = {
+    ...doc,
+    viewedBy: [...doc.viewedBy, { employeeUuid: actorUuid, viewedAt: NOW() }],
+  };
+  writeTable(Tables.documents, documents);
+  await appendAudit({
+    actorUuid,
+    actorName: employeeNameFor(actorUuid),
+    action: 'DOCUMENT_VIEWED',
+    resourceType: 'document',
+    resourceUuid: uuid,
+    resourceLabel: docLabel(doc),
+  });
+}
+
+// === Mutations — documents ===
+
+export interface CreateDocumentInput {
+  title: string;
+  source: DocumentSource;
+  /** source = TEMPLATE. */
+  templateUuid?: string;
+  /** source = TEMPLATE — placeholder values keyed by `TemplateField.key`. */
+  values?: Record<string, string>;
+  /** source = UPLOAD — pick-time metadata; `uploadedAt` is stamped here. */
+  fileMeta?: Omit<FileMeta, 'uploadedAt'>;
+  confidentiality: Confidentiality;
+  recipientUuid: string;
+  signerUuid?: string;
+  requiresApproval: boolean;
+  /** Ordered kelishuv chain; required when `requiresApproval`. */
+  participantUuids?: string[];
+}
+
+function assertValidParticipants(participantUuids: string[], creatorUuid: string): void {
+  const unique = new Set(participantUuids);
+  if (
+    participantUuids.length < 1 ||
+    unique.size !== participantUuids.length ||
+    unique.has(creatorUuid)
+  ) {
+    // Programmer/UI error, not a policy violation — the step-18 wizard
+    // prevents all three cases before submit.
+    throw new Error('participantUuids must be ordered, non-empty, duplicate-free and exclude the creator');
+  }
+}
+
+export async function createDocument(
+  input: CreateDocumentInput,
+  actorUuid: string,
+): Promise<DocumentEntity> {
+  await simulatedDelay();
+  maybeFail();
+  const documents = readDocuments();
+
+  let templateUuid: string | undefined;
+  let templateCode: string | undefined;
+  let renderedBody: string | undefined;
+  let fileMeta: FileMeta | undefined;
+
+  if (input.source === 'TEMPLATE') {
+    const template = readDocumentTemplates().find((t) => t.uuid === input.templateUuid);
+    if (!template || !input.values) {
+      throw new Error('TEMPLATE documents require templateUuid + values');
+    }
+    templateUuid = template.uuid;
+    templateCode = template.code;
+    renderedBody = renderTemplate(
+      template.bodyTemplate,
+      resolveTemplateValues(template, input.values),
+    );
+  } else {
+    if (!input.fileMeta) throw new Error('UPLOAD documents require fileMeta');
+    fileMeta = { ...input.fileMeta, uploadedAt: NOW() };
+  }
+
+  if (input.requiresApproval) {
+    assertValidParticipants(input.participantUuids ?? [], actorUuid);
+  }
+
+  const doc: DocumentEntity = {
+    uuid: uid(),
+    number: nextDocumentNumber(documents),
+    title: input.title,
+    source: input.source,
+    templateUuid,
+    renderedBody,
+    fileMeta,
+    confidentiality: input.confidentiality,
+    creatorUuid: actorUuid,
+    recipientUuid: input.recipientUuid,
+    signerUuid: input.signerUuid,
+    requiresApproval: input.requiresApproval,
+    status: 'DRAFT',
+    round: 1,
+    viewedBy: [],
+    createdAt: NOW(),
+    updatedAt: NOW(),
+  };
+  documents.unshift(doc);
+  writeTable(Tables.documents, documents);
+
+  if (input.requiresApproval) {
+    const steps = readApprovalSteps();
+    (input.participantUuids ?? []).forEach((employeeUuid, i) => {
+      steps.push({
+        uuid: uid(),
+        documentUuid: doc.uuid,
+        round: 1,
+        order: i + 1,
+        employeeUuid,
+        decision: 'PENDING',
+      });
+    });
+    writeTable(Tables.approvalSteps, steps);
+  }
+
+  // DRAFT create is audit-only — notifications start at submit.
+  await appendAudit({
+    actorUuid,
+    actorName: employeeNameFor(actorUuid),
+    action: 'DOCUMENT_CREATED',
+    resourceType: 'document',
+    resourceUuid: doc.uuid,
+    resourceLabel: docLabel(doc),
+    context: { number: doc.number, source: doc.source, template: templateCode },
+  });
+  return doc;
+}
+
+export interface UpdateDraftDocumentInput {
+  title?: string;
+  /** TEMPLATE docs — complete placeholder value set; the body is re-rendered. */
+  values?: Record<string, string>;
+  /** UPLOAD docs — replacement pick-time metadata. */
+  fileMeta?: Omit<FileMeta, 'uploadedAt'>;
+  recipientUuid?: string;
+  /** Pass `null` to clear the signer (switches the chain's end to acceptance). */
+  signerUuid?: string | null;
+  confidentiality?: Confidentiality;
+  /** Rebuilds the PENDING steps of the *upcoming* round only. */
+  participantUuids?: string[];
+}
+
+export async function updateDraftDocument(
+  uuid: string,
+  patch: UpdateDraftDocumentInput,
+  actorUuid: string,
+): Promise<DocumentEntity> {
+  await simulatedDelay();
+  maybeFail();
+  const documents = readDocuments();
+  const idx = documents.findIndex((d) => d.uuid === uuid);
+  if (idx === -1) throw new Error(`Document not found: ${uuid}`);
+  const before = documents[idx]!;
+  if (before.status !== 'DRAFT' && before.status !== 'REJECTED') {
+    throw new DocumentValidationError('not-editable');
+  }
+  if (before.creatorUuid !== actorUuid) throw new DocumentValidationError('not-creator');
+
+  const next: DocumentEntity = { ...before, updatedAt: NOW() };
+  if (patch.title !== undefined) next.title = patch.title;
+  if (patch.recipientUuid !== undefined) next.recipientUuid = patch.recipientUuid;
+  if (patch.signerUuid !== undefined) next.signerUuid = patch.signerUuid ?? undefined;
+  if (patch.confidentiality !== undefined) next.confidentiality = patch.confidentiality;
+  if (patch.values && before.source === 'TEMPLATE' && before.templateUuid) {
+    const template = readDocumentTemplates().find((t) => t.uuid === before.templateUuid);
+    if (template) {
+      next.renderedBody = renderTemplate(
+        template.bodyTemplate,
+        resolveTemplateValues(template, patch.values),
+      );
+    }
+  }
+  if (patch.fileMeta && before.source === 'UPLOAD') {
+    next.fileMeta = { ...patch.fileMeta, uploadedAt: NOW() };
+  }
+  documents[idx] = next;
+  writeTable(Tables.documents, documents);
+
+  if (patch.participantUuids && next.requiresApproval) {
+    assertValidParticipants(patch.participantUuids, actorUuid);
+    // For a DRAFT the upcoming round IS the current round (nothing decided
+    // yet). After a rejection it's round + 1 — the decided steps of the
+    // halted round stay untouched as immutable history.
+    const upcomingRound = before.status === 'DRAFT' ? before.round : before.round + 1;
+    const steps = readApprovalSteps().filter(
+      (s) => !(s.documentUuid === uuid && s.round === upcomingRound),
+    );
+    patch.participantUuids.forEach((employeeUuid, i) => {
+      steps.push({
+        uuid: uid(),
+        documentUuid: uuid,
+        round: upcomingRound,
+        order: i + 1,
+        employeeUuid,
+        decision: 'PENDING',
+      });
+    });
+    writeTable(Tables.approvalSteps, steps);
+  }
+
+  await appendAudit({
+    actorUuid,
+    actorName: employeeNameFor(actorUuid),
+    action: 'UPDATE',
+    resourceType: 'document',
+    resourceUuid: uuid,
+    resourceLabel: docLabel(next),
+  });
+  return next;
+}
+
+export async function submitDocumentForReview(
+  uuid: string,
+  actorUuid: string,
+): Promise<DocumentEntity> {
+  await simulatedDelay();
+  maybeFail();
+  const documents = readDocuments();
+  const idx = documents.findIndex((d) => d.uuid === uuid);
+  if (idx === -1) throw new Error(`Document not found: ${uuid}`);
+  const before = documents[idx]!;
+  if (before.status !== 'DRAFT' && before.status !== 'REJECTED') {
+    throw new DocumentValidationError('wrong-status');
+  }
+  if (before.creatorUuid !== actorUuid) throw new DocumentValidationError('not-creator');
+  const actorName = employeeNameFor(actorUuid);
+
+  let next: DocumentEntity;
+  if (before.requiresApproval) {
+    let round = before.round;
+    if (before.status === 'REJECTED') {
+      // Resubmit after rework: new round. Steps may already exist (the
+      // participant list was edited during rework); otherwise clone the
+      // halted round's chain as fresh PENDING steps.
+      round = before.round + 1;
+      const steps = readApprovalSteps();
+      if (stepsOfRound(steps, uuid, round).length === 0) {
+        for (const p of stepsOfRound(steps, uuid, before.round)) {
+          steps.push({
+            uuid: uid(),
+            documentUuid: uuid,
+            round,
+            order: p.order,
+            employeeUuid: p.employeeUuid,
+            decision: 'PENDING',
+          });
+        }
+        writeTable(Tables.approvalSteps, steps);
+      }
+    }
+    next = { ...before, status: 'IN_REVIEW', round, sentForReviewAt: NOW(), updatedAt: NOW() };
+    documents[idx] = next;
+    writeTable(Tables.documents, documents);
+    const first = stepsOfRound(readApprovalSteps(), uuid, round)[0];
+    if (first) {
+      await notifyDocument([first.employeeUuid], 'DOC_REVIEW_REQUESTED', next, {
+        docNumber: next.number,
+        actorName,
+      });
+    }
+  } else {
+    // BPMN 3.4 "Kelishuv varaqasi kerakmi? → Yo'q": implicit approval,
+    // straight to the sign/accept gate.
+    next = {
+      ...before,
+      status: 'APPROVED',
+      sentForReviewAt: NOW(),
+      approvedAt: NOW(),
+      updatedAt: NOW(),
+    };
+    documents[idx] = next;
+    writeTable(Tables.documents, documents);
+    await notifySignerOrRecipient(next, actorName);
+  }
+
+  await appendAudit({
+    actorUuid,
+    actorName,
+    action: 'DOCUMENT_SENT_FOR_REVIEW',
+    resourceType: 'document',
+    resourceUuid: uuid,
+    resourceLabel: docLabel(next),
+    context: { round: next.round },
+  });
+  return next;
+}
+
+export async function decideApproval(
+  documentUuid: string,
+  actorUuid: string,
+  decision: Exclude<ApprovalDecision, 'PENDING'>,
+  comment?: string,
+): Promise<DocumentEntity> {
+  await simulatedDelay();
+  maybeFail();
+  const documents = readDocuments();
+  const idx = documents.findIndex((d) => d.uuid === documentUuid);
+  if (idx === -1) throw new Error(`Document not found: ${documentUuid}`);
+  const doc = documents[idx]!;
+  if (doc.status !== 'IN_REVIEW') throw new DocumentValidationError('wrong-status');
+
+  const allSteps = readApprovalSteps();
+  const roundSteps = stepsOfRound(allSteps, documentUuid, doc.round);
+  const mine = roundSteps.find((s) => s.employeeUuid === actorUuid);
+  if (!mine) throw new DocumentValidationError('not-participant');
+  if (mine.decision !== 'PENDING') throw new DocumentValidationError('already-decided');
+  if (roundSteps.some((s) => s.order < mine.order && s.decision === 'PENDING')) {
+    // The demo chain is strictly sequential (BP-4) — no out-of-turn decisions.
+    throw new DocumentValidationError('out-of-order');
+  }
+  if (decision === 'REJECTED' && !comment?.trim()) {
+    throw new DocumentValidationError('comment-required');
+  }
+
+  const stepIdx = allSteps.findIndex((s) => s.uuid === mine.uuid);
+  allSteps[stepIdx] = {
+    ...mine,
+    decision,
+    comment: comment?.trim() || undefined,
+    decidedAt: NOW(),
+  };
+  writeTable(Tables.approvalSteps, allSteps);
+
+  const actorName = employeeNameFor(actorUuid);
+  let next = doc;
+
+  if (decision === 'REJECTED') {
+    // Halt the round: the document goes back to the creator for rework; the
+    // remaining steps stay PENDING as the frozen history of the halted round.
+    next = { ...doc, status: 'REJECTED', updatedAt: NOW() };
+    documents[idx] = next;
+    writeTable(Tables.documents, documents);
+    await notifyDocument([doc.creatorUuid], 'DOC_REJECTED', next, {
+      docNumber: doc.number,
+      actorName,
+    });
+  } else {
+    await notifyDocument([doc.creatorUuid], 'DOC_DECIDED', doc, {
+      docNumber: doc.number,
+      actorName,
+      decision,
+    });
+    const stillPending = roundSteps.some(
+      (s) => s.uuid !== mine.uuid && s.decision === 'PENDING',
+    );
+    if (!stillPending) {
+      next = { ...doc, status: 'APPROVED', approvedAt: NOW(), updatedAt: NOW() };
+      documents[idx] = next;
+      writeTable(Tables.documents, documents);
+      await notifyDocument([doc.creatorUuid], 'DOC_APPROVED', next, {
+        docNumber: doc.number,
+        actorName,
+      });
+      await notifySignerOrRecipient(next, actorName);
+    }
+  }
+
+  await appendAudit({
+    actorUuid,
+    actorName,
+    action: decision === 'REJECTED' ? 'DOCUMENT_REJECTED' : 'DOCUMENT_APPROVED',
+    resourceType: 'document',
+    resourceUuid: documentUuid,
+    resourceLabel: docLabel(doc),
+    context: {
+      decision,
+      order: mine.order,
+      round: doc.round,
+      comment: comment?.trim() || undefined,
+    },
+  });
+  return next;
+}
+
+export async function signDocument(
+  documentUuid: string,
+  actorUuid: string,
+  certificateUuid: string,
+): Promise<DocumentEntity> {
+  await simulatedDelay();
+  maybeFail();
+  const documents = readDocuments();
+  const idx = documents.findIndex((d) => d.uuid === documentUuid);
+  if (idx === -1) throw new Error(`Document not found: ${documentUuid}`);
+  const doc = documents[idx]!;
+  if (doc.status !== 'APPROVED') throw new DocumentValidationError('wrong-status');
+  if (doc.signerUuid !== actorUuid) throw new DocumentValidationError('not-signer');
+  const cert = readCertificates().find((c) => c.uuid === certificateUuid);
+  if (!cert || cert.status !== 'ACTIVE' || cert.employeeUuid !== actorUuid) {
+    throw new DocumentValidationError('cert-invalid');
+  }
+
+  const signatures = readSignatures();
+  signatures.unshift({
+    uuid: uid(),
+    resourceType: 'document',
+    resourceUuid: documentUuid,
+    employeeUuid: actorUuid,
+    certificateUuid,
+    algorithm: 'RSA-PKCS7',
+    signatureHex: randomSignatureHex(),
+    signedAt: NOW(),
+  });
+  writeTable(Tables.signatures, signatures);
+
+  // `archivedAt` stamps immediately: the TLH's nightly archive job is
+  // simulated by archiving the moment a terminal status lands (master §17).
+  const next: DocumentEntity = {
+    ...doc,
+    status: 'SIGNED',
+    signedAt: NOW(),
+    archivedAt: NOW(),
+    updatedAt: NOW(),
+  };
+  documents[idx] = next;
+  writeTable(Tables.documents, documents);
+
+  const actorName = employeeNameFor(actorUuid);
+  await notifyDocument([doc.creatorUuid, doc.recipientUuid], 'DOC_SIGNED', next, {
+    docNumber: doc.number,
+    actorName,
+  });
+  await appendAudit({
+    actorUuid,
+    actorName,
+    action: 'DOCUMENT_SIGNED',
+    resourceType: 'document',
+    resourceUuid: documentUuid,
+    resourceLabel: docLabel(next),
+    context: { certificateSerial: cert.serialNumber },
+  });
+  return next;
+}
+
+/** The no-ERI branch (BPMN 3.4 node 11.2) — the recipient accepts and the document closes. */
+export async function acceptDocument(
+  documentUuid: string,
+  actorUuid: string,
+): Promise<DocumentEntity> {
+  await simulatedDelay();
+  maybeFail();
+  const documents = readDocuments();
+  const idx = documents.findIndex((d) => d.uuid === documentUuid);
+  if (idx === -1) throw new Error(`Document not found: ${documentUuid}`);
+  const doc = documents[idx]!;
+  if (doc.status !== 'APPROVED' || doc.signerUuid) {
+    throw new DocumentValidationError('wrong-status');
+  }
+  if (doc.recipientUuid !== actorUuid) throw new DocumentValidationError('not-recipient');
+
+  const next: DocumentEntity = {
+    ...doc,
+    status: 'CLOSED',
+    closedAt: NOW(),
+    archivedAt: NOW(),
+    updatedAt: NOW(),
+  };
+  documents[idx] = next;
+  writeTable(Tables.documents, documents);
+
+  const actorName = employeeNameFor(actorUuid);
+  await notifyDocument([doc.creatorUuid], 'DOC_CLOSED', next, {
+    docNumber: doc.number,
+    actorName,
+  });
+  await appendAudit({
+    actorUuid,
+    actorName,
+    action: 'DOCUMENT_CLOSED',
+    resourceType: 'document',
+    resourceUuid: documentUuid,
+    resourceLabel: docLabel(next),
+  });
+  return next;
+}
+
+/** Mock email export (§2.7) — appends to the log; no real mail per master §17. */
+export async function emailDocument(
+  uuid: string,
+  actorUuid: string,
+  email: string,
+): Promise<DocumentEntity> {
+  await simulatedDelay();
+  maybeFail();
+  const documents = readDocuments();
+  const idx = documents.findIndex((d) => d.uuid === uuid);
+  if (idx === -1) throw new Error(`Document not found: ${uuid}`);
+  const doc = documents[idx]!;
+  if (doc.status !== 'SIGNED' && doc.status !== 'CLOSED') {
+    throw new DocumentValidationError('wrong-status');
+  }
+  const next: DocumentEntity = {
+    ...doc,
+    emailedTo: [...(doc.emailedTo ?? []), email],
+    updatedAt: NOW(),
+  };
+  documents[idx] = next;
+  writeTable(Tables.documents, documents);
+  await appendAudit({
+    actorUuid,
+    actorName: employeeNameFor(actorUuid),
+    action: 'DOCUMENT_EMAILED',
+    resourceType: 'document',
+    resourceUuid: uuid,
+    resourceLabel: docLabel(next),
+    context: { email },
+  });
+  return next;
+}
+
+/**
+ * Delete a document — allowed ONLY for the creator's own DRAFT. This is the
+ * §2.2 signed-document protection: there is deliberately NO code path that
+ * removes a non-DRAFT row, regardless of role.
+ */
+export async function deleteDocument(uuid: string, actorUuid: string): Promise<void> {
+  await simulatedDelay();
+  maybeFail();
+  const documents = readDocuments();
+  const idx = documents.findIndex((d) => d.uuid === uuid);
+  if (idx === -1) throw new Error(`Document not found: ${uuid}`);
+  const doc = documents[idx]!;
+  if (doc.status !== 'DRAFT') throw new DocumentValidationError('not-deletable');
+  if (doc.creatorUuid !== actorUuid) throw new DocumentValidationError('not-creator');
+  documents.splice(idx, 1);
+  writeTable(Tables.documents, documents);
+  // Drop the draft's PENDING chain too — no orphan steps.
+  writeTable(
+    Tables.approvalSteps,
+    readApprovalSteps().filter((s) => s.documentUuid !== uuid),
+  );
+  await appendAudit({
+    actorUuid,
+    actorName: employeeNameFor(actorUuid),
+    action: 'DELETE',
+    resourceType: 'document',
+    resourceUuid: uuid,
+    resourceLabel: docLabel(doc),
+  });
+}
+
 // === Re-exports ===
 
 export { seedIfEmpty, resetAndSeed, PERSONAS } from './seed';
@@ -1092,6 +1877,7 @@ export type { PersonaKey } from './seed';
 export {
   AssignmentValidationError,
   CertificateValidationError,
+  DocumentValidationError,
   EmployeeValidationError,
   MockNetworkError,
   PasswordValidationError,
@@ -1100,6 +1886,7 @@ export {
 export type {
   AssignmentValidationCode,
   CertificateValidationCode,
+  DocumentValidationCode,
   EmployeeValidationCode,
   PasswordValidationCode,
   UnitValidationCode,

@@ -181,7 +181,15 @@ export type AuditAction =
   | 'CERTIFICATE_REVOKED'
   | 'PROFILE_CHANGE_REQUESTED'
   | 'PROFILE_CHANGE_APPROVED'
-  | 'POV_SWITCHED';
+  | 'POV_SWITCHED'
+  | 'DOCUMENT_CREATED'
+  | 'DOCUMENT_SENT_FOR_REVIEW'
+  | 'DOCUMENT_APPROVED'
+  | 'DOCUMENT_REJECTED'
+  | 'DOCUMENT_SIGNED'
+  | 'DOCUMENT_CLOSED'
+  | 'DOCUMENT_VIEWED'
+  | 'DOCUMENT_EMAILED';
 
 export type AuditResourceType =
   | 'unit'
@@ -189,7 +197,9 @@ export type AuditResourceType =
   | 'assignment'
   | 'certificate'
   | 'user'
-  | 'profile-request';
+  | 'profile-request'
+  | 'document'
+  | 'letter';
 
 export interface AuditEntry {
   uuid: string;
@@ -255,4 +265,142 @@ export interface AppNotification {
   resourceUuid: string;
   isRead: boolean;
   createdAt: string;
+}
+
+// === Documents (milestone 2, master §15 — BPMN 3.4 / BP-4) ===
+
+export type DocumentSource = 'TEMPLATE' | 'UPLOAD';
+
+// BP-4 canon: draft → in-review → (rejected → rework) → approved → signed | closed
+// `CLOSED` = accepted without ERI ("Qabul qilish" branch 11.2 of BPMN 3.4).
+// Archival is NOT a status — it's the `archivedAt` stamp (nightly-job simulation).
+// Editing an APPROVED document (BP-4 "modification cancels approvals") is out of
+// scope for the demo — only DRAFT and REJECTED documents are editable.
+export type DocumentStatus =
+  | 'DRAFT'
+  | 'IN_REVIEW'
+  | 'REJECTED'
+  | 'APPROVED'
+  | 'SIGNED'
+  | 'CLOSED';
+
+/** Display-only badge in the demo (TLH 4-BLOK). */
+export type Confidentiality = 'ODDIY' | 'MAXFIY';
+
+/**
+ * Metadata-only file convention — identical shape to
+ * `Employee.employmentOrderExtract`. No bytes stored. Shared by documents
+ * (step 17) and letters (step 20) — keep free of domain-specific fields.
+ */
+export interface FileMeta {
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedAt: string;
+}
+
+export interface TemplateField {
+  /** Placeholder token inside `bodyTemplate`, e.g. "ASOS". */
+  key: string;
+  /** Fully-qualified i18n key for the field label (`dashboard:documents.fields.*`). */
+  labelKey: string;
+  /** 'employee' renders as a Combobox and resolves to the FIO at substitution time. */
+  kind: 'text' | 'textarea' | 'date' | 'employee';
+  required: boolean;
+}
+
+export type DocumentTemplateCode =
+  | 'BUYRUQ'
+  | 'XIZMAT_XATI'
+  | 'MALUMOTNOMA'
+  | 'ARIZA'
+  | 'BILDIRISHNOMA';
+
+export interface DocumentTemplate {
+  uuid: string;
+  code: DocumentTemplateCode;
+  nameUz: string;
+  descriptionUz: string;
+  /** Uzbek body text with `{{PLACEHOLDER}}` tokens. */
+  bodyTemplate: string;
+  fields: TemplateField[];
+}
+
+export interface DocumentViewRecord {
+  employeeUuid: string;
+  viewedAt: string;
+}
+
+// Named DocumentEntity because `Document` collides with lib.dom's global type.
+export interface DocumentEntity {
+  uuid: string;
+  /** Auto-numbered: 'HJ-2026/0001' (year hardcoded per master §17). */
+  number: string;
+  title: string;
+  source: DocumentSource;
+  /** source = TEMPLATE. */
+  templateUuid?: string;
+  /** source = TEMPLATE — placeholders resolved at creation. */
+  renderedBody?: string;
+  /** source = UPLOAD (metadata only). */
+  fileMeta?: FileMeta;
+  confidentiality: Confidentiality;
+  /** Employee uuid (BPMN: hujjat yaratuvchi). */
+  creatorUuid: string;
+  /** "Kimga". */
+  recipientUuid: string;
+  /** "Kim imzolaydi" — undefined ⇒ recipient accepts without ERI → CLOSED. */
+  signerUuid?: string;
+  /** "Kelishuv varaqasi kerakmi?" */
+  requiresApproval: boolean;
+  status: DocumentStatus;
+  /** Approval round; increments on resubmit after REJECTED. */
+  round: number;
+  /** §2.2 "who viewed" audit requirement — one record per employee. */
+  viewedBy: DocumentViewRecord[];
+  sentForReviewAt?: string;
+  approvedAt?: string;
+  signedAt?: string;
+  closedAt?: string;
+  /** Stamped when the simulated nightly job would have run; drives Arxiv grouping. */
+  archivedAt?: string;
+  /** Mock email-export log (§2.7). */
+  emailedTo?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ApprovalDecision =
+  | 'PENDING'
+  | 'APPROVED'
+  | 'APPROVED_WITH_COMMENT'
+  | 'REJECTED';
+
+export interface ApprovalStep {
+  uuid: string;
+  documentUuid: string;
+  /** Matches `DocumentEntity.round` when the step was created. */
+  round: number;
+  /** 1-based; the demo chain is strictly sequential. */
+  order: number;
+  employeeUuid: string;
+  decision: ApprovalDecision;
+  /** REQUIRED when decision = REJECTED (BP-4 failure-mode rule). */
+  comment?: string;
+  decidedAt?: string;
+}
+
+/** Shared by documents (step 17) and letters (step 20) — `resourceType` discriminates. */
+export interface SignatureRecord {
+  uuid: string;
+  resourceType: 'document' | 'letter';
+  resourceUuid: string;
+  employeeUuid: string;
+  /** Must be an ACTIVE certificate belonging to that employee. */
+  certificateUuid: string;
+  /** Cosmetic — mirrors the TLH's phpseclib stack line. */
+  algorithm: 'RSA-PKCS7';
+  /** Fake hex via crypto.getRandomValues (FakePfxParser convention). */
+  signatureHex: string;
+  signedAt: string;
 }

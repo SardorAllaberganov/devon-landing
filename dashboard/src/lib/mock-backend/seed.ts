@@ -3,15 +3,20 @@
 // hierarchy (+ the root-level Devonxona), 31 employees, 31 primary
 // assignments, 26 certificates in the 19/4/2/1 status distribution,
 // ~70 audit entries spread over the last 30 days, the position
-// catalogue, and ~20 milestone-2 notifications across the personas.
+// catalogue, ~20 milestone-2 notifications across the personas, and
+// (step 17) 5 document templates + 12 documents walking the BPMN 3.4
+// chain with internally-consistent approval steps and signatures.
 //
 // Uses native `crypto.randomUUID()` — browsers ship it natively
 // since 2022. No `uuid` npm package needed.
 
 import { sha256Hex } from '@/lib/hash';
+import { renderTemplate } from '@/features/documents/renderTemplate';
 import { Tables, clearAll, writeTable } from './storage';
 import type {
   AppNotification,
+  ApprovalDecision,
+  ApprovalStep,
   Assignment,
   AuditAction,
   AuditEntry,
@@ -19,11 +24,17 @@ import type {
   Certificate,
   CertStatus,
   CertType,
+  Confidentiality,
+  DocumentEntity,
+  DocumentStatus,
+  DocumentTemplate,
   Employee,
+  FileMeta,
   Gender,
   NotificationType,
   Position,
   Role,
+  SignatureRecord,
   Unit,
   UnitType,
   User,
@@ -34,7 +45,7 @@ const SEED_FLAG = 'devon.dashboard.seeded';
 // distributions, hierarchy reshapes). Mismatched versions in localStorage
 // trigger a silent reseed on next app load — keeps demos consistent without
 // asking users to hit "Reset demo" after every change.
-const SEED_VERSION = '5';
+const SEED_VERSION = '6';
 
 const uuid = () => crypto.randomUUID();
 const NOW = () => new Date().toISOString();
@@ -771,14 +782,536 @@ function buildCertificates(employees: Employee[]): Certificate[] {
   return certificates;
 }
 
-// === Notifications (milestone 2 rails) ===
+// === Fixed resource UUIDs (milestone 2 rails) ===
 
-// Placeholder resource UUIDs (fixed literals, valid v4 shape). Steps 17/20
-// seed real documents/letters under these exact UUIDs so the notification
-// deep-links below start resolving retroactively. Until then a click lands
-// on the step-16 placeholder pages / home redirect — acceptable per step 16.
+// Fixed literals, valid v4 shape. Documents d001–d006 are seeded below
+// (step 17) so the step-16 notification deep-links resolve against real
+// rows; letters f001–f003 follow in step 20.
 const DOC_UUID = (n: number) => `00000000-0000-4000-8000-00000000d00${n}`;
 const LETTER_UUID = (n: number) => `00000000-0000-4000-8000-00000000f00${n}`;
+
+// === Document domain (milestone 2, step 17 — BPMN 3.4) ===
+
+// FIO literals for template values + comments. Must match the `fios` table.
+const FIO_XODIM = 'Sobirova Dilnoza Murodovna';
+
+const documentTemplates: DocumentTemplate[] = [
+  {
+    uuid: '00000000-0000-4000-8000-00000000c001',
+    code: 'BUYRUQ',
+    nameUz: 'Buyruq',
+    descriptionUz: "Tashkilot bo'yicha buyruq (tayinlash, o'tkazish, rag'batlantirish)",
+    // RAQAM is a 5th field beyond the prompt's 2–4 guideline — the example
+    // body uses the token, and a seeded template must never render «—».
+    bodyTemplate:
+      '{{SANA}} dagi {{RAQAM}}-sonli buyruqqa asosan {{XODIM_FIO}}\n' +
+      'quyidagi vazifaga tayinlansin: {{MAZMUN}}.\n' +
+      'Asos: {{ASOS}}.',
+    fields: [
+      { key: 'SANA', labelKey: 'dashboard:documents.fields.SANA', kind: 'date', required: true },
+      { key: 'RAQAM', labelKey: 'dashboard:documents.fields.RAQAM', kind: 'text', required: true },
+      { key: 'XODIM_FIO', labelKey: 'dashboard:documents.fields.XODIM_FIO', kind: 'employee', required: true },
+      { key: 'MAZMUN', labelKey: 'dashboard:documents.fields.MAZMUN', kind: 'textarea', required: true },
+      { key: 'ASOS', labelKey: 'dashboard:documents.fields.ASOS', kind: 'text', required: true },
+    ],
+  },
+  {
+    uuid: '00000000-0000-4000-8000-00000000c002',
+    code: 'XIZMAT_XATI',
+    nameUz: 'Xizmat xati',
+    descriptionUz: "Bo'linmalararo ichki yozishmalar uchun xizmat xati",
+    bodyTemplate:
+      '{{KIMGA}}ga\n\n' +
+      "{{SANA}} holatiga ko'ra quyidagi masala bo'yicha xizmat xati yo'llanmoqda:\n" +
+      '{{MAZMUN}}\n\n' +
+      'Ijro muddati: {{MUDDAT}}.',
+    fields: [
+      { key: 'KIMGA', labelKey: 'dashboard:documents.fields.KIMGA', kind: 'text', required: true },
+      { key: 'SANA', labelKey: 'dashboard:documents.fields.SANA', kind: 'date', required: true },
+      { key: 'MAZMUN', labelKey: 'dashboard:documents.fields.MAZMUN', kind: 'textarea', required: true },
+      { key: 'MUDDAT', labelKey: 'dashboard:documents.fields.MUDDAT', kind: 'date', required: false },
+    ],
+  },
+  {
+    uuid: '00000000-0000-4000-8000-00000000c003',
+    code: 'MALUMOTNOMA',
+    nameUz: "Ma'lumotnoma",
+    descriptionUz: "Xodimning ish joyidan ma'lumotnoma",
+    bodyTemplate:
+      "Ushbu ma'lumotnoma {{XODIM_FIO}}ga berildi.\n" +
+      'U haqiqatan ham tashkilotda {{LAVOZIM}} lavozimida faoliyat yuritadi.\n' +
+      "Ma'lumotnoma {{MAQSAD}} taqdim etish uchun berildi.",
+    fields: [
+      { key: 'XODIM_FIO', labelKey: 'dashboard:documents.fields.XODIM_FIO', kind: 'employee', required: true },
+      { key: 'LAVOZIM', labelKey: 'dashboard:documents.fields.LAVOZIM', kind: 'text', required: true },
+      { key: 'MAQSAD', labelKey: 'dashboard:documents.fields.MAQSAD', kind: 'text', required: true },
+    ],
+  },
+  {
+    uuid: '00000000-0000-4000-8000-00000000c004',
+    code: 'ARIZA',
+    nameUz: 'Ariza',
+    descriptionUz: "Xodimning rahbariyatga arizasi (ta'til, ruxsat, so'rov)",
+    bodyTemplate:
+      "Sizdan {{SANA}}dan boshlab menga {{MAZMUN}} berishingizni so'rayman.\n" +
+      'Sabab: {{SABAB}}.',
+    fields: [
+      { key: 'SANA', labelKey: 'dashboard:documents.fields.SANA', kind: 'date', required: true },
+      { key: 'MAZMUN', labelKey: 'dashboard:documents.fields.MAZMUN', kind: 'textarea', required: true },
+      { key: 'SABAB', labelKey: 'dashboard:documents.fields.SABAB', kind: 'text', required: true },
+    ],
+  },
+  {
+    uuid: '00000000-0000-4000-8000-00000000c005',
+    code: 'BILDIRISHNOMA',
+    nameUz: 'Bildirishnoma',
+    descriptionUz: "Barcha bo'linmalarga yo'naltiriladigan rasmiy bildirishnoma",
+    bodyTemplate:
+      "Barcha bo'linmalar e'tiboriga!\n\n" +
+      '{{SANA}} kunidan boshlab {{MAZMUN}}.\n' +
+      "Mas'ul shaxs: {{MASUL_FIO}}.",
+    fields: [
+      { key: 'SANA', labelKey: 'dashboard:documents.fields.SANA', kind: 'date', required: true },
+      { key: 'MAZMUN', labelKey: 'dashboard:documents.fields.MAZMUN', kind: 'textarea', required: true },
+      { key: 'MASUL_FIO', labelKey: 'dashboard:documents.fields.MASUL_FIO', kind: 'employee', required: true },
+    ],
+  },
+];
+
+interface DocStepSpec {
+  order: number;
+  employeeUuid: string;
+  decision: ApprovalDecision;
+  /** Required for decided steps. */
+  daysAgo?: number;
+  comment?: string;
+}
+
+interface DocSpec {
+  /** Fixed literal for the six notification-referenced docs; others mint one. */
+  uuid?: string;
+  number: string;
+  title: string;
+  /** TEMPLATE source when set; UPLOAD (with fileMeta) otherwise. */
+  templateCode?: DocumentTemplate['code'];
+  /** Final display strings — employee-kind values are FIOs here, not uuids. */
+  values?: Record<string, string>;
+  fileMeta?: FileMeta;
+  confidentiality?: Confidentiality;
+  creator: string;
+  recipient: string;
+  signer?: string;
+  requiresApproval: boolean;
+  status: DocumentStatus;
+  createdDaysAgo: number;
+  sentDaysAgo?: number;
+  approvedDaysAgo?: number;
+  signedDaysAgo?: number;
+  closedDaysAgo?: number;
+  emailedTo?: string[];
+  viewedBy?: { employeeUuid: string; daysAgo: number }[];
+  steps?: DocStepSpec[];
+}
+
+// 12 documents: 2 DRAFT · 3 IN_REVIEW (current PENDING participant =
+// RAHBAR / BOLIM_BOSHLIGI / HR_ADMIN respectively) · 1 REJECTED ·
+// 2 APPROVED (one signature queue, one acceptance queue) · 2 SIGNED ·
+// 2 CLOSED. The six DOC_UUID literals line up with the step-16
+// notification story (numbers 0003/0005/0007/0008/0009/0011).
+const docSpecs: DocSpec[] = [
+  {
+    number: 'HJ-2026/0001',
+    title: "Kirish-chiqish tartibi to'g'risida bildirishnoma",
+    templateCode: 'BILDIRISHNOMA',
+    values: {
+      SANA: '01.06.2026',
+      MAZMUN: 'binoga kirish-chiqish yangi elektron ruxsatnomalar orqali amalga oshiriladi',
+      MASUL_FIO: 'Ergasheva Zarina Yusupovna',
+    },
+    creator: PERSONAS.HR_ADMIN,
+    recipient: PERSONAS.XODIM,
+    // "Kelishuv varaqasi kerakmi? → Yo'q" + no signer ⇒ the recipient
+    // accepted and the document went straight to CLOSED.
+    requiresApproval: false,
+    status: 'CLOSED',
+    createdDaysAgo: 20,
+    sentDaysAgo: 19.5,
+    approvedDaysAgo: 19.5,
+    closedDaysAgo: 19,
+    viewedBy: [{ employeeUuid: PERSONAS.XODIM, daysAgo: 19.2 }],
+  },
+  {
+    number: 'HJ-2026/0002',
+    title: "Lavozimga tayinlash to'g'risida buyruq",
+    templateCode: 'BUYRUQ',
+    values: {
+      SANA: '28.05.2026',
+      RAQAM: '17',
+      XODIM_FIO: FIO_XODIM,
+      MAZMUN: "API Sho'basida integratsiya loyihasini muvofiqlashtirish",
+      ASOS: "bo'lim boshlig'ining taqdimnomasi",
+    },
+    creator: PERSONAS.BOLIM_BOSHLIGI,
+    recipient: PERSONAS.XODIM,
+    signer: PERSONAS.RAHBAR,
+    requiresApproval: true,
+    status: 'SIGNED',
+    createdDaysAgo: 15,
+    sentDaysAgo: 14.5,
+    approvedDaysAgo: 14,
+    signedDaysAgo: 13.5,
+    steps: [{ order: 1, employeeUuid: PERSONAS.HR_ADMIN, decision: 'APPROVED', daysAgo: 14 }],
+    viewedBy: [
+      { employeeUuid: PERSONAS.HR_ADMIN, daysAgo: 14.2 },
+      { employeeUuid: PERSONAS.RAHBAR, daysAgo: 13.8 },
+      { employeeUuid: PERSONAS.XODIM, daysAgo: 13 },
+    ],
+  },
+  {
+    uuid: DOC_UUID(3),
+    number: 'HJ-2026/0003',
+    title: "Ta'til berish to'g'risida ariza",
+    templateCode: 'ARIZA',
+    values: {
+      SANA: '15.06.2026',
+      MAZMUN: "yillik mehnat ta'tili (14 kun)",
+      SABAB: 'oilaviy sharoit',
+    },
+    creator: PERSONAS.XODIM,
+    recipient: PERSONAS.BOLIM_BOSHLIGI,
+    requiresApproval: true,
+    status: 'REJECTED',
+    createdDaysAgo: 5,
+    sentDaysAgo: 4.8,
+    steps: [
+      {
+        order: 1,
+        employeeUuid: PERSONAS.BOLIM_BOSHLIGI,
+        decision: 'REJECTED',
+        daysAgo: 4.5,
+        comment: "Ta'til jadvaliga mos kelmaydi — muddatni bo'lim jadvali bilan kelishib qayta kiriting.",
+      },
+    ],
+    viewedBy: [{ employeeUuid: PERSONAS.BOLIM_BOSHLIGI, daysAgo: 4.6 }],
+  },
+  {
+    number: 'HJ-2026/0004',
+    title: "Ish joyidan ma'lumotnoma",
+    templateCode: 'MALUMOTNOMA',
+    values: {
+      XODIM_FIO: FIO_XODIM,
+      LAVOZIM: 'Dasturchi',
+      MAQSAD: 'bank muassasasiga',
+    },
+    creator: PERSONAS.HR_ADMIN,
+    recipient: PERSONAS.BOLIM_BOSHLIGI,
+    // No signer ⇒ sits in the BOLIM_BOSHLIGI acceptance queue.
+    requiresApproval: true,
+    status: 'APPROVED',
+    createdDaysAgo: 3,
+    sentDaysAgo: 2.8,
+    approvedDaysAgo: 2.6,
+    steps: [{ order: 1, employeeUuid: PERSONAS.RAHBAR, decision: 'APPROVED', daysAgo: 2.6 }],
+    viewedBy: [
+      { employeeUuid: PERSONAS.RAHBAR, daysAgo: 2.7 },
+      { employeeUuid: PERSONAS.BOLIM_BOSHLIGI, daysAgo: 2 },
+    ],
+  },
+  {
+    uuid: DOC_UUID(2),
+    number: 'HJ-2026/0005',
+    title: "Server resurslarini kengaytirish to'g'risida",
+    templateCode: 'XIZMAT_XATI',
+    values: {
+      KIMGA: "Infratuzilma Boshqarmasi boshlig'i",
+      SANA: '09.06.2026',
+      MAZMUN: "API xizmatlari yuklamasining o'sishi munosabati bilan qo'shimcha server resurslari ajratish so'raladi",
+      MUDDAT: '20.06.2026',
+    },
+    creator: PERSONAS.XODIM,
+    recipient: PERSONAS.HR_ADMIN,
+    signer: PERSONAS.RAHBAR,
+    requiresApproval: true,
+    status: 'SIGNED',
+    createdDaysAgo: 2.5,
+    sentDaysAgo: 2.3,
+    approvedDaysAgo: 2.1,
+    signedDaysAgo: 1.8,
+    emailedTo: ['arxiv@devon.uz'],
+    steps: [{ order: 1, employeeUuid: PERSONAS.BOLIM_BOSHLIGI, decision: 'APPROVED', daysAgo: 2.1 }],
+    viewedBy: [
+      { employeeUuid: PERSONAS.BOLIM_BOSHLIGI, daysAgo: 2.2 },
+      { employeeUuid: PERSONAS.RAHBAR, daysAgo: 1.9 },
+      { employeeUuid: PERSONAS.HR_ADMIN, daysAgo: 1.5 },
+    ],
+  },
+  {
+    number: 'HJ-2026/0006',
+    title: "Texnik ta'minotni kengaytirish to'g'risida",
+    templateCode: 'XIZMAT_XATI',
+    values: {
+      KIMGA: 'IT Departamenti rahbari',
+      SANA: '10.06.2026',
+      MAZMUN: "ishlab chiqish serverlari uchun qo'shimcha quvvat ajratish masalasini ko'rib chiqish so'raladi",
+      MUDDAT: '30.06.2026',
+    },
+    creator: PERSONAS.XODIM,
+    recipient: PERSONAS.HR_ADMIN,
+    signer: PERSONAS.RAHBAR,
+    // Current PENDING participant = RAHBAR (order 2) → his decision queue.
+    requiresApproval: true,
+    status: 'IN_REVIEW',
+    createdDaysAgo: 1.5,
+    sentDaysAgo: 1.4,
+    steps: [
+      {
+        order: 1,
+        employeeUuid: PERSONAS.BOLIM_BOSHLIGI,
+        decision: 'APPROVED_WITH_COMMENT',
+        daysAgo: 1.0,
+        comment: "Byudjet doirasida ma'qullayman.",
+      },
+      { order: 2, employeeUuid: PERSONAS.RAHBAR, decision: 'PENDING' },
+    ],
+    viewedBy: [{ employeeUuid: PERSONAS.BOLIM_BOSHLIGI, daysAgo: 1.1 }],
+  },
+  {
+    uuid: DOC_UUID(1),
+    number: 'HJ-2026/0007',
+    title: "Qo'shimcha jihozlar ajratish to'g'risida",
+    templateCode: 'XIZMAT_XATI',
+    values: {
+      KIMGA: 'IT Departamenti rahbari',
+      SANA: '11.06.2026',
+      MAZMUN: "yangi xodimlar uchun ish stansiyalari ajratish so'raladi",
+      MUDDAT: '25.06.2026',
+    },
+    creator: PERSONAS.XODIM,
+    recipient: PERSONAS.BOLIM_BOSHLIGI,
+    signer: PERSONAS.RAHBAR,
+    // Kelishuv done → APPROVED, awaiting the Rahbar's ERI (signature queue).
+    requiresApproval: true,
+    status: 'APPROVED',
+    createdDaysAgo: 0.3,
+    sentDaysAgo: 0.2,
+    approvedDaysAgo: 0.15,
+    steps: [{ order: 1, employeeUuid: PERSONAS.BOLIM_BOSHLIGI, decision: 'APPROVED', daysAgo: 0.15 }],
+    viewedBy: [{ employeeUuid: PERSONAS.BOLIM_BOSHLIGI, daysAgo: 0.18 }],
+  },
+  {
+    uuid: DOC_UUID(6),
+    number: 'HJ-2026/0008',
+    title: "Attestatsiya o'tkazish to'g'risida bildirishnoma",
+    templateCode: 'BILDIRISHNOMA',
+    values: {
+      SANA: '15.06.2026',
+      MAZMUN: "Backend Bo'limida navbatdagi attestatsiya o'tkaziladi",
+      MASUL_FIO: HR_ADMIN_NAME,
+    },
+    creator: PERSONAS.BOLIM_BOSHLIGI,
+    recipient: PERSONAS.RAHBAR,
+    // Current PENDING participant = HR_ADMIN → his decision queue.
+    requiresApproval: true,
+    status: 'IN_REVIEW',
+    createdDaysAgo: 0.5,
+    sentDaysAgo: 0.4,
+    steps: [{ order: 1, employeeUuid: PERSONAS.HR_ADMIN, decision: 'PENDING' }],
+  },
+  {
+    uuid: DOC_UUID(4),
+    number: 'HJ-2026/0009',
+    title: 'Boshqarma majlisi bayonnomasi',
+    fileMeta: {
+      fileName: 'majlis_bayonnomasi_2026-21.pdf',
+      fileSize: 642 * 1024,
+      mimeType: 'application/pdf',
+      uploadedAt: DAYS_AGO(4),
+    },
+    confidentiality: 'MAXFIY',
+    creator: PERSONAS.BOLIM_BOSHLIGI,
+    recipient: PERSONAS.HR_ADMIN,
+    // No signer ⇒ the HR_ADMIN recipient accepted → CLOSED.
+    requiresApproval: true,
+    status: 'CLOSED',
+    createdDaysAgo: 4,
+    sentDaysAgo: 3.8,
+    approvedDaysAgo: 3.5,
+    closedDaysAgo: 3.2,
+    steps: [{ order: 1, employeeUuid: PERSONAS.RAHBAR, decision: 'APPROVED', daysAgo: 3.5 }],
+    viewedBy: [
+      { employeeUuid: PERSONAS.RAHBAR, daysAgo: 3.6 },
+      { employeeUuid: PERSONAS.HR_ADMIN, daysAgo: 3.3 },
+    ],
+  },
+  {
+    number: 'HJ-2026/0010',
+    title: 'Hamkorlik taklifi (skan)',
+    fileMeta: {
+      fileName: 'hamkorlik_taklifi_skan.pdf',
+      fileSize: 418 * 1024,
+      mimeType: 'application/pdf',
+      uploadedAt: DAYS_AGO(0.8),
+    },
+    creator: PERSONAS.XODIM,
+    recipient: PERSONAS.BOLIM_BOSHLIGI,
+    requiresApproval: true,
+    status: 'DRAFT',
+    createdDaysAgo: 0.8,
+    steps: [{ order: 1, employeeUuid: PERSONAS.BOLIM_BOSHLIGI, decision: 'PENDING' }],
+  },
+  {
+    uuid: DOC_UUID(5),
+    number: 'HJ-2026/0011',
+    title: "Doimiy lavozimga tayinlash to'g'risida buyruq",
+    templateCode: 'BUYRUQ',
+    values: {
+      SANA: '10.06.2026',
+      RAQAM: '23',
+      XODIM_FIO: "Norbo'taeva Mohira Sherzodovna",
+      MAZMUN: "doimiy mehnat shartnomasiga o'tkazilsin",
+      ASOS: "sinov muddati yakunlari to'g'risidagi xulosa",
+    },
+    creator: PERSONAS.HR_ADMIN,
+    recipient: PERSONAS.RAHBAR,
+    signer: PERSONAS.RAHBAR,
+    // RAHBAR (order 1) decided; current PENDING participant =
+    // BOLIM_BOSHLIGI (order 2) → his decision queue.
+    requiresApproval: true,
+    status: 'IN_REVIEW',
+    createdDaysAgo: 0.7,
+    sentDaysAgo: 0.6,
+    steps: [
+      { order: 1, employeeUuid: PERSONAS.RAHBAR, decision: 'APPROVED', daysAgo: 0.3 },
+      { order: 2, employeeUuid: PERSONAS.BOLIM_BOSHLIGI, decision: 'PENDING' },
+    ],
+    viewedBy: [{ employeeUuid: PERSONAS.RAHBAR, daysAgo: 0.35 }],
+  },
+  {
+    number: 'HJ-2026/0012',
+    title: "Malaka oshirish kursi to'g'risida",
+    templateCode: 'XIZMAT_XATI',
+    // MUDDAT deliberately unfilled — the optional field of this fresh draft
+    // renders as «—» until the creator completes it (renderTemplate rule).
+    values: {
+      KIMGA: 'Kadrlar Departamenti',
+      SANA: '12.06.2026',
+      MAZMUN: "malaka oshirish kursiga yo'llanma berish so'raladi",
+    },
+    creator: PERSONAS.XODIM,
+    recipient: PERSONAS.HR_ADMIN,
+    requiresApproval: true,
+    status: 'DRAFT',
+    createdDaysAgo: 0.1,
+    steps: [
+      { order: 1, employeeUuid: PERSONAS.BOLIM_BOSHLIGI, decision: 'PENDING' },
+      { order: 2, employeeUuid: PERSONAS.RAHBAR, decision: 'PENDING' },
+    ],
+  },
+];
+
+function buildDocumentDomain(certificates: Certificate[]): {
+  documents: DocumentEntity[];
+  approvalSteps: ApprovalStep[];
+  signatures: SignatureRecord[];
+} {
+  const templateByCode = new Map(documentTemplates.map((t) => [t.code, t]));
+  const documents: DocumentEntity[] = [];
+  const approvalSteps: ApprovalStep[] = [];
+  const signatures: SignatureRecord[] = [];
+
+  const activeCertOf = (employeeUuid: string): Certificate => {
+    const cert = certificates.find(
+      (c) => c.employeeUuid === employeeUuid && c.status === 'ACTIVE',
+    );
+    if (!cert) throw new Error(`Seed invariant broken: no ACTIVE cert for ${employeeUuid}`);
+    return cert;
+  };
+
+  // Math.random()-based hex is fine for seed fixtures (the runtime
+  // signDocument mutation uses crypto.getRandomValues).
+  const fakeSignatureHex = () => randomHex(256);
+
+  for (const spec of docSpecs) {
+    const template = spec.templateCode ? templateByCode.get(spec.templateCode) : undefined;
+    const docUuid = spec.uuid ?? uuid();
+    const terminalDaysAgo = spec.signedDaysAgo ?? spec.closedDaysAgo;
+    const updatedDaysAgo =
+      terminalDaysAgo ?? spec.approvedDaysAgo ?? spec.sentDaysAgo ?? spec.createdDaysAgo;
+
+    documents.push({
+      uuid: docUuid,
+      number: spec.number,
+      title: spec.title,
+      source: template ? 'TEMPLATE' : 'UPLOAD',
+      templateUuid: template?.uuid,
+      renderedBody: template ? renderTemplate(template.bodyTemplate, spec.values ?? {}) : undefined,
+      fileMeta: spec.fileMeta,
+      confidentiality: spec.confidentiality ?? 'ODDIY',
+      creatorUuid: spec.creator,
+      recipientUuid: spec.recipient,
+      signerUuid: spec.signer,
+      requiresApproval: spec.requiresApproval,
+      status: spec.status,
+      round: 1,
+      viewedBy: (spec.viewedBy ?? []).map((v) => ({
+        employeeUuid: v.employeeUuid,
+        viewedAt: DAYS_AGO(v.daysAgo),
+      })),
+      sentForReviewAt: spec.sentDaysAgo !== undefined ? DAYS_AGO(spec.sentDaysAgo) : undefined,
+      approvedAt: spec.approvedDaysAgo !== undefined ? DAYS_AGO(spec.approvedDaysAgo) : undefined,
+      signedAt: spec.signedDaysAgo !== undefined ? DAYS_AGO(spec.signedDaysAgo) : undefined,
+      closedAt: spec.closedDaysAgo !== undefined ? DAYS_AGO(spec.closedDaysAgo) : undefined,
+      // The simulated nightly archive job stamps terminal docs immediately.
+      archivedAt: terminalDaysAgo !== undefined ? DAYS_AGO(terminalDaysAgo) : undefined,
+      emailedTo: spec.emailedTo,
+      createdAt: DAYS_AGO(spec.createdDaysAgo),
+      updatedAt: DAYS_AGO(updatedDaysAgo),
+    });
+
+    for (const step of spec.steps ?? []) {
+      approvalSteps.push({
+        uuid: uuid(),
+        documentUuid: docUuid,
+        round: 1,
+        order: step.order,
+        employeeUuid: step.employeeUuid,
+        decision: step.decision,
+        comment: step.comment,
+        decidedAt: step.daysAgo !== undefined ? DAYS_AGO(step.daysAgo) : undefined,
+      });
+    }
+
+    if (spec.status === 'SIGNED' && spec.signer) {
+      signatures.push({
+        uuid: uuid(),
+        resourceType: 'document',
+        resourceUuid: docUuid,
+        employeeUuid: spec.signer,
+        certificateUuid: activeCertOf(spec.signer).uuid,
+        algorithm: 'RSA-PKCS7',
+        signatureHex: fakeSignatureHex(),
+        signedAt: DAYS_AGO(spec.signedDaysAgo!),
+      });
+    }
+  }
+
+  // Spare third record: the Rahbar's ERI on the dispatched outgoing letter
+  // CH-2026/0001 from the step-16 notification story. Step 20 must seed
+  // that letter under LETTER_UUID(3) with requiresSignature: true so this
+  // signature resolves retroactively (same convention as the doc UUIDs).
+  signatures.push({
+    uuid: uuid(),
+    resourceType: 'letter',
+    resourceUuid: LETTER_UUID(3),
+    employeeUuid: PERSONAS.RAHBAR,
+    certificateUuid: activeCertOf(PERSONAS.RAHBAR).uuid,
+    algorithm: 'RSA-PKCS7',
+    signatureHex: fakeSignatureHex(),
+    signedAt: DAYS_AGO(2.6),
+  });
+
+  return { documents, approvalSteps, signatures };
+}
 
 interface NotificationSpec {
   recipient: string;
@@ -1115,6 +1648,7 @@ export async function resetAndSeed(): Promise<void> {
   const certificates = buildCertificates(employees);
   const audit = buildAudit(employees, units, certificates);
   const notifications = buildNotifications(employees);
+  const { documents, approvalSteps, signatures } = buildDocumentDomain(certificates);
 
   writeTable(Tables.positions, positions);
   writeTable(Tables.units, units);
@@ -1125,6 +1659,10 @@ export async function resetAndSeed(): Promise<void> {
   writeTable(Tables.audit, audit);
   writeTable(Tables.profileRequests, []);
   writeTable(Tables.notifications, notifications);
+  writeTable(Tables.documentTemplates, documentTemplates);
+  writeTable(Tables.documents, documents);
+  writeTable(Tables.approvalSteps, approvalSteps);
+  writeTable(Tables.signatures, signatures);
 
   localStorage.setItem(SEED_FLAG, SEED_VERSION);
 }

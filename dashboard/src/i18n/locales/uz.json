@@ -162,6 +162,7 @@
         "DOC_APPROVED": "{{docNumber}} hujjati kelishuvdan o'tdi",
         "DOC_REJECTED": "{{actorName}} {{docNumber}} hujjatini rad etdi",
         "DOC_SIGN_REQUESTED": "{{docNumber}} hujjati imzolash uchun yuborildi",
+        "DOC_ACCEPT_REQUESTED": "{{docNumber}} hujjati qabul qilish uchun yuborildi",
         "DOC_SIGNED": "{{actorName}} {{docNumber}} hujjatini imzoladi",
         "DOC_CLOSED": "{{docNumber}} hujjati qabul qilindi",
         "LETTER_ROUTED": "{{letterNumber}} xati bo'linmangizga yo'naltirildi",
@@ -246,7 +247,9 @@
         "assignment": "Biriktirma",
         "certificate": "ERI",
         "user": "Foydalanuvchi",
-        "profile-request": "Profil so'rovi"
+        "profile-request": "Profil so'rovi",
+        "document": "Hujjat",
+        "letter": "Xat"
       },
       "col": {
         "time": "Vaqt",
@@ -283,7 +286,43 @@
         "CERTIFICATE_REVOKED": "ERIni bekor qildi",
         "PROFILE_CHANGE_REQUESTED": "profil o'zgarishini so'radi",
         "PROFILE_CHANGE_APPROVED": "profil o'zgarishini tasdiqladi",
-        "POV_SWITCHED": "rol almashtirdi"
+        "POV_SWITCHED": "rol almashtirdi",
+        "DOCUMENT_CREATED": "hujjat yaratdi",
+        "DOCUMENT_SENT_FOR_REVIEW": "hujjatni kelishuvga yubordi",
+        "DOCUMENT_APPROVED": "hujjatni ma'qulladi",
+        "DOCUMENT_REJECTED": "hujjatni rad etdi",
+        "DOCUMENT_SIGNED": "hujjatni imzoladi",
+        "DOCUMENT_CLOSED": "hujjatni qabul qilib yopdi",
+        "DOCUMENT_VIEWED": "hujjat bilan tanishdi",
+        "DOCUMENT_EMAILED": "hujjatni email orqali eksport qildi"
+      }
+    },
+    "documents": {
+      "errors": {
+        "wrong-status": "Bu amal hujjatning joriy holatida bajarilmaydi",
+        "not-creator": "Bu amalni faqat hujjat yaratuvchisi bajara oladi",
+        "not-participant": "Siz ushbu kelishuv varaqasining ishtirokchisi emassiz",
+        "out-of-order": "Navbat hali sizga kelmagan",
+        "already-decided": "Siz bu hujjat bo'yicha qaroringizni allaqachon bildirgansiz",
+        "comment-required": "Rad etish uchun izoh kiritish majburiy",
+        "not-signer": "Bu hujjatni faqat belgilangan imzolovchi imzolay oladi",
+        "not-recipient": "Bu hujjatni faqat qabul qiluvchi qabul qila oladi",
+        "cert-invalid": "ERI sertifikati yaroqsiz yoki sizga tegishli emas",
+        "not-editable": "Faqat qoralama yoki rad etilgan hujjatni tahrirlash mumkin",
+        "not-deletable": "Imzolangan yoki jarayondagi hujjatni o'chirish mumkin emas — faqat o'z qoralamangiz o'chiriladi"
+      },
+      "fields": {
+        "SANA": "Sana",
+        "RAQAM": "Buyruq raqami",
+        "XODIM_FIO": "Xodim F.I.Sh.",
+        "MAZMUN": "Mazmun",
+        "ASOS": "Asos",
+        "KIMGA": "Kimga",
+        "MUDDAT": "Ijro muddati",
+        "LAVOZIM": "Lavozim",
+        "MAQSAD": "Taqdim etish joyi",
+        "SABAB": "Sabab",
+        "MASUL_FIO": "Mas'ul shaxs"
       }
     },
     "profile": {

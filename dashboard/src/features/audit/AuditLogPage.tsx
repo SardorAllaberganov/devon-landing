@@ -39,6 +39,8 @@ const RESOURCE_TYPES: AuditResourceType[] = [
   'certificate',
   'user',
   'profile-request',
+  'document',
+  // 'letter' joins in step 20 — no letter rows can exist before then.
 ];
 
 interface Filters {

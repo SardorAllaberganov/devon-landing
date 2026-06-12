@@ -10,6 +10,11 @@ export const Tables = {
   profileRequests: 'profile-requests',
   positions: 'positions',
   notifications: 'notifications',
+  documentTemplates: 'document-templates',
+  documents: 'documents',
+  approvalSteps: 'approval-steps',
+  // Shared with letters from step 20 — `SignatureRecord.resourceType` discriminates.
+  signatures: 'signatures',
 } as const;
 
 export function readTable<T>(key: string, fallback: T[]): T[] {

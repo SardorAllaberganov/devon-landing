@@ -49,6 +49,31 @@ export class CertificateValidationError extends Error {
   }
 }
 
+// Policy layer for milestone-2 documents (CLAUDE.md: per-document
+// authorization is enforced in mutations, never by UI hiding alone).
+// Every document mutation validates against the *acting* employee uuid.
+export type DocumentValidationCode =
+  | 'wrong-status' // action not allowed in the current DocumentStatus
+  | 'not-creator' // edit/delete/submit by someone other than the creator
+  | 'not-participant' // decideApproval by a non-participant of the current round
+  | 'out-of-order' // participant exists but an earlier order is still PENDING
+  | 'already-decided' // participant already acted this round
+  | 'comment-required' // REJECTED without a comment (BP-4 failure-mode rule)
+  | 'not-signer' // signDocument by someone other than signerUuid
+  | 'not-recipient' // acceptDocument by someone other than recipientUuid
+  | 'cert-invalid' // certificate not ACTIVE or not owned by the signer
+  | 'not-editable' // update on a non-DRAFT/non-REJECTED document
+  | 'not-deletable'; // delete on anything except own DRAFT (§2.2 signed-doc protection)
+
+export class DocumentValidationError extends Error {
+  readonly code: DocumentValidationCode;
+  constructor(code: DocumentValidationCode) {
+    super(`Document validation failed: ${code}`);
+    this.name = 'DocumentValidationError';
+    this.code = code;
+  }
+}
+
 export type PasswordValidationCode = 'current-wrong';
 
 export class PasswordValidationError extends Error {

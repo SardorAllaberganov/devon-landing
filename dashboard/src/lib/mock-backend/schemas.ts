@@ -83,6 +83,14 @@ export const auditActionSchema = z.enum([
   'PROFILE_CHANGE_REQUESTED',
   'PROFILE_CHANGE_APPROVED',
   'POV_SWITCHED',
+  'DOCUMENT_CREATED',
+  'DOCUMENT_SENT_FOR_REVIEW',
+  'DOCUMENT_APPROVED',
+  'DOCUMENT_REJECTED',
+  'DOCUMENT_SIGNED',
+  'DOCUMENT_CLOSED',
+  'DOCUMENT_VIEWED',
+  'DOCUMENT_EMAILED',
 ]);
 
 export const auditResourceTypeSchema = z.enum([
@@ -92,6 +100,8 @@ export const auditResourceTypeSchema = z.enum([
   'certificate',
   'user',
   'profile-request',
+  'document',
+  'letter',
 ]);
 
 // === Field validators reused across schemas + form schemas ===
@@ -273,4 +283,102 @@ export const appNotificationSchema = z.object({
   resourceUuid: z.string().uuid(),
   isRead: z.boolean(),
   createdAt: z.string(),
+});
+
+// === Documents (milestone 2, step 17) ===
+
+export const documentSourceSchema = z.enum(['TEMPLATE', 'UPLOAD']);
+
+export const documentStatusSchema = z.enum([
+  'DRAFT',
+  'IN_REVIEW',
+  'REJECTED',
+  'APPROVED',
+  'SIGNED',
+  'CLOSED',
+]);
+
+export const confidentialitySchema = z.enum(['ODDIY', 'MAXFIY']);
+
+export const fileMetaSchema = z.object({
+  fileName: z.string().min(1),
+  fileSize: z.number().int().positive(),
+  mimeType: z.string().min(1),
+  uploadedAt: z.string(),
+});
+
+export const templateFieldSchema = z.object({
+  key: z.string().min(1),
+  labelKey: z.string().min(1),
+  kind: z.enum(['text', 'textarea', 'date', 'employee']),
+  required: z.boolean(),
+});
+
+export const documentTemplateSchema = z.object({
+  uuid: z.string().uuid(),
+  code: z.enum(['BUYRUQ', 'XIZMAT_XATI', 'MALUMOTNOMA', 'ARIZA', 'BILDIRISHNOMA']),
+  nameUz: z.string().min(1),
+  descriptionUz: z.string().min(1),
+  bodyTemplate: z.string().min(1),
+  fields: z.array(templateFieldSchema),
+});
+
+export const documentViewRecordSchema = z.object({
+  employeeUuid: z.string().uuid(),
+  viewedAt: z.string(),
+});
+
+export const documentEntitySchema = z.object({
+  uuid: z.string().uuid(),
+  number: z.string().regex(/^HJ-2026\/\d{4}$/),
+  title: z.string().min(1),
+  source: documentSourceSchema,
+  templateUuid: z.string().uuid().optional(),
+  renderedBody: z.string().optional(),
+  fileMeta: fileMetaSchema.optional(),
+  confidentiality: confidentialitySchema,
+  creatorUuid: z.string().uuid(),
+  recipientUuid: z.string().uuid(),
+  signerUuid: z.string().uuid().optional(),
+  requiresApproval: z.boolean(),
+  status: documentStatusSchema,
+  round: z.number().int().min(1),
+  viewedBy: z.array(documentViewRecordSchema),
+  sentForReviewAt: z.string().optional(),
+  approvedAt: z.string().optional(),
+  signedAt: z.string().optional(),
+  closedAt: z.string().optional(),
+  archivedAt: z.string().optional(),
+  emailedTo: z.array(z.string()).optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const approvalDecisionSchema = z.enum([
+  'PENDING',
+  'APPROVED',
+  'APPROVED_WITH_COMMENT',
+  'REJECTED',
+]);
+
+export const approvalStepSchema = z.object({
+  uuid: z.string().uuid(),
+  documentUuid: z.string().uuid(),
+  round: z.number().int().min(1),
+  order: z.number().int().min(1),
+  employeeUuid: z.string().uuid(),
+  decision: approvalDecisionSchema,
+  comment: z.string().optional(),
+  decidedAt: z.string().optional(),
+});
+
+export const signatureRecordSchema = z.object({
+  uuid: z.string().uuid(),
+  resourceType: z.enum(['document', 'letter']),
+  resourceUuid: z.string().uuid(),
+  employeeUuid: z.string().uuid(),
+  certificateUuid: z.string().uuid(),
+  algorithm: z.literal('RSA-PKCS7'),
+  signatureHex: z.string().min(1),
+  signedAt: z.string(),
 });
