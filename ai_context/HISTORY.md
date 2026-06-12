@@ -4,6 +4,34 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-06-12 — `/doc_sync` checkpoint (post M2-planning session)
+
+Ran `/doc_sync` immediately after the milestone-2 planning session below. **Verified in sync — no additional writes needed:** the doc cascade was performed inline with the planning work (`CLAUDE.md` sources-of-truth rows, `AI_CONTEXT.md` canonical table + M2 section + open questions, `business-processes.md` BPMN links + BP-3 state extension, `glossary.md` three edits, prompt-set master/README), and the session entry below already records date, summary and files touched. Template-mismatch reasoning as in prior checkpoints: Devon has no `product_states.md` / `models.md` / `mermaid_schemas/` — its equivalents were the cascade targets. Deliberately untouched: root `README.md` and `docs/product-specification.md` (M2 is planned, not shipped — no product behavior changed; UC demo-coverage notes are step 22's job post-implementation). Working tree still uncommitted, awaiting `/commit`. **Files touched:** `ai_context/HISTORY.md` (this entry)
+
+---
+
+## 2026-06-12 — Milestone 2 planned: Electronic Document Management prompt set (steps 16–22)
+
+Deep-analyzed the new TLH [`docs/Plyma 19.03.2026.docx`](../docs/Plyma%2019.03.2026.docx) ("PLYMA — Yangilangan, Laravel Stack": requirements §2.1–2.7, BPMN §3.1–3.4, Laravel-11 stack table, team plan, 11-block to-do/price list) and authored the milestone-2 development plan for the dashboard demo, following the milestone-1 prompt-set rhythm.
+
+**Scope decisions (user-approved):** M2 = BPMN 3.4 (document creation + kelishuv + ERI signing + archive) **+** BPMN 3.3 (Devonxona incoming/outgoing letters); BPMN 3.2 (task Kanban) deferred to M3; BPMN 3.1 already shipped as M1. Multi-actor flows handled via a **POV switcher** (5 seeded personas, no extra logins — resolves the step-13 "employee POV" deferral). Deliverable format: prompt set (master addenda + steps 16–22), implementation to follow one step per session.
+
+**Key design facts baked into the set:** state names follow `business-processes.md` BP-3/BP-4 canon — `DocumentStatus: DRAFT → IN_REVIEW → REJECTED(→rework)/APPROVED → SIGNED | CLOSED` with archive as an `archivedAt` stamp (not a status); `LetterStatus` extends BP-3's list with `executed` and `on-signature` (the TLH BPMN's explicit acceptance/signature gates — BP-3 doc updated accordingly, dated note inline); sequential-only kelishuv (parallel chains out of scope); `ApprovalDecision: PENDING/APPROVED/APPROVED_WITH_COMMENT/REJECTED` with comment required on reject; metadata-only `FileMeta` convention continues (print-to-PDF of an A4 preview substitutes downloads); hardcoded numbering `HJ-2026/NNNN` · `K-2026/NNNN` · `CH-2026/NNNN`; policy-layer enforcement in the mock backend (`DocumentValidationError` / `LetterValidationError` with codes like `out-of-order`, `not-deletable`, `not-devonxona`) so signed-document immutability and per-document authorization hold even against console calls; notifications table + bell with per-persona scoping; seed grows in three bumps (`SEED_VERSION` 5/6/7 in steps 16/17/20). Type names avoid DOM collisions (`DocumentEntity`, `AppNotification`).
+
+**BPMN PNGs extracted** from the docx into [`docs/bpmn/`](../docs/bpmn/) (4 files, descriptive names + index README) — closes the long-standing "BPMN diagrams missing" gap. New TLH registered as a canonical source in `CLAUDE.md` and `AI_CONTEXT.md` (supersedes `Plyma_Technical_Spec_v1.0.docx`). Glossary: PLYMA naming-history row now mentions the 2026-dated TLH; `keluvchi xat` spelling variant; new `Yo'naltirish` entry. Flagged in AI_CONTEXT open questions: the TLH lists only 7 module sections (letters module missing as §2.8 despite its BPMN) — 8-module canon stands; "Mehmon" role mention is consistent with the existing planned-post-v1.0 glossary entry.
+
+**No code touched; no commits** (user runs `/commit`). Implementation of step 16 is the next dashboard session.
+
+**Files touched:**
+- `docs/bpmn/bp{1..4}-*.png` (new, extracted) + `docs/bpmn/README.md` (new)
+- `docs/dashboard-prompts/16-m2-pov-notifications.md`, `17-m2-documents-backend.md`, `18-m2-flow5-documents-wizard.md`, `19-m2-flow5-document-detail.md`, `20-m2-flow6-letters-registry.md`, `21-m2-flow6-letter-execution.md`, `22-m2-home-qa.md` (all new)
+- `docs/dashboard-prompts/00-master.md` (§2 milestones, §3 repo refs, §9 M2 seed, §10 POV switcher, §11 routes, §12 file structure, §15 M2 data models + state machines, §17 M2 out-of-scope, §19 references)
+- `docs/dashboard-prompts/README.md` (intro, files table 16–22, M2 decisions table)
+- `docs/business-processes.md` (BPMN diagram links per BP, BP-3 state list extension)
+- `docs/glossary.md` (3 edits), `CLAUDE.md` (sources-of-truth rows), `ai_context/AI_CONTEXT.md` (canonical table, M2 section, open questions), `ai_context/HISTORY.md` (this entry)
+
+---
+
 ## 2026-06-11 — Required "Buyruqdan ko'chirma" attachment in the employee wizard
 
 Added the required hiring-order-extract attachment field to wizard Step 3 (Ish o'rni) per the approved spec (`docs/superpowers/specs/2026-06-11-employee-order-extract-attachment-design.md`) and plan (`docs/superpowers/plans/2026-06-11-employee-order-extract-attachment.md`). Metadata-only storage (`{ fileName, fileSize, mimeType, uploadedAt }` — no bytes, certificate convention); pick-time type/size validation (PDF/JPG/PNG, ≤ 10 MB) in the new [`OrderExtractField.tsx`](../dashboard/src/features/employees/wizard/OrderExtractField.tsx); zod-required gate in `step3Schema`; policy-layer enforcement via `EmployeeValidationError('order-extract-missing')` in `createEmployeeFull` (which stamps `uploadedAt` and writes the file name into the CREATE audit entry's `context`). Field is immutable post-creation (excluded from `updateEmployee`'s patch type; not in `UpdateEmployeeSheet`). New rows on the wizard review screen and the profile Info tab. Shared `formatBytes` helper extracted to [`src/lib/format.ts`](../dashboard/src/lib/format.ts) (B/KB/MB; certificate upload page switched to it). All 30 seeded employees carry extract metadata; `SEED_VERSION` bumped `'3' → '4'` (existing browsers silently reseed on next load — demo-session edits are wiped, correct per LESSONS). Doc cascade: product-specification §User/Auth capability list, UC-17 main flow + acceptance criterion, BP-1 steps 3/9 (order extract is in-wizard pre-creation; lavozim yo'riqnomasi stays post-creation), glossary "Buyruqdan ko'chirma" entry, README profile line, prompt-set addendum in 10-flow2.
