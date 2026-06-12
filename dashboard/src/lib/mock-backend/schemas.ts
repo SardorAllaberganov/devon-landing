@@ -91,6 +91,14 @@ export const auditActionSchema = z.enum([
   'DOCUMENT_CLOSED',
   'DOCUMENT_VIEWED',
   'DOCUMENT_EMAILED',
+  'LETTER_REGISTERED',
+  'LETTER_ROUTED',
+  'LETTER_ASSIGNED',
+  'LETTER_EXECUTED',
+  'LETTER_ACCEPTED',
+  'LETTER_SIGNED',
+  'LETTER_DISPATCHED',
+  'LETTER_CLOSED',
 ]);
 
 export const auditResourceTypeSchema = z.enum([
@@ -382,4 +390,48 @@ export const signatureRecordSchema = z.object({
   algorithm: z.literal('RSA-PKCS7'),
   signatureHex: z.string().min(1),
   signedAt: z.string(),
+});
+
+// === Letters (milestone 2, step 20) ===
+
+export const letterDirectionSchema = z.enum(['INCOMING', 'OUTGOING']);
+
+export const letterStatusSchema = z.enum([
+  'REGISTERED',
+  'ROUTED',
+  'ASSIGNED',
+  'IN_PROGRESS',
+  'EXECUTED',
+  'ON_SIGNATURE',
+  'RESPONDED',
+  'DISPATCHED',
+  'CLOSED',
+  'CLOSED_NO_RESPONSE',
+]);
+
+export const letterChannelSchema = z.enum(['POCHTA', 'EMAIL', 'KURYER', 'QOGOZ']);
+
+export const letterSchema = z.object({
+  uuid: z.string().uuid(),
+  direction: letterDirectionSchema,
+  number: z.string().regex(/^(K|CH)-2026\/\d{4}$/),
+  externalOrg: z.string().min(1),
+  subject: z.string().min(1),
+  channel: letterChannelSchema,
+  fileMeta: fileMetaSchema.optional(),
+  receivedAt: z.string().optional(),
+  deadline: z.string().optional(),
+  routedToUnitUuid: z.string().uuid().optional(),
+  assignedEmployeeUuid: z.string().uuid().optional(),
+  requiresSignature: z.boolean(),
+  executionComment: z.string().optional(),
+  responseFileMeta: fileMetaSchema.optional(),
+  responseDocumentUuid: z.string().uuid().optional(),
+  linkedIncomingUuid: z.string().uuid().optional(),
+  status: letterStatusSchema,
+  registeredByUuid: z.string().uuid(),
+  dispatchedAt: z.string().optional(),
+  closedAt: z.string().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 });

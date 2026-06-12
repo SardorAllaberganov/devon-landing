@@ -9,6 +9,7 @@ import {
   CertificateValidationError,
   DocumentValidationError,
   EmployeeValidationError,
+  LetterValidationError,
   maybeFail,
   PasswordValidationError,
   UnitValidationError,
@@ -52,6 +53,10 @@ import type {
   Employee,
   EmploymentOrderExtract,
   FileMeta,
+  Letter,
+  LetterChannel,
+  LetterDirection,
+  LetterStatus,
   NotificationType,
   Position,
   ProfileChangeRequest,
@@ -1883,6 +1888,640 @@ export async function deleteDocument(uuid: string, actorUuid: string): Promise<v
   });
 }
 
+// === Letters (milestone 2, step 20 — BPMN 3.3 / BP-3) ===
+//
+// Same policy contract as documents: per-letter authorization is enforced
+// HERE against the *acting* employee uuid each mutation receives. Walking
+// the API from the browser console hits the same guards as the screens
+// (registry in this step; detail actions in step 21).
+
+function readLetters(): Letter[] {
+  return readTable<Letter>(Tables.letters, []);
+}
+
+function letterLabel(letter: Letter): string {
+  return `${letter.number} · ${letter.subject}`;
+}
+
+/**
+ * Year hardcoded per master §17 (documents convention). Separate counters
+ * per prefix: incoming 'K-2026/NNNN', outgoing 'CH-2026/NNNN'.
+ */
+function nextLetterNumber(letters: Letter[], prefix: 'K' | 'CH'): string {
+  const re = new RegExp(`^${prefix}-2026/(\\d{4})$`);
+  let max = 0;
+  for (const l of letters) {
+    const m = re.exec(l.number);
+    if (m) max = Math.max(max, Number(m[1]));
+  }
+  return `${prefix}-2026/${String(max + 1).padStart(4, '0')}`;
+}
+
+// --- Persona resolution (BPMN 3.3 swim lanes) ---
+
+/** Devonxona = the actor's user carries ROLE_DEVONXONA. */
+function isDevonxona(employeeUuid: string): boolean {
+  const user = readUsers().find((u) => u.employeeUuid === employeeUuid);
+  return user?.roles.includes('ROLE_DEVONXONA') ?? false;
+}
+
+/** Rahbar = the actor heads a root-level unit (level 0 + headEmployeeUuid). */
+function isRahbar(employeeUuid: string): boolean {
+  return readUnits().some(
+    (u) => u.level === 0 && u.headEmployeeUuid === employeeUuid,
+  );
+}
+
+/** Unit head = the actor heads the unit itself or any of its ancestors. */
+function headsUnitOrAncestor(employeeUuid: string, unitUuid: string): boolean {
+  const units = readUnits();
+  let current = units.find((u) => u.uuid === unitUuid);
+  while (current) {
+    if (current.headEmployeeUuid === employeeUuid) return true;
+    const parentUuid = current.parentUuid;
+    current = parentUuid ? units.find((u) => u.uuid === parentUuid) : undefined;
+  }
+  return false;
+}
+
+/**
+ * "The Rahbar" for a routed letter = head of the root ancestor of the routed
+ * unit — the leader of the branch the letter is being executed in. Used for
+ * notification targeting (the `isRahbar` *policy* check stays generic).
+ */
+function rahbarOverUnit(unitUuid: string): string | undefined {
+  const units = readUnits();
+  let current = units.find((u) => u.uuid === unitUuid);
+  while (current && current.parentUuid) {
+    const parentUuid: string = current.parentUuid;
+    current = units.find((u) => u.uuid === parentUuid);
+  }
+  return current?.headEmployeeUuid;
+}
+
+/** All employees carrying ROLE_DEVONXONA (the demo seeds exactly one). */
+function devonxonaEmployeeUuids(): string[] {
+  return readUsers()
+    .filter((u) => u.roles.includes('ROLE_DEVONXONA') && u.employeeUuid)
+    .map((u) => u.employeeUuid!);
+}
+
+function unitHeadOf(unitUuid: string | undefined): string | undefined {
+  if (!unitUuid) return undefined;
+  return readUnits().find((u) => u.uuid === unitUuid)?.headEmployeeUuid;
+}
+
+async function notifyLetter(
+  recipients: Array<string | undefined>,
+  type: NotificationType,
+  letter: Letter,
+  params: Record<string, string>,
+): Promise<void> {
+  const unique = new Set(recipients.filter((r): r is string => Boolean(r)));
+  for (const recipientEmployeeUuid of unique) {
+    await appendNotification({
+      recipientEmployeeUuid,
+      type,
+      titleKey: `dashboard:notifications.title.${type}`,
+      params,
+      resourceType: 'letter',
+      resourceUuid: letter.uuid,
+    });
+  }
+}
+
+// --- Overdue (shared by `listLetters` and the registry badge) ---
+
+const TERMINAL_LETTER_STATUSES: ReadonlySet<LetterStatus> = new Set([
+  'CLOSED',
+  'CLOSED_NO_RESPONSE',
+  'DISPATCHED',
+]);
+
+/** Overdue = deadline strictly before today AND the letter is not terminal. */
+export function isLetterOverdue(letter: Letter): boolean {
+  if (!letter.deadline || TERMINAL_LETTER_STATUSES.has(letter.status)) return false;
+  return letter.deadline.slice(0, 10) < NOW().slice(0, 10);
+}
+
+// === Reads — letters ===
+
+export interface LetterFilters {
+  direction?: LetterDirection;
+  status?: LetterStatus;
+  search?: string;
+  overdueOnly?: boolean;
+}
+
+export async function listLetters(filters?: LetterFilters): Promise<Letter[]> {
+  await simulatedDelay();
+  let rows = readLetters();
+  rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  if (filters?.direction) rows = rows.filter((r) => r.direction === filters.direction);
+  if (filters?.status) rows = rows.filter((r) => r.status === filters.status);
+  if (filters?.overdueOnly) rows = rows.filter(isLetterOverdue);
+  if (filters?.search) {
+    const q = filters.search.toLowerCase();
+    rows = rows.filter(
+      (r) =>
+        r.number.toLowerCase().includes(q) ||
+        r.subject.toLowerCase().includes(q) ||
+        r.externalOrg.toLowerCase().includes(q),
+    );
+  }
+  return rows;
+}
+
+export interface LetterDetail {
+  letter: Letter;
+  signatures: SignatureRecord[];
+  /** On INCOMING rows — the dispatched OUTGOING reply, if any. */
+  linkedOutgoing?: Letter;
+  /** On OUTGOING rows — the INCOMING letter being answered, if any. */
+  linkedIncoming?: Letter;
+  routedToUnitName?: string;
+  assignedEmployeeName?: string;
+  registeredByName: string;
+}
+
+export async function getLetter(uuid: string): Promise<LetterDetail | null> {
+  await simulatedDelay();
+  const letters = readLetters();
+  const letter = letters.find((l) => l.uuid === uuid);
+  if (!letter) return null;
+  return {
+    letter,
+    signatures: readSignatures().filter(
+      (s) => s.resourceType === 'letter' && s.resourceUuid === uuid,
+    ),
+    linkedOutgoing:
+      letter.direction === 'INCOMING'
+        ? letters.find((l) => l.linkedIncomingUuid === uuid)
+        : undefined,
+    linkedIncoming: letter.linkedIncomingUuid
+      ? letters.find((l) => l.uuid === letter.linkedIncomingUuid)
+      : undefined,
+    routedToUnitName: letter.routedToUnitUuid
+      ? readUnits().find((u) => u.uuid === letter.routedToUnitUuid)?.nameUz
+      : undefined,
+    assignedEmployeeName: letter.assignedEmployeeUuid
+      ? employeeNameFor(letter.assignedEmployeeUuid)
+      : undefined,
+    registeredByName: employeeNameFor(letter.registeredByUuid),
+  };
+}
+
+// === Mutations — letters ===
+
+export interface RegisterIncomingLetterInput {
+  externalOrg: string;
+  subject: string;
+  channel: LetterChannel;
+  /** ISO date (yyyy-mm-dd) — when the paper/email actually arrived. */
+  receivedAt: string;
+  /** ISO date — ijro muddati; drives the overdue badge. */
+  deadline?: string;
+  /** "Javobga rahbar imzosi talab qilinadi". */
+  requiresSignature: boolean;
+  /** Scanned original — pick-time metadata; `uploadedAt` is stamped here. */
+  fileMeta?: Omit<FileMeta, 'uploadedAt'>;
+}
+
+export async function registerIncomingLetter(
+  input: RegisterIncomingLetterInput,
+  actorUuid: string,
+): Promise<Letter> {
+  await simulatedDelay();
+  maybeFail();
+  if (!isDevonxona(actorUuid)) throw new LetterValidationError('not-devonxona');
+  const letters = readLetters();
+  const letter: Letter = {
+    uuid: uid(),
+    direction: 'INCOMING',
+    number: nextLetterNumber(letters, 'K'),
+    externalOrg: input.externalOrg,
+    subject: input.subject,
+    channel: input.channel,
+    fileMeta: input.fileMeta ? { ...input.fileMeta, uploadedAt: NOW() } : undefined,
+    receivedAt: input.receivedAt,
+    deadline: input.deadline,
+    requiresSignature: input.requiresSignature,
+    status: 'REGISTERED',
+    registeredByUuid: actorUuid,
+    createdAt: NOW(),
+    updatedAt: NOW(),
+  };
+  letters.unshift(letter);
+  writeTable(Tables.letters, letters);
+  // Registration is Devonxona's own act — audit-only, notifications start at routing.
+  await appendAudit({
+    actorUuid,
+    actorName: employeeNameFor(actorUuid),
+    action: 'LETTER_REGISTERED',
+    resourceType: 'letter',
+    resourceUuid: letter.uuid,
+    resourceLabel: letterLabel(letter),
+    context: { number: letter.number, channel: letter.channel, externalOrg: letter.externalOrg },
+  });
+  return letter;
+}
+
+export async function routeLetter(
+  uuid: string,
+  unitUuid: string,
+  actorUuid: string,
+): Promise<Letter> {
+  await simulatedDelay();
+  maybeFail();
+  const letters = readLetters();
+  const idx = letters.findIndex((l) => l.uuid === uuid);
+  if (idx === -1) throw new Error(`Letter not found: ${uuid}`);
+  const before = letters[idx]!;
+  if (before.status !== 'REGISTERED') throw new LetterValidationError('wrong-status');
+  if (!isRahbar(actorUuid)) throw new LetterValidationError('not-rahbar');
+  const unit = readUnits().find((u) => u.uuid === unitUuid);
+  // Programmer/UI error, not a policy violation — the step-21 picker only
+  // offers existing ACTIVE units.
+  if (!unit || unit.status !== 'ACTIVE') throw new Error(`Cannot route to unit: ${unitUuid}`);
+
+  const next: Letter = { ...before, status: 'ROUTED', routedToUnitUuid: unitUuid, updatedAt: NOW() };
+  letters[idx] = next;
+  writeTable(Tables.letters, letters);
+
+  const actorName = employeeNameFor(actorUuid);
+  await notifyLetter([unit.headEmployeeUuid], 'LETTER_ROUTED', next, {
+    letterNumber: next.number,
+    actorName,
+  });
+  await appendAudit({
+    actorUuid,
+    actorName,
+    action: 'LETTER_ROUTED',
+    resourceType: 'letter',
+    resourceUuid: uuid,
+    resourceLabel: letterLabel(next),
+    context: { unit: unit.nameUz },
+  });
+  return next;
+}
+
+export async function assignLetterExecutor(
+  uuid: string,
+  employeeUuid: string,
+  actorUuid: string,
+): Promise<Letter> {
+  await simulatedDelay();
+  maybeFail();
+  const letters = readLetters();
+  const idx = letters.findIndex((l) => l.uuid === uuid);
+  if (idx === -1) throw new Error(`Letter not found: ${uuid}`);
+  const before = letters[idx]!;
+  if (before.status !== 'ROUTED') throw new LetterValidationError('wrong-status');
+  const routedUnit = before.routedToUnitUuid!;
+  if (!headsUnitOrAncestor(actorUuid, routedUnit)) {
+    throw new LetterValidationError('not-unit-head');
+  }
+  // The executor must belong to the routed unit's subtree (open assignment
+  // or primary unit there — a bo'lim head assigns from his sho'bas too).
+  // Programmer/UI error — the step-21 picker only offers members.
+  const units = readUnits();
+  const routedPath = units.find((u) => u.uuid === routedUnit)?.path ?? '';
+  const inSubtree = (unitUuid: string) =>
+    Boolean(routedPath) &&
+    (units.find((u) => u.uuid === unitUuid)?.path.startsWith(routedPath) ?? false);
+  const belongs =
+    readAssignments().some(
+      (a) => a.employeeUuid === employeeUuid && !a.endDate && inSubtree(a.unitUuid),
+    ) ||
+    readEmployees().some(
+      (e) => e.uuid === employeeUuid && inSubtree(e.primaryUnitUuid),
+    );
+  if (!belongs) throw new Error(`Executor ${employeeUuid} does not belong to unit ${routedUnit}`);
+
+  const next: Letter = {
+    ...before,
+    status: 'ASSIGNED',
+    assignedEmployeeUuid: employeeUuid,
+    updatedAt: NOW(),
+  };
+  letters[idx] = next;
+  writeTable(Tables.letters, letters);
+
+  const actorName = employeeNameFor(actorUuid);
+  await notifyLetter([employeeUuid], 'LETTER_ASSIGNED', next, {
+    letterNumber: next.number,
+    actorName,
+  });
+  await appendAudit({
+    actorUuid,
+    actorName,
+    action: 'LETTER_ASSIGNED',
+    resourceType: 'letter',
+    resourceUuid: uuid,
+    resourceLabel: letterLabel(next),
+    context: { executor: employeeNameFor(employeeUuid) },
+  });
+  return next;
+}
+
+/**
+ * Timeline realism only (ASSIGNED → IN_PROGRESS). Audited as LETTER_EXECUTED
+ * with `context.phase = 'started'` — CLAUDE.md requires every meaningful state
+ * change in the trail, and the canonical action set has no separate "started"
+ * verb; the context field carries the distinction.
+ */
+export async function startLetterExecution(uuid: string, actorUuid: string): Promise<Letter> {
+  await simulatedDelay();
+  maybeFail();
+  const letters = readLetters();
+  const idx = letters.findIndex((l) => l.uuid === uuid);
+  if (idx === -1) throw new Error(`Letter not found: ${uuid}`);
+  const before = letters[idx]!;
+  if (before.status !== 'ASSIGNED') throw new LetterValidationError('wrong-status');
+  if (before.assignedEmployeeUuid !== actorUuid) {
+    throw new LetterValidationError('not-executor');
+  }
+
+  const next: Letter = { ...before, status: 'IN_PROGRESS', updatedAt: NOW() };
+  letters[idx] = next;
+  writeTable(Tables.letters, letters);
+  await appendAudit({
+    actorUuid,
+    actorName: employeeNameFor(actorUuid),
+    action: 'LETTER_EXECUTED',
+    resourceType: 'letter',
+    resourceUuid: uuid,
+    resourceLabel: letterLabel(next),
+    context: { phase: 'started' },
+  });
+  return next;
+}
+
+export interface SubmitLetterExecutionInput {
+  /** BPMN 7.1 — comment-only execution. Present (even empty) selects this path. */
+  executionComment?: string;
+  /** BPMN 7.2 — ready response file (pick-time metadata). */
+  responseFileMeta?: Omit<FileMeta, 'uploadedAt'>;
+  /** BPMN 7.2 alt — response composed as an internal document. */
+  responseDocumentUuid?: string;
+}
+
+export async function submitLetterExecution(
+  uuid: string,
+  input: SubmitLetterExecutionInput,
+  actorUuid: string,
+): Promise<Letter> {
+  await simulatedDelay();
+  maybeFail();
+  const letters = readLetters();
+  const idx = letters.findIndex((l) => l.uuid === uuid);
+  if (idx === -1) throw new Error(`Letter not found: ${uuid}`);
+  const before = letters[idx]!;
+  if (before.status !== 'ASSIGNED' && before.status !== 'IN_PROGRESS') {
+    throw new LetterValidationError('wrong-status');
+  }
+  if (before.assignedEmployeeUuid !== actorUuid) {
+    throw new LetterValidationError('not-executor');
+  }
+
+  const commentPath = input.executionComment !== undefined;
+  if (commentPath && !input.executionComment!.trim()) {
+    throw new LetterValidationError('comment-required');
+  }
+  if (!commentPath && !input.responseFileMeta && !input.responseDocumentUuid) {
+    throw new LetterValidationError('missing-response');
+  }
+
+  const next: Letter = {
+    ...before,
+    status: 'EXECUTED',
+    executionComment: commentPath ? input.executionComment!.trim() : undefined,
+    responseFileMeta: input.responseFileMeta
+      ? { ...input.responseFileMeta, uploadedAt: NOW() }
+      : undefined,
+    responseDocumentUuid: input.responseDocumentUuid,
+    updatedAt: NOW(),
+  };
+  letters[idx] = next;
+  writeTable(Tables.letters, letters);
+
+  const actorName = employeeNameFor(actorUuid);
+  await notifyLetter([unitHeadOf(next.routedToUnitUuid)], 'LETTER_EXECUTED', next, {
+    letterNumber: next.number,
+    actorName,
+  });
+  await appendAudit({
+    actorUuid,
+    actorName,
+    action: 'LETTER_EXECUTED',
+    resourceType: 'letter',
+    resourceUuid: uuid,
+    resourceLabel: letterLabel(next),
+    context: { phase: 'submitted', mode: commentPath ? 'comment' : 'response' },
+  });
+  return next;
+}
+
+/**
+ * Unit-head acceptance gate (BPMN 3.3 node 8). Branches:
+ * - comment-only execution → CLOSED_NO_RESPONSE (nothing to sign or dispatch,
+ *   so the `requiresSignature` flag is irrelevant on this path);
+ * - response present + requiresSignature → ON_SIGNATURE (Rahbar's ERI next);
+ * - response present, no signature required → RESPONDED (ready for dispatch).
+ */
+export async function acceptLetterExecution(uuid: string, actorUuid: string): Promise<Letter> {
+  await simulatedDelay();
+  maybeFail();
+  const letters = readLetters();
+  const idx = letters.findIndex((l) => l.uuid === uuid);
+  if (idx === -1) throw new Error(`Letter not found: ${uuid}`);
+  const before = letters[idx]!;
+  if (before.status !== 'EXECUTED') throw new LetterValidationError('wrong-status');
+  if (!headsUnitOrAncestor(actorUuid, before.routedToUnitUuid!)) {
+    throw new LetterValidationError('not-unit-head');
+  }
+
+  const hasResponse = Boolean(before.responseFileMeta || before.responseDocumentUuid);
+  const status: LetterStatus = !hasResponse
+    ? 'CLOSED_NO_RESPONSE'
+    : before.requiresSignature
+      ? 'ON_SIGNATURE'
+      : 'RESPONDED';
+  const next: Letter = {
+    ...before,
+    status,
+    closedAt: status === 'CLOSED_NO_RESPONSE' ? NOW() : before.closedAt,
+    updatedAt: NOW(),
+  };
+  letters[idx] = next;
+  writeTable(Tables.letters, letters);
+
+  const actorName = employeeNameFor(actorUuid);
+  const params = { letterNumber: next.number, actorName };
+  // The executor always learns their work was accepted; the branch target
+  // (Rahbar or Devonxona) learns what to do next.
+  await notifyLetter([next.assignedEmployeeUuid], 'LETTER_ACCEPTED', next, params);
+  if (status === 'ON_SIGNATURE') {
+    await notifyLetter([rahbarOverUnit(next.routedToUnitUuid!)], 'LETTER_SIGN_REQUESTED', next, params);
+  } else {
+    await notifyLetter(devonxonaEmployeeUuids(), 'LETTER_ACCEPTED', next, params);
+  }
+  await appendAudit({
+    actorUuid,
+    actorName,
+    action: 'LETTER_ACCEPTED',
+    resourceType: 'letter',
+    resourceUuid: uuid,
+    resourceLabel: letterLabel(next),
+    context: { outcome: status },
+  });
+  return next;
+}
+
+export async function signLetter(
+  uuid: string,
+  certificateUuid: string,
+  actorUuid: string,
+): Promise<Letter> {
+  await simulatedDelay();
+  maybeFail();
+  const letters = readLetters();
+  const idx = letters.findIndex((l) => l.uuid === uuid);
+  if (idx === -1) throw new Error(`Letter not found: ${uuid}`);
+  const before = letters[idx]!;
+  if (before.status !== 'ON_SIGNATURE') throw new LetterValidationError('wrong-status');
+  if (!isRahbar(actorUuid)) throw new LetterValidationError('not-rahbar');
+  const cert = readCertificates().find((c) => c.uuid === certificateUuid);
+  if (!cert || cert.status !== 'ACTIVE' || cert.employeeUuid !== actorUuid) {
+    throw new LetterValidationError('cert-invalid');
+  }
+
+  const signatures = readSignatures();
+  signatures.unshift({
+    uuid: uid(),
+    resourceType: 'letter',
+    resourceUuid: uuid,
+    employeeUuid: actorUuid,
+    certificateUuid,
+    algorithm: 'RSA-PKCS7',
+    signatureHex: randomSignatureHex(),
+    signedAt: NOW(),
+  });
+  writeTable(Tables.signatures, signatures);
+
+  const next: Letter = { ...before, status: 'RESPONDED', updatedAt: NOW() };
+  letters[idx] = next;
+  writeTable(Tables.letters, letters);
+
+  const actorName = employeeNameFor(actorUuid);
+  // The signature gate is cleared — Devonxona can dispatch now.
+  await notifyLetter(devonxonaEmployeeUuids(), 'LETTER_ACCEPTED', next, {
+    letterNumber: next.number,
+    actorName,
+  });
+  await appendAudit({
+    actorUuid,
+    actorName,
+    action: 'LETTER_SIGNED',
+    resourceType: 'letter',
+    resourceUuid: uuid,
+    resourceLabel: letterLabel(next),
+    context: { certificateSerial: cert.serialNumber },
+  });
+  return next;
+}
+
+export interface DispatchLetterInput {
+  /** Outbound channel for the reply. */
+  channel: LetterChannel;
+}
+
+/**
+ * Devonxona dispatch (BPMN 3.3 node 10): the incoming letter CLOSES and the
+ * OUTGOING reply row is created in one step — auto-numbered 'CH-2026/NNNN',
+ * terminal `DISPATCHED`, linked back via `linkedIncomingUuid`, addressee =
+ * the incoming sender, carrying the response package as its `fileMeta`.
+ */
+export async function dispatchLetter(
+  uuid: string,
+  input: DispatchLetterInput,
+  actorUuid: string,
+): Promise<{ incoming: Letter; outgoing: Letter }> {
+  await simulatedDelay();
+  maybeFail();
+  const letters = readLetters();
+  const idx = letters.findIndex((l) => l.uuid === uuid);
+  if (idx === -1) throw new Error(`Letter not found: ${uuid}`);
+  const before = letters[idx]!;
+  if (before.status !== 'RESPONDED') throw new LetterValidationError('wrong-status');
+  if (!isDevonxona(actorUuid)) throw new LetterValidationError('not-devonxona');
+
+  const now = NOW();
+  const outgoing: Letter = {
+    uuid: uid(),
+    direction: 'OUTGOING',
+    number: nextLetterNumber(letters, 'CH'),
+    externalOrg: before.externalOrg,
+    subject: before.subject,
+    channel: input.channel,
+    fileMeta: before.responseFileMeta,
+    responseDocumentUuid: before.responseDocumentUuid,
+    requiresSignature: before.requiresSignature,
+    linkedIncomingUuid: before.uuid,
+    status: 'DISPATCHED',
+    registeredByUuid: actorUuid,
+    dispatchedAt: now,
+    createdAt: now,
+    updatedAt: now,
+  };
+  const incoming: Letter = {
+    ...before,
+    status: 'CLOSED',
+    dispatchedAt: now,
+    closedAt: now,
+    updatedAt: now,
+  };
+  letters[idx] = incoming;
+  letters.unshift(outgoing);
+  writeTable(Tables.letters, letters);
+
+  const actorName = employeeNameFor(actorUuid);
+  const params = { letterNumber: outgoing.number, actorName };
+  await notifyLetter(
+    [incoming.assignedEmployeeUuid, unitHeadOf(incoming.routedToUnitUuid)],
+    'LETTER_DISPATCHED',
+    incoming,
+    params,
+  );
+  await appendAudit({
+    actorUuid,
+    actorName,
+    action: 'LETTER_DISPATCHED',
+    resourceType: 'letter',
+    resourceUuid: incoming.uuid,
+    resourceLabel: letterLabel(incoming),
+    context: { outgoingNumber: outgoing.number, channel: input.channel },
+  });
+  await appendAudit({
+    actorUuid,
+    actorName,
+    action: 'LETTER_DISPATCHED',
+    resourceType: 'letter',
+    resourceUuid: outgoing.uuid,
+    resourceLabel: letterLabel(outgoing),
+    context: { linkedIncomingNumber: incoming.number, channel: input.channel },
+  });
+  await appendAudit({
+    actorUuid,
+    actorName,
+    action: 'LETTER_CLOSED',
+    resourceType: 'letter',
+    resourceUuid: incoming.uuid,
+    resourceLabel: letterLabel(incoming),
+  });
+  return { incoming, outgoing };
+}
+
 // === Re-exports ===
 
 export { seedIfEmpty, resetAndSeed, PERSONAS } from './seed';
@@ -1892,6 +2531,7 @@ export {
   CertificateValidationError,
   DocumentValidationError,
   EmployeeValidationError,
+  LetterValidationError,
   MockNetworkError,
   PasswordValidationError,
   UnitValidationError,
@@ -1901,6 +2541,7 @@ export type {
   CertificateValidationCode,
   DocumentValidationCode,
   EmployeeValidationCode,
+  LetterValidationCode,
   PasswordValidationCode,
   UnitValidationCode,
 } from './errors';

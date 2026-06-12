@@ -40,7 +40,7 @@ const RESOURCE_TYPES: AuditResourceType[] = [
   'user',
   'profile-request',
   'document',
-  // 'letter' joins in step 20 — no letter rows can exist before then.
+  'letter',
 ];
 
 interface Filters {

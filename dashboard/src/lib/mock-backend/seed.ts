@@ -3,9 +3,10 @@
 // hierarchy (+ the root-level Devonxona), 31 employees, 31 primary
 // assignments, 26 certificates in the 19/4/2/1 status distribution,
 // ~70 audit entries spread over the last 30 days, the position
-// catalogue, ~20 milestone-2 notifications across the personas, and
+// catalogue, ~20 milestone-2 notifications across the personas,
 // (step 17) 5 document templates + 12 documents walking the BPMN 3.4
-// chain with internally-consistent approval steps and signatures.
+// chain with internally-consistent approval steps and signatures, and
+// (step 20) 12 letters walking the BPMN 3.3 correspondence lifecycle.
 //
 // Uses native `crypto.randomUUID()` — browsers ship it natively
 // since 2022. No `uuid` npm package needed.
@@ -31,6 +32,7 @@ import type {
   Employee,
   FileMeta,
   Gender,
+  Letter,
   NotificationType,
   Position,
   Role,
@@ -45,7 +47,9 @@ const SEED_FLAG = 'devon.dashboard.seeded';
 // distributions, hierarchy reshapes). Mismatched versions in localStorage
 // trigger a silent reseed on next app load — keeps demos consistent without
 // asking users to hit "Reset demo" after every change.
-const SEED_VERSION = '7';
+// '8' = step 20 letters (the step prompt said '7', but step 19 had already
+// consumed it for the document `values` persistence).
+const SEED_VERSION = '8';
 
 const uuid = () => crypto.randomUUID();
 const NOW = () => new Date().toISOString();
@@ -1301,9 +1305,9 @@ function buildDocumentDomain(certificates: Certificate[]): {
   }
 
   // Spare third record: the Rahbar's ERI on the dispatched outgoing letter
-  // CH-2026/0001 from the step-16 notification story. Step 20 must seed
-  // that letter under LETTER_UUID(3) with requiresSignature: true so this
-  // signature resolves retroactively (same convention as the doc UUIDs).
+  // CH-2026/0001 from the step-16 notification story. Step 20 seeds that
+  // letter under LETTER_UUID(3) with requiresSignature: true (see
+  // buildLetters), so this signature resolves against a real row.
   signatures.push({
     uuid: uuid(),
     resourceType: 'letter',
@@ -1553,6 +1557,268 @@ function buildNotifications(employees: Employee[]): AppNotification[] {
   }));
 }
 
+// === Letters (milestone 2, step 20 — BPMN 3.3 / BP-3) ===
+//
+// 12 rows (the step-20 prompt's 10-letter table, +2 justified by the rails
+// already seeded in steps 16–17):
+// - K-2026/0002 (LETTER_UUID(1)) must sit POST-acceptance — its step-16
+//   notification story ends with LETTER_ACCEPTED to the executor — so it
+//   lands in RESPONDED (Devonxona's dispatch queue) instead of the table's
+//   EXECUTED; a separate K-2026/0005 covers EXECUTED.
+// - K-2026/0003 adds the otherwise-unseeded CLOSED_NO_RESPONSE terminal so
+//   the registry shows the whole BP-3 lifecycle.
+// Status ↔ number ordering is monotonic: higher K-numbers were registered
+// more recently and are earlier in the lifecycle.
+
+const pdfMeta = (fileName: string, sizeKb: number, daysAgo: number): FileMeta => ({
+  fileName,
+  fileSize: sizeKb * 1024,
+  mimeType: 'application/pdf',
+  uploadedAt: DAYS_AGO(daysAgo),
+});
+
+function buildLetters(byCode: Map<string, Unit>): Letter[] {
+  // Every routed letter walks the IT branch the five personas live in:
+  // Backend Bo'limi (head = BOLIM_BOSHLIGI persona), executor = XODIM
+  // persona (member of the bo'lim's API Sho'basi subtree), Rahbar = head
+  // of the root IT Departament.
+  const backendBolim = byCode.get('DEP-IT-DEV-BE')!.uuid;
+
+  // K-2026/0001's uuid is needed twice: on the incoming row itself and as
+  // CH-2026/0001's `linkedIncomingUuid`.
+  const closedIncomingUuid = uuid();
+
+  const incoming = (n: number, rest: Omit<Letter, 'uuid' | 'direction' | 'number'> & { uuid?: string }): Letter => ({
+    uuid: rest.uuid ?? uuid(),
+    direction: 'INCOMING',
+    number: `K-2026/${String(n).padStart(4, '0')}`,
+    ...rest,
+  });
+
+  return [
+    // K-2026/0001 — the full happy path, CLOSED: registered → routed →
+    // assigned → executed (response file) → accepted → signed by the Rahbar
+    // (2.6d ago — matches the step-17 SignatureRecord, which sits on the
+    // dispatched reply CH-2026/0001 below) → dispatched 2.5d ago.
+    incoming(1, {
+      uuid: closedIncomingUuid,
+      externalOrg: 'Toshkent shahar hokimligi',
+      subject: "Axborot tizimlari integratsiyasi to'g'risida so'rov",
+      channel: 'POCHTA',
+      fileMeta: pdfMeta('kiruvchi_K-2026-0001_skan.pdf', 412, 9),
+      receivedAt: DAYS_AGO(9),
+      deadline: DAYS_AGO(1),
+      routedToUnitUuid: backendBolim,
+      assignedEmployeeUuid: PERSONAS.XODIM,
+      requiresSignature: true,
+      responseFileMeta: pdfMeta('javob_K-2026-0001.pdf', 188, 4),
+      status: 'CLOSED',
+      registeredByUuid: PERSONAS.DEVONXONA,
+      dispatchedAt: DAYS_AGO(2.5),
+      closedAt: DAYS_AGO(2.5),
+      createdAt: DAYS_AGO(9),
+      updatedAt: DAYS_AGO(2.5),
+    }),
+
+    // K-2026/0002 — LETTER_UUID(1): the step-16 notification story (routed
+    // 5d → assigned 4.8d → executed 1.2d → accepted 0.9d). No signature
+    // required, response file present → RESPONDED, awaiting Devonxona
+    // dispatch (step 21's Devonxona action).
+    incoming(2, {
+      uuid: LETTER_UUID(1),
+      externalOrg: "O'zstandart agentligi",
+      subject: "Ma'lumotlar almashinuvi reglamenti loyihasi",
+      channel: 'EMAIL',
+      fileMeta: pdfMeta('kiruvchi_K-2026-0002_skan.pdf', 256, 5.5),
+      receivedAt: DAYS_AGO(5.5),
+      deadline: DAYS_FROM_NOW(3),
+      routedToUnitUuid: backendBolim,
+      assignedEmployeeUuid: PERSONAS.XODIM,
+      requiresSignature: false,
+      responseFileMeta: pdfMeta('javob_K-2026-0002.pdf', 145, 1.2),
+      status: 'RESPONDED',
+      registeredByUuid: PERSONAS.DEVONXONA,
+      createdAt: DAYS_AGO(5.5),
+      updatedAt: DAYS_AGO(0.9),
+    }),
+
+    // K-2026/0003 — comment-only execution accepted → CLOSED_NO_RESPONSE
+    // (BPMN 7.1: "ma'lumot uchun" letters need no reply and no outgoing row).
+    incoming(3, {
+      externalOrg: 'Raqamli texnologiyalar vazirligi',
+      subject: "Seminar o'tkazilishi haqida xabarnoma",
+      channel: 'EMAIL',
+      receivedAt: DAYS_AGO(5.2),
+      routedToUnitUuid: backendBolim,
+      assignedEmployeeUuid: PERSONAS.XODIM,
+      requiresSignature: false,
+      executionComment:
+        "Ma'lumot uchun qabul qilindi, bo'lim xodimlari seminar haqida xabardor qilindi. Javob xati talab etilmaydi.",
+      status: 'CLOSED_NO_RESPONSE',
+      registeredByUuid: PERSONAS.DEVONXONA,
+      closedAt: DAYS_AGO(3),
+      createdAt: DAYS_AGO(5.2),
+      updatedAt: DAYS_AGO(3),
+    }),
+
+    // K-2026/0004 — LETTER_UUID(2): response ready, awaiting the Rahbar's
+    // ERI (the step-16 LETTER_SIGN_REQUESTED notification points here).
+    incoming(4, {
+      uuid: LETTER_UUID(2),
+      externalOrg: "O'zbekiston Respublikasi Markaziy banki",
+      subject: 'Hamkorlik memorandumi loyihasini kelishish',
+      channel: 'KURYER',
+      fileMeta: pdfMeta('kiruvchi_K-2026-0004_skan.pdf', 530, 4),
+      receivedAt: DAYS_AGO(4),
+      deadline: DAYS_FROM_NOW(5),
+      routedToUnitUuid: backendBolim,
+      assignedEmployeeUuid: PERSONAS.XODIM,
+      requiresSignature: true,
+      responseFileMeta: pdfMeta('javob_K-2026-0004.pdf', 210, 1),
+      status: 'ON_SIGNATURE',
+      registeredByUuid: PERSONAS.DEVONXONA,
+      createdAt: DAYS_AGO(4),
+      updatedAt: DAYS_AGO(0.7),
+    }),
+
+    // K-2026/0005 — executor submitted a response file; awaiting the
+    // BOLIM_BOSHLIGI's acceptance (step 21's unit-head action).
+    incoming(5, {
+      externalOrg: "Soliq qo'mitasi",
+      subject: "Statistik hisobot taqdim etish to'g'risida",
+      channel: 'POCHTA',
+      fileMeta: pdfMeta('kiruvchi_K-2026-0005_skan.pdf', 320, 3),
+      receivedAt: DAYS_AGO(3),
+      deadline: DAYS_FROM_NOW(7),
+      routedToUnitUuid: backendBolim,
+      assignedEmployeeUuid: PERSONAS.XODIM,
+      requiresSignature: false,
+      responseFileMeta: pdfMeta('javob_K-2026-0005.pdf', 96, 0.5),
+      status: 'EXECUTED',
+      registeredByUuid: PERSONAS.DEVONXONA,
+      createdAt: DAYS_AGO(3),
+      updatedAt: DAYS_AGO(0.5),
+    }),
+
+    // K-2026/0006 — XODIM working on it.
+    incoming(6, {
+      externalOrg: 'Adliya vazirligi',
+      subject: "Server uskunalari texnik talablariga oid so'rov",
+      channel: 'EMAIL',
+      receivedAt: DAYS_AGO(2.5),
+      deadline: DAYS_FROM_NOW(4),
+      routedToUnitUuid: backendBolim,
+      assignedEmployeeUuid: PERSONAS.XODIM,
+      requiresSignature: false,
+      status: 'IN_PROGRESS',
+      registeredByUuid: PERSONAS.DEVONXONA,
+      createdAt: DAYS_AGO(2.5),
+      updatedAt: DAYS_AGO(1.8),
+    }),
+
+    // K-2026/0007 — assigned with a deadline already in the past → the
+    // registry's one visibly OVERDUE row (acceptance check).
+    incoming(7, {
+      externalOrg: 'Xavfsizlik kengashi kotibiyati',
+      subject: 'Kiberxavfsizlik auditi natijalarini taqdim etish',
+      channel: 'QOGOZ',
+      fileMeta: pdfMeta('kiruvchi_K-2026-0007_skan.pdf', 275, 2.4),
+      receivedAt: DAYS_AGO(2.4),
+      deadline: DAYS_AGO(1),
+      routedToUnitUuid: backendBolim,
+      assignedEmployeeUuid: PERSONAS.XODIM,
+      requiresSignature: true,
+      status: 'ASSIGNED',
+      registeredByUuid: PERSONAS.DEVONXONA,
+      createdAt: DAYS_AGO(2.4),
+      updatedAt: DAYS_AGO(2.1),
+    }),
+
+    // K-2026/0008 — routed to the Backend Bo'limi; head hasn't assigned yet.
+    incoming(8, {
+      externalOrg: "O'zarxiv agentligi",
+      subject: "Dasturiy ta'minot litsenziyalari to'g'risida ma'lumot so'rovi",
+      channel: 'EMAIL',
+      receivedAt: DAYS_AGO(1),
+      deadline: DAYS_FROM_NOW(10),
+      routedToUnitUuid: backendBolim,
+      requiresSignature: false,
+      status: 'ROUTED',
+      registeredByUuid: PERSONAS.DEVONXONA,
+      createdAt: DAYS_AGO(1),
+      updatedAt: DAYS_AGO(0.5),
+    }),
+
+    // K-2026/0009 — fresh, no routing yet (the Rahbar's routing queue).
+    incoming(9, {
+      externalOrg: 'Elektron hukumat loyihalari milliy agentligi',
+      subject: 'Davlat xizmatlari portali bilan integratsiya taklifi',
+      channel: 'POCHTA',
+      fileMeta: pdfMeta('kiruvchi_K-2026-0009_skan.pdf', 364, 0.2),
+      receivedAt: DAYS_AGO(0.2),
+      requiresSignature: false,
+      status: 'REGISTERED',
+      registeredByUuid: PERSONAS.DEVONXONA,
+      createdAt: DAYS_AGO(0.2),
+      updatedAt: DAYS_AGO(0.2),
+    }),
+
+    // CH-2026/0001 — LETTER_UUID(3): the dispatched reply to K-2026/0001,
+    // carrying the Rahbar's step-17 SignatureRecord (signedAt 2.6d ago) and
+    // the response package. The step-16 LETTER_DISPATCHED notifications
+    // (2.5/2.4d ago) deep-link here.
+    {
+      uuid: LETTER_UUID(3),
+      direction: 'OUTGOING',
+      number: 'CH-2026/0001',
+      externalOrg: 'Toshkent shahar hokimligi',
+      subject: "Axborot tizimlari integratsiyasi to'g'risida so'rov",
+      channel: 'POCHTA',
+      fileMeta: pdfMeta('javob_K-2026-0001.pdf', 188, 2.5),
+      requiresSignature: true,
+      linkedIncomingUuid: closedIncomingUuid,
+      status: 'DISPATCHED',
+      registeredByUuid: PERSONAS.DEVONXONA,
+      dispatchedAt: DAYS_AGO(2.5),
+      createdAt: DAYS_AGO(2.5),
+      updatedAt: DAYS_AGO(2.5),
+    },
+
+    // CH-2026/0002 / 0003 — standalone outbound letters (no linked incoming):
+    // the org's own initiative correspondence.
+    {
+      uuid: uuid(),
+      direction: 'OUTGOING',
+      number: 'CH-2026/0002',
+      externalOrg: "O'zarxiv agentligi",
+      subject: "Yillik hisobotni taqdim etish to'g'risida",
+      channel: 'EMAIL',
+      fileMeta: pdfMeta('chiquvchi_CH-2026-0002.pdf', 152, 1.8),
+      requiresSignature: false,
+      status: 'DISPATCHED',
+      registeredByUuid: PERSONAS.DEVONXONA,
+      dispatchedAt: DAYS_AGO(1.8),
+      createdAt: DAYS_AGO(1.8),
+      updatedAt: DAYS_AGO(1.8),
+    },
+    {
+      uuid: uuid(),
+      direction: 'OUTGOING',
+      number: 'CH-2026/0003',
+      externalOrg: 'Toshkent axborot texnologiyalari universiteti',
+      subject: "Texnik hamkorlik bo'yicha taklifnoma",
+      channel: 'KURYER',
+      fileMeta: pdfMeta('chiquvchi_CH-2026-0003.pdf', 98, 0.8),
+      requiresSignature: false,
+      status: 'DISPATCHED',
+      registeredByUuid: PERSONAS.DEVONXONA,
+      dispatchedAt: DAYS_AGO(0.8),
+      createdAt: DAYS_AGO(0.8),
+      updatedAt: DAYS_AGO(0.8),
+    },
+  ];
+}
+
 // === Audit ===
 
 function buildAudit(employees: Employee[], units: Unit[], certificates: Certificate[]): AuditEntry[] {
@@ -1654,6 +1920,7 @@ export async function resetAndSeed(): Promise<void> {
   const audit = buildAudit(employees, units, certificates);
   const notifications = buildNotifications(employees);
   const { documents, approvalSteps, signatures } = buildDocumentDomain(certificates);
+  const letters = buildLetters(byCode);
 
   writeTable(Tables.positions, positions);
   writeTable(Tables.units, units);
@@ -1668,6 +1935,7 @@ export async function resetAndSeed(): Promise<void> {
   writeTable(Tables.documents, documents);
   writeTable(Tables.approvalSteps, approvalSteps);
   writeTable(Tables.signatures, signatures);
+  writeTable(Tables.letters, letters);
 
   localStorage.setItem(SEED_FLAG, SEED_VERSION);
 }

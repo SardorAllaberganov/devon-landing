@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import {
   Archive,
   ArrowRightLeft,
+  BadgeCheck,
+  ClipboardCheck,
   Drama,
   Eye,
   FileCheck,
@@ -11,13 +13,18 @@ import {
   FilePenLine,
   FilePlus,
   FileX,
+  Forward,
   KeyRound,
   LogIn,
   LogOut,
   Mail,
+  MailCheck,
+  MailPlus,
   Pencil,
+  PenLine,
   Plus,
   Send,
+  SendHorizontal,
   ShieldCheck,
   ShieldOff,
   ShieldX,
@@ -25,6 +32,7 @@ import {
   Upload,
   UserCheck,
   UserCog,
+  UserPlus,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -59,6 +67,14 @@ const ACTION_ICON: Record<AuditAction, LucideIcon> = {
   DOCUMENT_CLOSED: FileCheck2,
   DOCUMENT_VIEWED: Eye,
   DOCUMENT_EMAILED: Mail,
+  LETTER_REGISTERED: MailPlus,
+  LETTER_ROUTED: Forward,
+  LETTER_ASSIGNED: UserPlus,
+  LETTER_EXECUTED: ClipboardCheck,
+  LETTER_ACCEPTED: BadgeCheck,
+  LETTER_SIGNED: PenLine,
+  LETTER_DISPATCHED: SendHorizontal,
+  LETTER_CLOSED: MailCheck,
 };
 
 export default function RecentActivityCard() {

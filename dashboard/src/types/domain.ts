@@ -189,7 +189,15 @@ export type AuditAction =
   | 'DOCUMENT_SIGNED'
   | 'DOCUMENT_CLOSED'
   | 'DOCUMENT_VIEWED'
-  | 'DOCUMENT_EMAILED';
+  | 'DOCUMENT_EMAILED'
+  | 'LETTER_REGISTERED'
+  | 'LETTER_ROUTED'
+  | 'LETTER_ASSIGNED'
+  | 'LETTER_EXECUTED'
+  | 'LETTER_ACCEPTED'
+  | 'LETTER_SIGNED'
+  | 'LETTER_DISPATCHED'
+  | 'LETTER_CLOSED';
 
 export type AuditResourceType =
   | 'unit'
@@ -409,4 +417,66 @@ export interface SignatureRecord {
   /** Fake hex via crypto.getRandomValues (FakePfxParser convention). */
   signatureHex: string;
   signedAt: string;
+}
+
+// === Letters (milestone 2, step 20 — BPMN 3.3 / BP-3) ===
+
+export type LetterDirection = 'INCOMING' | 'OUTGOING';
+
+// BP-3 canon (extended 2026-06-12 per BPMN 3.3's explicit acceptance + signature gates):
+// registered → routed → assigned → in-progress → executed → [on-signature →] responded → dispatched → closed
+//                                       ↘ closed-without-response (comment-only execution, accepted)
+// Demo semantics: an INCOMING letter terminates in CLOSED (response dispatched)
+// or CLOSED_NO_RESPONSE (comment-only execution accepted); DISPATCHED is the
+// terminal state of OUTGOING rows, created at dispatch time as the reply.
+export type LetterStatus =
+  | 'REGISTERED'
+  | 'ROUTED'
+  | 'ASSIGNED'
+  | 'IN_PROGRESS'
+  /** Executor submitted; awaiting unit-head acceptance. */
+  | 'EXECUTED'
+  /** Accepted; awaiting Rahbar ERI (only when requiresSignature). */
+  | 'ON_SIGNATURE'
+  /** Response ready for dispatch. */
+  | 'RESPONDED'
+  | 'DISPATCHED'
+  | 'CLOSED'
+  | 'CLOSED_NO_RESPONSE';
+
+export type LetterChannel = 'POCHTA' | 'EMAIL' | 'KURYER' | 'QOGOZ';
+
+export interface Letter {
+  uuid: string;
+  direction: LetterDirection;
+  /** Auto-numbered: incoming 'K-2026/0001' · outgoing 'CH-2026/0001' (year hardcoded per master §17). */
+  number: string;
+  /** Sender (incoming) / addressee (outgoing). */
+  externalOrg: string;
+  subject: string;
+  channel: LetterChannel;
+  /** Scanned original (incoming) / dispatch package (outgoing). */
+  fileMeta?: FileMeta;
+  /** Incoming only. */
+  receivedAt?: string;
+  /** Ijro muddati — optional; drives the overdue badge. */
+  deadline?: string;
+  routedToUnitUuid?: string;
+  assignedEmployeeUuid?: string;
+  /** "Rahbar imzo talab etiladimi?" */
+  requiresSignature: boolean;
+  /** BPMN 7.1 path (comment-only execution). */
+  executionComment?: string;
+  /** BPMN 7.2 path (ready response file attached). */
+  responseFileMeta?: FileMeta;
+  /** BPMN 7.2 alt: response composed as an internal DocumentEntity. */
+  responseDocumentUuid?: string;
+  /** On OUTGOING replies — the incoming letter being answered. */
+  linkedIncomingUuid?: string;
+  status: LetterStatus;
+  registeredByUuid: string;
+  dispatchedAt?: string;
+  closedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }

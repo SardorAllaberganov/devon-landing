@@ -74,6 +74,28 @@ export class DocumentValidationError extends Error {
   }
 }
 
+// Policy layer for milestone-2 letters (step 20, BPMN 3.3 / BP-3). Same
+// contract as documents: every letter mutation validates status + persona
+// against the *acting* employee uuid — never UI hiding alone.
+export type LetterValidationCode =
+  | 'wrong-status' // action not allowed in the current LetterStatus
+  | 'not-devonxona' // register/dispatch by someone without ROLE_DEVONXONA
+  | 'not-rahbar' // route/sign by someone who heads no root-level unit
+  | 'not-unit-head' // assign/accept by someone who heads neither the routed unit nor an ancestor
+  | 'not-executor' // execution action by someone other than assignedEmployeeUuid
+  | 'comment-required' // comment-only execution with an empty comment (BPMN 7.1)
+  | 'missing-response' // response-path execution with neither file nor document (BPMN 7.2)
+  | 'cert-invalid'; // certificate not ACTIVE or not owned by the signer
+
+export class LetterValidationError extends Error {
+  readonly code: LetterValidationCode;
+  constructor(code: LetterValidationCode) {
+    super(`Letter validation failed: ${code}`);
+    this.name = 'LetterValidationError';
+    this.code = code;
+  }
+}
+
 export type PasswordValidationCode = 'current-wrong';
 
 export class PasswordValidationError extends Error {

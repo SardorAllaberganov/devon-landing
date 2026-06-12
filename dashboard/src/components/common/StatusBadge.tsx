@@ -5,9 +5,15 @@ import {
   Check,
   CheckCheck,
   Clock,
+  Forward,
   Hourglass,
+  Inbox,
   Lock,
+  MailCheck,
   PenLine,
+  Play,
+  SendHorizontal,
+  UserRound,
   X,
   type LucideIcon,
 } from 'lucide-react';
@@ -29,7 +35,16 @@ export type StatusKind =
   | 'ON_LEAVE'
   | 'IN_REVIEW'
   | 'SIGNED'
-  | 'CLOSED';
+  | 'CLOSED'
+  | 'REGISTERED'
+  | 'ROUTED'
+  | 'ASSIGNED'
+  | 'IN_PROGRESS'
+  | 'EXECUTED'
+  | 'ON_SIGNATURE'
+  | 'RESPONDED'
+  | 'DISPATCHED'
+  | 'CLOSED_NO_RESPONSE';
 
 interface Style {
   cls: string;
@@ -92,6 +107,52 @@ const STYLES: Record<StatusKind, Style> = {
     cls: 'bg-muted text-muted-foreground',
     icon: CheckCheck,
     key: 'common:status.closed',
+  },
+  // Letter statuses (M2 step 20, BP-3 canon). CLOSED above is shared.
+  REGISTERED: {
+    cls: 'bg-cream-warm text-cinnamon',
+    icon: Inbox,
+    key: 'common:status.registered',
+  },
+  ROUTED: {
+    cls: 'bg-cinnamon-soft text-cinnamon',
+    icon: Forward,
+    key: 'common:status.routed',
+  },
+  ASSIGNED: {
+    cls: 'bg-cinnamon-soft text-cinnamon',
+    icon: UserRound,
+    key: 'common:status.assigned',
+  },
+  IN_PROGRESS: {
+    cls: 'bg-cinnamon-soft text-cinnamon',
+    icon: Play,
+    key: 'common:status.in-progress',
+  },
+  EXECUTED: {
+    cls: 'bg-cinnamon-soft text-cinnamon',
+    icon: CheckCheck,
+    key: 'common:status.executed',
+  },
+  ON_SIGNATURE: {
+    cls: 'bg-cinnamon-soft text-cinnamon',
+    icon: PenLine,
+    key: 'common:status.on-signature',
+  },
+  RESPONDED: {
+    cls: 'bg-emerald-soft text-emerald-deep',
+    icon: MailCheck,
+    key: 'common:status.responded',
+  },
+  DISPATCHED: {
+    cls: 'bg-emerald-soft text-emerald-deep',
+    icon: SendHorizontal,
+    key: 'common:status.dispatched',
+  },
+  CLOSED_NO_RESPONSE: {
+    cls: 'bg-muted text-muted-foreground',
+    icon: Archive,
+    key: 'common:status.closed-no-response',
   },
 };
 

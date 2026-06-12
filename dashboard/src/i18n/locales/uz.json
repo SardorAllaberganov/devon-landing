@@ -38,8 +38,7 @@
       "all": "Barchasi",
       "none": "Hech narsa",
       "select": "Tanlang",
-      "search-placeholder": "Qidirish...",
-      "coming-soon": "Keyingi bosqichlarda to'ldiriladi"
+      "search-placeholder": "Qidirish..."
     },
     "errors": {
       "required": "Bu maydon majburiy",
@@ -72,7 +71,16 @@
       "terminated": "Ishdan bo'shatilgan",
       "in-review": "Kelishuvda",
       "signed": "Imzolangan",
-      "closed": "Yopilgan"
+      "closed": "Yopilgan",
+      "registered": "Ro'yxatga olingan",
+      "routed": "Yo'naltirilgan",
+      "assigned": "Tayinlangan",
+      "in-progress": "Ijroda",
+      "executed": "Ijro etilgan",
+      "on-signature": "Imzolashda",
+      "responded": "Javob tayyor",
+      "dispatched": "Jo'natilgan",
+      "closed-no-response": "Javobsiz yopilgan"
     },
     "unit-types": {
       "DEPARTMENT": "Departament",
@@ -175,10 +183,6 @@
         "LETTER_SIGN_REQUESTED": "{{letterNumber}} xatining javobi imzolash uchun yuborildi",
         "LETTER_DISPATCHED": "{{letterNumber}} xati jo'natildi"
       }
-    },
-    "coming-soon": {
-      "title": "Tez kunda",
-      "body": "Bu bo'lim hujjat aylanmasi bosqichida quriladi va tez orada ishga tushadi."
     },
     "login": {
       "title": "Devon platformasiga kirish",
@@ -298,7 +302,15 @@
         "DOCUMENT_SIGNED": "hujjatni imzoladi",
         "DOCUMENT_CLOSED": "hujjatni qabul qilib yopdi",
         "DOCUMENT_VIEWED": "hujjat bilan tanishdi",
-        "DOCUMENT_EMAILED": "hujjatni email orqali eksport qildi"
+        "DOCUMENT_EMAILED": "hujjatni email orqali eksport qildi",
+        "LETTER_REGISTERED": "xatni ro'yxatga oldi",
+        "LETTER_ROUTED": "xatni bo'linmaga yo'naltirdi",
+        "LETTER_ASSIGNED": "xatga ijrochi tayinladi",
+        "LETTER_EXECUTED": "xat ijrosini bajardi",
+        "LETTER_ACCEPTED": "xat ijrosini qabul qildi",
+        "LETTER_SIGNED": "xat javobini imzoladi",
+        "LETTER_DISPATCHED": "javob xatini jo'natdi",
+        "LETTER_CLOSED": "xatni yopdi"
       }
     },
     "documents": {
@@ -553,6 +565,72 @@
       "empty-title": "Sizni kutayotgan hujjatlar yo'q ✨",
       "empty-body": "Yangi kelishuv kelganda bildirishnoma olasiz",
       "waiting-since": "{{time}} yuborilgan"
+    },
+    "letters": {
+      "registry": {
+        "title": "Xatlar",
+        "subtitle": "Kiruvchi va chiquvchi yozishmalar reestri",
+        "cta-register": "Xat ro'yxatga olish",
+        "tab-incoming": "Keluvchi",
+        "tab-outgoing": "Chiquvchi",
+        "search-placeholder": "Raqam, tashkilot yoki mavzu bo'yicha qidirish",
+        "filter-status": "Holat",
+        "filter-status-all": "Barcha holatlar",
+        "filter-overdue": "Muddati o'tgan",
+        "col-number": "Raqam",
+        "col-org": "Tashkilot",
+        "col-subject": "Mavzu",
+        "col-assignee": "Bo'linma / Ijrochi",
+        "col-deadline": "Muddat",
+        "col-status": "Holat",
+        "overdue": "Muddati o'tgan",
+        "no-deadline": "—",
+        "empty-title": "Xatlar topilmadi",
+        "empty-body": "Qidiruv yoki filtr shartlarini o'zgartiring",
+        "open-letter": "{{number}} xatini ochish"
+      },
+      "register": {
+        "title": "Kiruvchi xatni ro'yxatga olish",
+        "description": "Xatga avtomatik tartib raqami beriladi (K-2026/...)",
+        "field-org": "Yuboruvchi tashkilot",
+        "org-placeholder": "Masalan: Toshkent shahar hokimligi",
+        "field-subject": "Mavzu",
+        "subject-placeholder": "Xatning qisqacha mazmuni",
+        "field-channel": "Kelish kanali",
+        "field-received-at": "Kelgan sana",
+        "field-deadline": "Ijro muddati",
+        "deadline-hint": "Ixtiyoriy — muddat o'tsa xat reestrda belgilanadi",
+        "field-requires-signature": "Javobga rahbar imzosi talab qilinadi",
+        "field-scan": "Skan nusxasi",
+        "scan-hint": "PDF, JPG yoki PNG, hajmi 10 MB gacha. Faqat fayl nomi saqlanadi (demo).",
+        "choose-file": "Fayl tanlash",
+        "replace-file": "Almashtirish",
+        "remove-file": "O'chirish",
+        "scan-format": "Faqat PDF, JPG yoki PNG formatdagi fayllar qabul qilinadi",
+        "scan-too-large": "Fayl hajmi 10 MB dan oshmasligi kerak",
+        "org-required": "Tashkilot nomini kiriting",
+        "subject-required": "Mavzuni kiriting",
+        "received-at-required": "Kelgan sanani kiriting",
+        "deadline-past": "Ijro muddati bugundan oldin bo'lishi mumkin emas",
+        "submit": "Ro'yxatga olish",
+        "success": "{{number}} raqami bilan ro'yxatga olindi"
+      },
+      "channels": {
+        "POCHTA": "Pochta",
+        "EMAIL": "Elektron pochta",
+        "KURYER": "Kuryer",
+        "QOGOZ": "Qog'oz (qo'lda)"
+      },
+      "errors": {
+        "wrong-status": "Bu amal xatning joriy holatida bajarilmaydi",
+        "not-devonxona": "Bu amalni faqat Devonxona xodimi bajara oladi",
+        "not-rahbar": "Bu amalni faqat tashkilot rahbari bajara oladi",
+        "not-unit-head": "Bu amalni faqat mas'ul bo'linma boshlig'i bajara oladi",
+        "not-executor": "Bu amalni faqat tayinlangan ijrochi bajara oladi",
+        "comment-required": "Ijro izohini kiritish majburiy",
+        "missing-response": "Javob fayli yoki hujjati biriktirilmagan",
+        "cert-invalid": "ERI sertifikati yaroqsiz yoki sizga tegishli emas"
+      }
     },
     "profile": {
       "title": "Mening profilim",

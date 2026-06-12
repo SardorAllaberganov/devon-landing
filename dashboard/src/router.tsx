@@ -1,7 +1,5 @@
 import type { ReactElement } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Mail, type LucideIcon } from 'lucide-react';
 
 import LoginPage from '@/features/auth/LoginPage';
 import { RequireAuth } from '@/features/auth/RequireAuth';
@@ -18,32 +16,15 @@ import EmployeeListPage from '@/features/employees/list/EmployeeListPage';
 import EmployeeWizardPage from '@/features/employees/wizard/EmployeeWizardPage';
 import EmployeeProfilePage from '@/features/employees/profile/EmployeeProfilePage';
 import EmployeeTransferPage from '@/features/employees/assignments/EmployeeTransferPage';
+import LettersPage from '@/features/letters/LettersPage';
 import ProfilePage from '@/features/profile/ProfilePage';
 import UnitsPage from '@/features/units/UnitsPage';
-import EmptyState from '@/components/common/EmptyState';
-import PageHeader from '@/components/common/PageHeader';
 
 function Protected({ children }: { children: ReactElement }) {
   return (
     <RequireAuth>
       <AppShell>{children}</AppShell>
     </RequireAuth>
-  );
-}
-
-// Step-16 placeholder for the last milestone-2 route the sidebar links to —
-// step 20 replaces it with the letters registry.
-function ComingSoonPage({ titleKey, icon }: { titleKey: string; icon: LucideIcon }) {
-  const { t } = useTranslation(['dashboard']);
-  return (
-    <>
-      <PageHeader title={t(titleKey)} />
-      <EmptyState
-        icon={icon}
-        title={t('dashboard:coming-soon.title')}
-        body={t('dashboard:coming-soon.body')}
-      />
-    </>
   );
 }
 
@@ -175,10 +156,12 @@ export default function Router() {
         path="/letters"
         element={
           <Protected>
-            <ComingSoonPage titleKey="dashboard:sidebar.nav-letters" icon={Mail} />
+            <LettersPage />
           </Protected>
         }
       />
+      {/* /letters/:uuid is step 21 — registry rows and bell deep-links fall
+          through the catch-all to home until then (documents-step-18 precedent). */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
