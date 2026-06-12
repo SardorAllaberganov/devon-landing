@@ -31,8 +31,10 @@
 | Product overview, modules, roles, roadmap | [`README.md`](./README.md) |
 | User manual (Uzbek) | `docs/user-manual-uz.md` |
 | Operations runbook (deploy, backup, recovery, oncall) | `docs/operations/` |
-| Technical specification (legacy "PLYMA" name) | `docs/Plyma_Technical_Spec_v1.0.docx` |
+| Technical project document (TLH, current — Laravel stack + BPMN, legacy "PLYMA" name) | `docs/Plyma 19.03.2026.docx` |
+| Technical specification (legacy, superseded by the 19.03.2026 TLH) | `docs/Plyma_Technical_Spec_v1.0.docx` |
 | BPMN business process diagrams | `docs/bpmn/` |
+| Dashboard demo build plan (M1 steps 01–15 · M2 steps 16–22) | `docs/dashboard-prompts/` |
 | Architecture decision records | `docs/adr/` |
 
 If a doc is wrong, **fix the doc first**, then build against the corrected truth.
