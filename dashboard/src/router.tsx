@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { FileText, ListChecks, Mail, type LucideIcon } from 'lucide-react';
+import { ListChecks, Mail, type LucideIcon } from 'lucide-react';
 
 import LoginPage from '@/features/auth/LoginPage';
 import { RequireAuth } from '@/features/auth/RequireAuth';
@@ -10,6 +10,8 @@ import AuditLogPage from '@/features/audit/AuditLogPage';
 import DashboardHome from '@/features/dashboard-home/DashboardHome';
 import CertificatesPage from '@/features/certificates/CertificatesPage';
 import CertificateUploadPage from '@/features/certificates/CertificateUploadPage';
+import DocumentsPage from '@/features/documents/DocumentsPage';
+import DocumentWizardPage from '@/features/documents/wizard/DocumentWizardPage';
 import EmployeeListPage from '@/features/employees/list/EmployeeListPage';
 import EmployeeWizardPage from '@/features/employees/wizard/EmployeeWizardPage';
 import EmployeeProfilePage from '@/features/employees/profile/EmployeeProfilePage';
@@ -28,7 +30,8 @@ function Protected({ children }: { children: ReactElement }) {
 }
 
 // Step-16 placeholders for the milestone-2 routes the sidebar already links
-// to. Steps 18 (documents), 19 (approvals) and 20 (letters) replace these.
+// to. Step 18 replaced the documents one; 19 (approvals) and 20 (letters)
+// replace the rest.
 function ComingSoonPage({ titleKey, icon }: { titleKey: string; icon: LucideIcon }) {
   const { t } = useTranslation(['dashboard']);
   return (
@@ -139,8 +142,16 @@ export default function Router() {
         path="/documents"
         element={
           <Protected>
-            <ComingSoonPage titleKey="dashboard:sidebar.nav-documents" icon={FileText} />
+            <DocumentsPage />
           </Protected>
+        }
+      />
+      <Route
+        path="/documents/new"
+        element={
+          <ProtectedNoShell>
+            <DocumentWizardPage />
+          </ProtectedNoShell>
         }
       />
       <Route

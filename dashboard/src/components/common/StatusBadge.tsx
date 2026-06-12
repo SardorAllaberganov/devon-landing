@@ -1,5 +1,16 @@
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Archive, Check, Clock, Lock, X, type LucideIcon } from 'lucide-react';
+import {
+  AlertCircle,
+  Archive,
+  Check,
+  CheckCheck,
+  Clock,
+  Hourglass,
+  Lock,
+  PenLine,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -15,7 +26,10 @@ export type StatusKind =
   | 'REVOKED'
   | 'SUSPENDED'
   | 'TERMINATED'
-  | 'ON_LEAVE';
+  | 'ON_LEAVE'
+  | 'IN_REVIEW'
+  | 'SIGNED'
+  | 'CLOSED';
 
 interface Style {
   cls: string;
@@ -62,6 +76,22 @@ const STYLES: Record<StatusKind, Style> = {
     cls: 'bg-cinnamon-soft text-cinnamon',
     icon: Clock,
     key: 'common:status.on-leave',
+  },
+  // Document statuses (M2, BP-4 canon).
+  IN_REVIEW: {
+    cls: 'bg-cinnamon-soft text-cinnamon',
+    icon: Hourglass,
+    key: 'common:status.in-review',
+  },
+  SIGNED: {
+    cls: 'bg-emerald-soft text-emerald-deep',
+    icon: PenLine,
+    key: 'common:status.signed',
+  },
+  CLOSED: {
+    cls: 'bg-muted text-muted-foreground',
+    icon: CheckCheck,
+    key: 'common:status.closed',
   },
 };
 

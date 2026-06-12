@@ -69,7 +69,10 @@
       "revoked": "Bekor qilingan",
       "suspended": "To'xtatilgan",
       "on-leave": "Ta'tilda",
-      "terminated": "Ishdan bo'shatilgan"
+      "terminated": "Ishdan bo'shatilgan",
+      "in-review": "Kelishuvda",
+      "signed": "Imzolangan",
+      "closed": "Yopilgan"
     },
     "unit-types": {
       "DEPARTMENT": "Departament",
@@ -222,6 +225,7 @@
       "quick": {
         "title": "Tezkor harakatlar",
         "new-employee": "Yangi xodim",
+        "new-document": "Hujjat yaratish",
         "manage-units": "Tuzilmani boshqarish",
         "upload-cert": "ERI yuklash",
         "view-audit": "Audit jurnali"
@@ -298,6 +302,103 @@
       }
     },
     "documents": {
+      "registry": {
+        "title": "Hujjatlar",
+        "subtitle": "Ichki hujjatlar reestri va arxiv",
+        "cta-new": "Hujjat yaratish",
+        "tabs": {
+          "mine": "Mening hujjatlarim",
+          "inbox": "Menga kelgan",
+          "review": "Kelishuvda",
+          "archive": "Arxiv"
+        },
+        "archive-hint": "Imzolangan hujjatlar har kuni kun yakunida arxivlanadi",
+        "search-placeholder": "Raqam yoki sarlavha bo'yicha qidirish",
+        "filter-status": "Holat",
+        "col-number": "Raqam",
+        "col-title": "Sarlavha",
+        "col-type": "Turi",
+        "col-creator": "Yaratuvchi",
+        "col-status": "Holat",
+        "col-date": "Sana",
+        "type-upload": "Yuklangan fayl",
+        "empty-title": "Hujjatlar topilmadi",
+        "empty-body": "Qidiruv yoki filtr shartlarini o'zgartiring, yoki yangi hujjat yarating",
+        "empty-archive-title": "Arxiv hozircha bo'sh",
+        "empty-archive-body": "Imzolangan va yopilgan hujjatlar shu yerda kun bo'yicha guruhlanadi"
+      },
+      "wizard": {
+        "title": "Yangi hujjat",
+        "subtitle": "Shablon yoki tayyor fayl asosida hujjat yarating",
+        "stepper-label": "Hujjat yaratish bosqichlari",
+        "confirm-close": "Kiritilgan ma'lumotlar saqlanmaydi. Chiqishni xohlaysizmi?",
+        "step-1": {
+          "title": "Turi",
+          "source-template": "Shablon asosida",
+          "source-template-hint": "Tayyor shablonni tanlang va maydonlarni to'ldiring",
+          "source-upload": "Tayyor faylni yuklash",
+          "source-upload-hint": "Kompyuteringizdagi tayyor hujjatni biriktiring",
+          "template-label": "Shablonni tanlang",
+          "fields-count": "{{n}} ta maydon",
+          "file-label": "Hujjat fayli",
+          "choose-file": "Fayl tanlash",
+          "replace-file": "Almashtirish",
+          "remove-file": "Faylni olib tashlash",
+          "file-hint": "PDF, DOC yoki DOCX, hajmi 10 MB gacha. Faqat fayl nomi saqlanadi (demo).",
+          "errors": {
+            "template-required": "Davom etish uchun shablonni tanlang",
+            "file-required": "Davom etish uchun fayl tanlang",
+            "file-format": "Faqat PDF, DOC yoki DOCX fayllar qabul qilinadi",
+            "file-too-large": "Fayl hajmi 10 MB dan oshmasligi kerak"
+          }
+        },
+        "step-2": {
+          "title": "Mazmun",
+          "field-title": "Sarlavha",
+          "field-recipient": "Kimga",
+          "field-signer": "Kim imzolaydi",
+          "signer-none": "ERI imzo talab qilinmaydi",
+          "field-confidentiality": "Maxfiylik",
+          "confidentiality-ODDIY": "Oddiy",
+          "confidentiality-MAXFIY": "Maxfiy",
+          "template-fields-heading": "Shablon maydonlari",
+          "preview-title": "Hujjat ko'rinishi",
+          "preview-hint": "Ko'rinish maydonlar to'ldirilgan sari yangilanadi"
+        },
+        "step-3": {
+          "title": "Kelishuv varaqasi",
+          "switch-label": "Kelishuv varaqasi kerakmi?",
+          "sequential-banner": "Kelishuv ketma-ket boradi — har bir ishtirokchi o'z navbatida tasdiqlaydi",
+          "off-explanation": "Kelishuvsiz hujjat to'g'ridan-to'g'ri imzolash yoki qabul qilish bosqichiga o'tadi",
+          "participants-label": "Ishtirokchilar (navbat tartibida)",
+          "add-participant": "Ishtirokchi qo'shish",
+          "move-up": "Yuqoriga ko'tarish",
+          "move-down": "Pastga tushirish",
+          "remove-participant": "Ro'yxatdan olib tashlash",
+          "errors": {
+            "min-participants": "Kamida bitta ishtirokchi qo'shing"
+          }
+        },
+        "review": {
+          "title": "Ko'rib chiqish",
+          "card-content": "Turi va mazmun",
+          "card-participants": "Qatnashchilar",
+          "card-routing": "Kimga / Kim imzolaydi",
+          "no-approval": "Kelishuvsiz",
+          "label-source": "Manba",
+          "label-template": "Shablon",
+          "label-file": "Fayl",
+          "label-title": "Sarlavha",
+          "label-confidentiality": "Maxfiylik",
+          "label-recipient": "Kimga",
+          "label-signer": "Kim imzolaydi"
+        },
+        "submit-draft": "Qoralama sifatida saqlash",
+        "submit-review": "Kelishuvga yuborish",
+        "toast-draft-saved": "{{number}} qoralama sifatida saqlandi",
+        "toast-sent-for-review": "{{number}} kelishuvga yuborildi",
+        "toast-submitted": "{{number}} yuborildi"
+      },
       "errors": {
         "wrong-status": "Bu amal hujjatning joriy holatida bajarilmaydi",
         "not-creator": "Bu amalni faqat hujjat yaratuvchisi bajara oladi",
