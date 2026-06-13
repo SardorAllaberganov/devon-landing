@@ -103,3 +103,18 @@ When in doubt: if the same override would land on every consumer, push it into t
 - When adding new dashboard pages, let `<PageHeader>` + content sit directly under `<main>` without an outer `max-w-*` wrapper on the page shell.
 - If a specific page legitimately needs constrained width (e.g., a one-column form, the employee wizard step content), use `max-w-*` on the *inner* form/section container — not on the page shell.
 - Do **not** re-introduce a clamp on `<main>` in `AppShell.tsx` even if a later step prompt suggests it.
+
+---
+
+## Typography
+
+### `font-serif` was italic-only — toggling the `italic` class can't fix it
+
+**Trap (2026-06-13):** removing the Tailwind `italic` class from the serif slogan/wordmark (login split-pane, sidebar footer) and the A4 document-preview title did **nothing** — they still rendered slanted. Cause: [`dashboard/index.html`](../dashboard/index.html) loaded Fraunces with the italic axis only (`family=Fraunces:ital,opsz,wght@1,9..144,500;1,9..144,600`). `--font-serif: "Fraunces", Georgia, serif`, so the only Fraunces face the browser had was italic; requesting upright just used the italic face (or fell back). The slant lives in the **loaded font face**, not in a CSS `font-style`.
+
+**Fix:** load the roman variant — `family=Fraunces:opsz,wght@9..144,500;9..144,600` (drop the `ital` axis). Now every `font-serif` element renders upright. There is no `font-style: italic` anywhere in `src/**/*.css`.
+
+**How to apply:**
+- If serif text looks italic and you find no `italic` class / `font-style`, check the Google Fonts `<link>` axis list — `ital,...@1,...` means only italic was fetched. Add/keep `@0,...` (roman) or drop the `ital` axis.
+- To support BOTH styles, request both: `ital,opsz,wght@0,...;1,...`. Devon's dashboard only needs roman now (all italic was removed per the user's request).
+- The **landing page** (`landing/index.html`) is a separate surface and intentionally keeps the italic Fraunces slogan as a brand accent — don't "fix" it there.
