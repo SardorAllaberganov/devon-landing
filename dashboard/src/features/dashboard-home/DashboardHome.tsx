@@ -4,6 +4,7 @@ import PageHeader from '@/components/common/PageHeader';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 import ExpiringCertsAlert from './ExpiringCertsAlert';
+import PendingApprovalsAlert from './PendingApprovalsAlert';
 import QuickActions from './QuickActions';
 import RecentActivityCard from './RecentActivityCard';
 import StatsRow from './StatsRow';
@@ -30,6 +31,7 @@ export default function DashboardHome() {
         title={t('dashboard:home.greeting', { name: firstName })}
         subtitle={t('dashboard:home.subtitle')}
       />
+      <PendingApprovalsAlert />
       <ExpiringCertsAlert />
       <StatsRow />
       <QuickActions />

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Inbox, Mail, Plus, Send } from 'lucide-react';
 
@@ -37,6 +38,7 @@ export default function LettersPage() {
   const { t } = useTranslation(['dashboard', 'common']);
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const acting = useActingEmployee();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [tab, setTab] = useState<LetterDirection>('INCOMING');
   const [filters, setFilters] = useState<LettersFiltersState>(defaultFilters);
@@ -48,6 +50,28 @@ export default function LettersPage() {
   // Registry CTA is Devonxona-only; the policy layer enforces regardless
   // (a console call from any other persona throws `not-devonxona`).
   const isDevonxona = acting?.roles.includes('ROLE_DEVONXONA') ?? false;
+
+  // Deep-link from the home overdue-letters stat card: pre-set the overdue
+  // filter, then strip the param so a refresh/back doesn't re-apply it.
+  useEffect(() => {
+    if (searchParams.get('overdue') !== '1') return;
+    setFilters((f) => ({ ...f, overdueOnly: true, page: 1 }));
+    const next = new URLSearchParams(searchParams);
+    next.delete('overdue');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  // Deep-link from the home "Xat ro'yxatga olish" quick action: open the
+  // register dialog once the acting persona resolves (so the role is known).
+  // Consume the param either way so it can't linger and re-open on refresh.
+  useEffect(() => {
+    if (!acting) return;
+    if (searchParams.get('register') !== '1') return;
+    if (isDevonxona) setRegisterOpen(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete('register');
+    setSearchParams(next, { replace: true });
+  }, [acting, isDevonxona, searchParams, setSearchParams]);
 
   // Static lookups for the Bo'linma / Ijrochi column — fetched once on mount.
   const [unitNames, setUnitNames] = useState<Map<string, string>>(new Map());

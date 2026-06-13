@@ -224,10 +224,17 @@
         "employees": "Faol xodimlar",
         "units": "Tarkibiy bo'linmalar",
         "active-certs": "Faol ERI kalitlari",
-        "pending-approvals": "Tasdiqlash kutilmoqda"
+        "my-approvals": "Kelishuv kutilmoqda",
+        "documents": "Hujjatlar",
+        "overdue-letters": "Muddati o'tgan xatlar"
       },
       "recent-activity": "So'nggi harakatlar",
       "no-activity": "Harakatlar yo'q",
+      "approvals-alert": {
+        "title": "Sizni {{count}} ta hujjat kutmoqda",
+        "body": "Kelishuv, imzolash yoki qabul qilishni kutayotgan hujjatlar bor.",
+        "cta": "Ko'rib chiqish"
+      },
       "expiring-alert": {
         "title": "{{count}} ta ERI muddati 30 kun ichida tugaydi",
         "body": "Xodimlarga muddati tugayotgan kalitlarni yangilashni eslatib qo'ying.",
@@ -237,6 +244,7 @@
         "title": "Tezkor harakatlar",
         "new-employee": "Yangi xodim",
         "new-document": "Hujjat yaratish",
+        "register-letter": "Xat ro'yxatga olish",
         "manage-units": "Tuzilmani boshqarish",
         "upload-cert": "ERI yuklash",
         "view-audit": "Audit jurnali"
