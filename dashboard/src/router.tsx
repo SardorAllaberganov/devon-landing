@@ -17,6 +17,7 @@ import EmployeeWizardPage from '@/features/employees/wizard/EmployeeWizardPage';
 import EmployeeProfilePage from '@/features/employees/profile/EmployeeProfilePage';
 import EmployeeTransferPage from '@/features/employees/assignments/EmployeeTransferPage';
 import LettersPage from '@/features/letters/LettersPage';
+import LetterDetailPage from '@/features/letters/detail/LetterDetailPage';
 import ProfilePage from '@/features/profile/ProfilePage';
 import UnitsPage from '@/features/units/UnitsPage';
 
@@ -160,8 +161,14 @@ export default function Router() {
           </Protected>
         }
       />
-      {/* /letters/:uuid is step 21 — registry rows and bell deep-links fall
-          through the catch-all to home until then (documents-step-18 precedent). */}
+      <Route
+        path="/letters/:uuid"
+        element={
+          <Protected>
+            <LetterDetailPage />
+          </Protected>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

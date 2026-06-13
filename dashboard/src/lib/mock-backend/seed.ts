@@ -33,6 +33,7 @@ import type {
   FileMeta,
   Gender,
   Letter,
+  LetterStatus,
   NotificationType,
   Position,
   Role,
@@ -49,7 +50,8 @@ const SEED_FLAG = 'devon.dashboard.seeded';
 // asking users to hit "Reset demo" after every change.
 // '8' = step 20 letters (the step prompt said '7', but step 19 had already
 // consumed it for the document `values` persistence).
-const SEED_VERSION = '8';
+// '9' = step 21 letter audit trails (BP-3 stations for the detail timeline).
+const SEED_VERSION = '9';
 
 const uuid = () => crypto.randomUUID();
 const NOW = () => new Date().toISOString();
@@ -1905,6 +1907,168 @@ function buildAudit(employees: Employee[], units: Unit[], certificates: Certific
   return entries;
 }
 
+// === Letter audit (BP-3 trail for the step-21 detail timeline) ===
+//
+// The letter-detail timeline reads each station's actor + date from the audit
+// trail (listAudit({ resourceUuid })) rather than from denormalised fields, so
+// a seeded letter needs the same per-transition rows the live mutations write —
+// otherwise its timeline renders without actor/date. This reproduces exactly
+// the action + context shape of routeLetter/assignLetterExecutor/… so a seeded
+// letter and one walked live look identical. Adding these rows is identity-
+// changing per the LESSONS rule → SEED_VERSION is bumped alongside.
+
+/** How far along the BP-3 lifecycle a status sits (terminal states share 9). */
+const LETTER_STATUS_RANK: Record<LetterStatus, number> = {
+  REGISTERED: 1,
+  ROUTED: 2,
+  ASSIGNED: 3,
+  IN_PROGRESS: 4,
+  EXECUTED: 5,
+  ON_SIGNATURE: 6,
+  RESPONDED: 7,
+  DISPATCHED: 9,
+  CLOSED: 9,
+  CLOSED_NO_RESPONSE: 9,
+};
+
+function buildLetterAudit(
+  letters: Letter[],
+  employees: Employee[],
+  units: Unit[],
+  certificates: Certificate[],
+): AuditEntry[] {
+  const nameOf = (uuid: string) =>
+    employees.find((e) => e.uuid === uuid)?.fullNameGenerated ?? '—';
+  const unitNameOf = (uuid?: string) =>
+    uuid ? (units.find((u) => u.uuid === uuid)?.nameUz ?? '—') : '—';
+  const rahbarSerial = certificates.find(
+    (c) => c.employeeUuid === PERSONAS.RAHBAR && c.status === 'ACTIVE',
+  )?.serialNumber;
+  const labelOf = (l: Letter) => `${l.number} · ${l.subject}`;
+
+  interface Spec {
+    action: AuditAction;
+    actor: string;
+    context?: Record<string, unknown>;
+  }
+
+  const out: AuditEntry[] = [];
+
+  for (const letter of letters) {
+    const specs: Spec[] = [];
+
+    if (letter.direction === 'OUTGOING') {
+      const linkedIncoming = letter.linkedIncomingUuid
+        ? letters.find((l) => l.uuid === letter.linkedIncomingUuid)
+        : undefined;
+      specs.push({
+        action: 'LETTER_DISPATCHED',
+        actor: letter.registeredByUuid,
+        context: linkedIncoming
+          ? { linkedIncomingNumber: linkedIncoming.number, channel: letter.channel }
+          : { channel: letter.channel },
+      });
+    } else {
+      const rank = LETTER_STATUS_RANK[letter.status];
+      const commentOnly = Boolean(letter.executionComment);
+
+      specs.push({
+        action: 'LETTER_REGISTERED',
+        actor: letter.registeredByUuid,
+        context: {
+          number: letter.number,
+          channel: letter.channel,
+          externalOrg: letter.externalOrg,
+        },
+      });
+      if (rank >= 2) {
+        specs.push({
+          action: 'LETTER_ROUTED',
+          actor: PERSONAS.RAHBAR,
+          context: { unit: unitNameOf(letter.routedToUnitUuid) },
+        });
+      }
+      if (rank >= 3 && letter.assignedEmployeeUuid) {
+        specs.push({
+          action: 'LETTER_ASSIGNED',
+          actor: PERSONAS.BOLIM_BOSHLIGI,
+          context: { executor: nameOf(letter.assignedEmployeeUuid) },
+        });
+      }
+      // Seeded executors always start before submitting (the demo's live flow
+      // offers a separate "Ijroni boshlash" step).
+      if (rank >= 4 && letter.assignedEmployeeUuid) {
+        specs.push({
+          action: 'LETTER_EXECUTED',
+          actor: letter.assignedEmployeeUuid,
+          context: { phase: 'started' },
+        });
+      }
+      if (rank >= 5 && letter.assignedEmployeeUuid) {
+        specs.push({
+          action: 'LETTER_EXECUTED',
+          actor: letter.assignedEmployeeUuid,
+          context: { phase: 'submitted', mode: commentOnly ? 'comment' : 'response' },
+        });
+      }
+      if (rank >= 6) {
+        const outcome: LetterStatus = commentOnly
+          ? 'CLOSED_NO_RESPONSE'
+          : letter.requiresSignature
+            ? 'ON_SIGNATURE'
+            : 'RESPONDED';
+        specs.push({
+          action: 'LETTER_ACCEPTED',
+          actor: PERSONAS.BOLIM_BOSHLIGI,
+          context: { outcome },
+        });
+      }
+      if (letter.requiresSignature && !commentOnly && rank >= 7) {
+        specs.push({
+          action: 'LETTER_SIGNED',
+          actor: PERSONAS.RAHBAR,
+          context: rahbarSerial ? { certificateSerial: rahbarSerial } : undefined,
+        });
+      }
+      if (letter.status === 'CLOSED') {
+        const outgoingNumber = letters.find((l) => l.linkedIncomingUuid === letter.uuid)?.number;
+        specs.push({
+          action: 'LETTER_DISPATCHED',
+          actor: PERSONAS.DEVONXONA,
+          context: { outgoingNumber, channel: letter.channel },
+        });
+        specs.push({
+          action: 'LETTER_CLOSED',
+          actor: PERSONAS.DEVONXONA,
+          context: { outgoingNumber },
+        });
+      }
+    }
+
+    // Space the trail across the letter's known window: registered at
+    // createdAt, the last transition at updatedAt, linear between.
+    const start = Date.parse(letter.createdAt);
+    const end = Date.parse(letter.updatedAt);
+    const n = specs.length;
+    specs.forEach((spec, i) => {
+      const frac = n <= 1 ? 0 : i / (n - 1);
+      out.push({
+        uuid: uuid(),
+        actorUuid: spec.actor,
+        actorName: nameOf(spec.actor),
+        action: spec.action,
+        resourceType: 'letter',
+        resourceUuid: letter.uuid,
+        resourceLabel: labelOf(letter),
+        context: spec.context,
+        createdAt: new Date(start + (end - start) * frac).toISOString(),
+      });
+    });
+  }
+
+  return out;
+}
+
 // === Public seeding API ===
 
 export async function seedIfEmpty(): Promise<void> {
@@ -1921,6 +2085,7 @@ export async function resetAndSeed(): Promise<void> {
   const notifications = buildNotifications(employees);
   const { documents, approvalSteps, signatures } = buildDocumentDomain(certificates);
   const letters = buildLetters(byCode);
+  const letterAudit = buildLetterAudit(letters, employees, units, certificates);
 
   writeTable(Tables.positions, positions);
   writeTable(Tables.units, units);
@@ -1928,7 +2093,12 @@ export async function resetAndSeed(): Promise<void> {
   writeTable(Tables.users, users);
   writeTable(Tables.assignments, assignments);
   writeTable(Tables.certificates, certificates);
-  writeTable(Tables.audit, audit);
+  // Letter audit rows merge with the general trail; the audit page + the
+  // letter-detail timeline both read the combined table, newest-first.
+  writeTable(
+    Tables.audit,
+    [...audit, ...letterAudit].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+  );
   writeTable(Tables.profileRequests, []);
   writeTable(Tables.notifications, notifications);
   writeTable(Tables.documentTemplates, documentTemplates);

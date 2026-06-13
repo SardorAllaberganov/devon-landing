@@ -630,6 +630,134 @@
         "comment-required": "Ijro izohini kiritish majburiy",
         "missing-response": "Javob fayli yoki hujjati biriktirilmagan",
         "cert-invalid": "ERI sertifikati yaroqsiz yoki sizga tegishli emas"
+      },
+      "detail": {
+        "back": "Xatlar ro'yxatiga",
+        "not-found": "Xat topilmadi",
+        "closed-line": "Bu xat bo'yicha jarayon yakunlangan",
+        "turn-hint": "Hozir {{lane}} navbati",
+        "label-sender": "Yuboruvchi tashkilot",
+        "label-addressee": "Manzil",
+        "label-channel": "Kanal",
+        "label-received": "Kelgan sana",
+        "label-deadline": "Ijro muddati",
+        "label-registered-by": "Ro'yxatga oluvchi",
+        "meta-title": "Ma'lumotlar",
+        "label-requires-signature": "Rahbar imzosi talab qilinadi",
+        "label-unit": "Mas'ul bo'linma",
+        "label-executor": "Ijrochi",
+        "label-dispatched": "Jo'natilgan",
+        "label-closed": "Yopilgan",
+        "label-created": "Ro'yxatga olingan",
+        "lane": {
+          "rahbar": "rahbar",
+          "unit-head": "bo'linma boshlig'i",
+          "executor": "ijrochi",
+          "devonxona": "Devonxona"
+        },
+        "timeline": {
+          "title": "Ijro jarayoni",
+          "current": "Joriy bosqich",
+          "registered": "Ro'yxatga olindi",
+          "routed": "Bo'linmaga yo'naltirildi",
+          "assigned": "Ijrochi tayinlandi",
+          "started": "Ijro boshlandi",
+          "submitted": "Ijro topshirildi",
+          "accepted": "Qabul qilindi",
+          "signed": "ERI bilan imzolandi",
+          "dispatched": "Jo'natildi",
+          "closed": "Yopildi",
+          "closed-no-response": "Yopildi (javobsiz)",
+          "lane-devonxona": "Devonxona · {{name}}",
+          "lane-devonxona-only": "Devonxona",
+          "mode-comment": "izoh bilan",
+          "mode-response": "javob xati"
+        },
+        "attachments": {
+          "title": "Ilovalar",
+          "original": "Asl nusxa",
+          "response-file": "Javob xati",
+          "response-document": "Javob hujjatini ochish",
+          "empty": "Ilova biriktirilmagan"
+        },
+        "linked": {
+          "title-reply": "Javob xati",
+          "title-source": "Asl xat"
+        },
+        "actions": {
+          "route": "Bo'linmaga yo'naltirish",
+          "assign": "Ijrochi tayinlash",
+          "start": "Ijroni boshlash",
+          "submit": "Ijroni topshirish",
+          "accept": "Ijroni qabul qilish",
+          "sign": "ERI bilan imzolash",
+          "dispatch": "Jo'natish va ro'yxatga olish"
+        },
+        "toast": {
+          "started": "Ijro boshlandi",
+          "accepted": "Ijro qabul qilindi"
+        },
+        "accept": {
+          "title": "Ijroni qabul qilish",
+          "body-close": "Ijro izoh bilan yakunlangan. Xat javobsiz yopiladi va arxivlanadi.",
+          "body-signature": "Javob xati rahbarning ERI imzosiga yuboriladi.",
+          "body-dispatch": "Javob xati jo'natishga tayyor bo'ladi."
+        },
+        "sign": {
+          "success": "Xat muvaffaqiyatli imzolandi"
+        },
+        "route": {
+          "title": "Xatni bo'linmaga yo'naltirish",
+          "description": "Xat ijro uchun mas'ul bo'linmaga yo'naltiriladi",
+          "field-unit": "Bo'linma",
+          "unit-placeholder": "Bo'linmani tanlang",
+          "cta": "Yo'naltirish",
+          "success": "{{number}} bo'linmaga yo'naltirildi"
+        },
+        "assign": {
+          "title": "Ijrochi tayinlash",
+          "description": "Xatni ijro etadigan xodimni tanlang",
+          "field-executor": "Ijrochi",
+          "executor-placeholder": "Xodimni tanlang",
+          "no-members": "Bo'linmada faol xodim topilmadi",
+          "cta": "Tayinlash",
+          "success": "Ijrochi tayinlandi"
+        },
+        "execute": {
+          "title": "Ijroni topshirish",
+          "gate-question": "Ijro yuzasidan hujjat biriktirish talab etiladimi?",
+          "mode-response": "Javob xati biriktirish",
+          "mode-response-hint": "Rasmiy javob xati tayyorlangan",
+          "mode-comment": "Izoh bilan yakunlash",
+          "mode-comment-hint": "Javob xati talab etilmaydi — sababini izohlang",
+          "kind-file": "Fayl yuklash",
+          "kind-document": "Tayyor hujjatdan tanlash",
+          "field-document": "Javob hujjati",
+          "document-placeholder": "Hujjatni tanlang",
+          "no-documents": "Sizda imzolangan yoki yopilgan hujjat yo'q",
+          "choose-file": "Fayl tanlash",
+          "replace-file": "Almashtirish",
+          "remove-file": "O'chirish",
+          "file-hint": "PDF yoki DOC, hajmi 10 MB gacha. Faqat fayl nomi saqlanadi (demo).",
+          "file-format": "Faqat PDF yoki DOC formatdagi fayllar qabul qilinadi",
+          "file-too-large": "Fayl hajmi 10 MB dan oshmasligi kerak",
+          "comment-label": "Ijro izohi",
+          "comment-placeholder": "Ijro natijasi va javob talab etilmasligini izohlang",
+          "comment-required": "Izoh kamida 10 ta belgidan iborat bo'lishi kerak",
+          "response-required": "Javob fayli yoki hujjatini biriktiring",
+          "cta": "Topshirish",
+          "success": "Ijro topshirildi"
+        },
+        "dispatch": {
+          "title": "Javobni jo'natish",
+          "description": "Javob xati jo'natiladi va chiquvchi raqam beriladi",
+          "outgoing-number": "Chiquvchi raqam",
+          "outgoing-preview": "CH-2026/... avtomatik beriladi",
+          "addressee": "Manzil",
+          "field-channel": "Jo'natish kanali",
+          "cta": "Jo'natish",
+          "success": "{{number}} raqami bilan jo'natildi"
+        }
       }
     },
     "profile": {
