@@ -49,9 +49,10 @@ The four-level Uzbek corporate hierarchy Devon models natively.
 | **Hujjat aylanmasi** | Document circulation / Document flow | The general practice of internal document movement and approval — what Devon digitizes end-to-end. |
 | **Shablon** | Template | A reusable document structure with placeholder fields. Customers define their own template library. |
 | **Buyruq** | Order / Directive | A formal internal order, typically signed by a director or deputy. A common document type. |
-| **Buyruqdan ko'chirma** | Extract from an order | The certified extract of the hiring order, signed by a director — attached (PDF/JPG/PNG) as a required document when an employee profile is created in Devon. Distinct from *lavozim yo'riqnomasi*, which is attached after the profile exists. |
+| **Buyruqdan ko'chirma** | Extract from an order | The certified extract of the hiring order, signed by a director — attached (PDF/JPG/PNG) as a required document when an employee profile is created in Devon. Collected alongside *lavozim yo'riqnomasi* — both are required at profile creation. |
+| **Ishdan bo'shatish buyrug'idan ko'chirma** | Extract from the termination order | The certified extract of the dismissal order, signed by a director — a required document (PDF/JPG/PNG) when an employee is terminated in Devon. Terminating also auto-revokes the employee's active ERI certificates. |
 | **Yo'riqnoma** | Instruction / Manual | A formal instruction document. |
-| **Lavozim yo'riqnomasi** | Position instructions / Job description | The document defining an employee's job duties; attached to their profile in Devon. |
+| **Lavozim yo'riqnomasi** | Position instructions / Job description | The document defining an employee's job duties; attached (PDF/JPG/PNG) as a required document when an employee profile is created in Devon. |
 | **Davonxona** | Registry / Chancellery / Clerk's office | The team that handles incoming and outgoing official correspondence. Often the entry point for citizen petitions and inter-agency letters. Owns the inbound/outbound numbering. Variants in spelling: *devonxona*, *dyevonxona*. |
 | **Kiruvchi xat** | Inbound letter / Incoming correspondence | Official letter received by the organization. Devon registers these with a unique inbound number. Spelling variant: *keluvchi xat* (used in the 19.03.2026 TLH and the dashboard UI). |
 | **Yo'naltirish** | Routing / Forwarding | The act of routing a registered letter down the hierarchy: Devonxona → Rahbar → structural unit → executor (BP-3). |

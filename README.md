@@ -70,7 +70,8 @@ Devon ships with 8 core modules:
 - Login via email + password
 - Three primary roles: Super Admin, Department Head, Employee
 - Employee profile: full name, department, position, phone, internal extension, certified employment-order extract ("buyruqdan ko'chirma", required at creation)
-- Position instructions ("lavozim yo'riqnomasi") attached as documents
+- Position instructions ("lavozim yo'riqnomasi"), required at creation
+- Termination requires a certified termination-order extract ("ishdan bo'shatish buyrug'idan ko'chirma")
 - Search employees by name or department
 
 ### 2. Document management

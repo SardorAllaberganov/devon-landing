@@ -615,7 +615,7 @@
 1. HR opens the employee-creation form.
 2. Fills in: name, position, department (drill-down through the four-level org tree), email, phone, internal extension.
 3. Attaches the certified extract of the hiring order ("buyruqdan ko'chirma") signed by the Director — required; PDF, JPG, or PNG. The form cannot be saved without it.
-4. Attaches the position instructions ("lavozim yo'riqnomasi").
+4. Attaches the position instructions ("lavozim yo'riqnomasi") — required; PDF, JPG, or PNG. The form cannot be saved without it.
 5. Saves.
 6. Devon creates the profile in `pending-first-login` state.
 7. Devon issues a one-time password.
