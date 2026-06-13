@@ -13,13 +13,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate } from '@/i18n/uz-locale';
 import {
   DocumentValidationError,
+  LetterValidationError,
   listCertificates,
   MockNetworkError,
   signDocument,
 } from '@/lib/mock-backend';
 import type { Certificate } from '@/types/domain';
 
-import { FakeEriSigner } from '../FakeEriSigner';
+import { FakeEriSigner } from './FakeEriSigner';
 
 const PIN_PATTERN = /^\d{6}$/;
 
@@ -28,23 +29,40 @@ type Phase = 'pick' | 'signing' | 'done';
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  documentUuid: string;
-  /** Acting employee — must be the document's designated signer. */
+  /** Document OR letter uuid — the resource being signed. */
+  resourceUuid: string;
+  /** Acting employee — must be the resource's designated signer. */
   actorUuid: string;
   onDone: () => void;
+  /**
+   * The real sign mutation, bound to the resource. Receives the chosen
+   * certificate uuid. Defaults to `signDocument(resourceUuid, actorUuid, …)`;
+   * the letter flow passes a `signLetter`-bound thunk (its param order differs).
+   */
+  onSign?: (certificateUuid: string) => Promise<unknown>;
+  /** Which `dashboard:<ns>.errors.*` table maps thrown validation codes. */
+  errorNamespace?: 'documents' | 'letters';
+  /** Success-state copy key — the only domain-specific string in this dialog. */
+  successKey?: string;
 }
 
 /**
  * ERI signing ceremony — step-12 upload theatre, signing flavour: pick an
  * ACTIVE certificate, enter a PIN (any 6 digits; never sent anywhere), watch
- * the simulated E-IMZO challenge-response, land on the success state.
+ * the simulated E-IMZO challenge-response, land on the success state. Shared
+ * by document signing (step 19) and letter signing (step 21); the only
+ * domain-specific bits — the mutation, the error namespace, the success copy —
+ * are injected.
  */
 export default function SignDialog({
   open,
   onOpenChange,
-  documentUuid,
+  resourceUuid,
   actorUuid,
   onDone,
+  onSign,
+  errorNamespace = 'documents',
+  successKey = 'dashboard:documents.detail.sign.success',
 }: Props) {
   const { t } = useTranslation(['dashboard', 'common']);
   const navigate = useNavigate();
@@ -86,14 +104,18 @@ export default function SignDialog({
     setPhase('signing');
     try {
       // Theatre first (the visible E-IMZO handshake), then the real mutation.
-      await FakeEriSigner.sign({ resourceUuid: documentUuid });
-      await signDocument(documentUuid, actorUuid, cert.uuid);
+      await FakeEriSigner.sign({ resourceUuid });
+      await (onSign
+        ? onSign(cert.uuid)
+        : signDocument(resourceUuid, actorUuid, cert.uuid));
       setSignedSerial(cert.serialNumber);
       setPhase('done');
     } catch (err) {
       setPhase('pick');
-      if (err instanceof DocumentValidationError) {
-        toast.error(t(`dashboard:documents.errors.${err.code}`));
+      // Both domain errors carry a `.code`; a policy failure (e.g. cert-invalid,
+      // wrong-status) won't clear on retry, so close + refetch to show truth.
+      if (err instanceof DocumentValidationError || err instanceof LetterValidationError) {
+        toast.error(t(`dashboard:${errorNamespace}.errors.${err.code}`));
         onOpenChange(false);
         onDone();
       } else if (err instanceof MockNetworkError) {
@@ -155,9 +177,7 @@ export default function SignDialog({
       ) : phase === 'done' ? (
         <div className="flex flex-col items-center gap-3 py-8 text-center">
           <CheckCircle2 className="h-12 w-12 text-emerald" aria-hidden />
-          <p className="text-sm font-semibold text-ink">
-            {t('dashboard:documents.detail.sign.success')}
-          </p>
+          <p className="text-sm font-semibold text-ink">{t(successKey)}</p>
           <p className="font-mono text-xs break-all text-muted-foreground">{signedSerial}</p>
         </div>
       ) : certs === null ? (

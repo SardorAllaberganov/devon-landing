@@ -38,9 +38,10 @@ import {
 } from '@/lib/mock-backend';
 import type { Employee } from '@/types/domain';
 
+import SignDialog from '@/features/_shared/eri/SignDialog';
+
 import DecideDialog, { type Decision } from './DecideDialog';
 import EmailDialog from './EmailDialog';
-import SignDialog from './SignDialog';
 
 interface Props {
   detail: DocumentDetail;
@@ -287,7 +288,7 @@ export default function DocumentActions({ detail, actorUuid, employees, onChange
       <SignDialog
         open={signOpen}
         onOpenChange={setSignOpen}
-        documentUuid={doc.uuid}
+        resourceUuid={doc.uuid}
         actorUuid={actorUuid}
         onDone={onChanged}
       />

@@ -23,10 +23,11 @@ import {
 import { useQueueStore } from '@/stores/useQueueStore';
 import type { Employee } from '@/types/domain';
 
+import SignatureHistoryCard from '@/features/_shared/eri/SignatureHistoryCard';
+
 import A4Preview, { type SignatureStamp } from './A4Preview';
 import ApprovalSheetCard from './ApprovalSheetCard';
 import DocumentActions from './DocumentActions';
-import SignatureHistoryCard from './SignatureHistoryCard';
 
 function initials(name: string): string {
   return name
