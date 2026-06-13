@@ -1,6 +1,7 @@
 # Devon Dashboard — QA Notes
 
-Last full QA: **2026-06-01** (automated pass; observational sweep TBD by human operator)
+Last full QA: **2026-06-13** (M2 step-22 automated pass; observational sweep TBD by human operator)
+Milestone 1 QA: **2026-06-01** (see the dated section below)
 
 Live: <https://sardorallaberganov.github.io/devon-landing/dashboard/>
 Demo credentials: `admin@devon.uz` / `Demo2026!`
@@ -14,7 +15,7 @@ These are intentional simplifications for the demo build, not bugs.
 - **Mock backend** — there is no real server. All "API" calls hit a typed wrapper over `localStorage` with simulated 200–600 ms latency and a 3 % random failure rate. UI exercises error paths via the simulated failures but no real recovery is possible (no retry queues, no offline reconciliation).
 - **Real PFX parsing not implemented** — certificate uploads route through a fake metadata extractor (`features/certificates/FakePfxParser.ts`) that returns plausible X.509 data with the employee's PINFL/FIO mirrored so the round-trip passes the backend's `pinfl-mismatch` guard. Wrong passwords are NOT actually verified — any password is accepted and metadata is generated regardless.
 - **Real E-IMZO plugin handshake not implemented** — replaced with a 1.5 s mocked challenge-response (`ShieldCheck` pulse) per master §17 ("fake the WebSocket with a delay").
-- **Single user role demoed (HR_ADMIN)** — other roles (`ROLE_SUPER_ADMIN`, `ROLE_HR_OPERATOR`, `ROLE_UNIT_HEAD`, `ROLE_EMPLOYEE`, `ROLE_AUDITOR`) exist in the data model and seed data but aren't accessible via login in the demo. No "Switch to employee POV" toggle ships in v1.
+- **Single login, multiple personas (M2 update)** — login is still the one HR_ADMIN demo user (`admin@devon.uz`). Since step 16 a **"Rol almashtirish" POV switcher** (user menu) lets that session act as any of the five M2 personas — HR_ADMIN · Rahbar (Karimov Bekzod) · Bo'lim boshlig'i (Akhmedov Akmal) · Devonxona (Yusupova Nilufar) · Xodim (Sobirova Dilnoza) — so the document-approval and letter pipelines can be walked end-to-end by one evaluator. Other roles in the data model that aren't one of these five personas still have no dedicated login.
 - **Hardcoded credentials shown on the login screen** — intentional for demo discoverability. A real deploy would remove the `demo-hint` block from `LoginPage`.
 - **Profile-change request approval path is unreachable in the demo** — `submitProfileChangeRequest` + `approveProfileRequest` are wired and audit-logged, but HR_ADMIN edits apply directly via `updateEmployee` (skipping the request flow), so no PENDING requests ever accumulate for the demo user to approve. The empty-state copy on the "Tahrirlash so'rovlari" tab explains the workflow exists for `ROLE_EMPLOYEE`.
 - **Real SMS / email OTP / notification delivery** — not implemented. The wizard's "notify-SMS" / "notify-email" checkboxes are persisted to the new-employee record but no message is sent.
@@ -110,9 +111,48 @@ These are the checks that landed during the agentic QA pass — they don't repla
 
 ---
 
+## Milestone 2 QA — 2026-06-13 (step 22)
+
+M2 wrap-up: home-surface integration of documents / letters / approvals, plus the step-15 QA battery re-scoped to the new surfaces (`dashboard-home`, `documents`, `letters`, `approvals`, `audit`).
+
+### Automated checks (step 22)
+
+| Check | Result |
+|---|---|
+| Production build (`npm run build`) | 2952 modules · 121.53 KB CSS · 1,132.20 KB JS / **313.92 KB gzip** |
+| Bundle size vs. < 500 KB gzipped target | **PASS** (314 KB < 500 KB; +0.5 KB vs the post-M2 313.41 KB baseline) |
+| i18n referenced-key resolution (whole `src`) | **639 / 639 static keys resolve, 0 unresolved**; 26 dynamic-family roots; 953 UZ keys total |
+| Cyrillic literals in `src` (excl. locale files) | Clean |
+| `toast.<level>("literal")` non-`t()` calls | Clean |
+| `PLYMA` / `PLYMO` in source | Clean |
+| `NotificationType` title keys | All **13** union members have a `notifications.title.*` key (+1 intentional `DOC_ACCEPT_REQUESTED` acceptance-variant title) |
+| `DocumentValidationCode` → `documents.errors.*` | All **11** codes keyed |
+| `LetterValidationCode` → `letters.errors.*` | All **8** codes keyed |
+| State-machine conformance (status literals in home code) | Clean — only `ACTIVE` / `DRAFT`, both canonical (no invented states) |
+| Read APIs call `maybeFail()`? | **No** — all list reads are `simulatedDelay()`-only, so the forced-failure pass can't break the read-only home surfaces (see note below) |
+| Route reachability (17 route patterns via `curl`) | All 200; dev-server cold-boot log error/warning-free |
+| Lint (`eslint .`) | 34 errors / 10 warnings, **all the pre-existing tolerated `react-hooks/*` idioms**. Net new from step 22: **+2** `set-state-in-effect` in `LettersPage.tsx` (the `?overdue=1` / `?register=1` URL→state-sync effects) — same family as the documented step-09/13/18/19/20/21 clones. Every other step-22 file is lint-clean. |
+
+**Forced-failure note.** Step 22's new surfaces are **read-only + navigation** (the 6 home stat cards, the pending-approvals alert, the quick-action tiles, the audit icon/filter wiring). List reads never call `maybeFail()`, so raising `maybeFail` to 100 % leaves the home intact. The only mutation entry point step 22 adds is the home "Xat ro'yxatga olish" quick action → `/letters?register=1`, which opens the **step-20 `RegisterLetterDialog`** whose flake handling was verified in the step-20 harness (53/53). No new unrecoverable UI state introduced; the interactive 100 %-fail click-through stays on the observational list below for completeness.
+
+### Pending observational sweep — M2 surfaces (human operator)
+
+These need DevTools / a real browser / a phone, and the **POV switcher** (user menu → "Rol almashtirish").
+
+- [ ] **Home persona-awareness** — on `/`, note the three M2 stat cards (Kelishuv kutilmoqda → `/approvals`, Hujjatlar → `/documents`, Muddati o'tgan xatlar → `/letters?overdue=1`). Switch POV and confirm the counts change (e.g. Rahbar and Bo'lim boshlig'i have non-zero "Kelishuv kutilmoqda"; the overdue-letters card turns the destructive tint when > 0). The **PendingApprovalsAlert** banner appears for a persona with a non-empty approvals queue and is absent for one with an empty queue.
+- [ ] **Stat-card deep links** — clicking "Muddati o'tgan xatlar" lands on `/letters` with the "Muddati o'tgan" filter already applied and the `?overdue=1` param stripped from the URL; "Kelishuv kutilmoqda" → `/approvals`; "Hujjatlar" → `/documents`.
+- [ ] **Devonxona quick action** — switch to the Devonxona persona (Yusupova) and confirm the **"Xat ro'yxatga olish"** quick-action tile appears; clicking it lands on `/letters` with the register dialog already open. Switch to any non-Devonxona persona and confirm the tile is **absent**.
+- [ ] **Audit M2 coverage** — `/audit`: filter resourceType by **Hujjat** and **Xat**; confirm rows render with the M2 icons (FilePlus / FileCheck / PenLine / MailPlus / Forward / SendHorizontal etc.). The same icons must match what `/documents/:uuid` and `/letters/:uuid` history and the home `RecentActivityCard` show (now sourced from the shared `lib/audit-icons.ts`).
+- [ ] **Keyboard-only document approval** — from `/approvals`, Tab to a queue row, Enter to open the document, Tab to the action bar, approve / reject via keyboard only (the DecideDialog comment field reachable, reject requires the ≥ 5-char comment). No mouse.
+- [ ] **Print stylesheet** — on a SIGNED `/documents/:uuid` (TEMPLATE source), use "Chop etish / PDF saqlash"; the `.print-area` rule must isolate the A4 sheet (chrome hidden, ERI stamp block visible) in the print preview.
+- [ ] **Six-viewport sweep of the home grid** — at 360 / 390 / 768 / 1024 / 1280 / 1920 px confirm the stat grid reflows 1-col → 2-col (`sm`) → 3-col (`lg`, 3 × 2), the quick-action tiles wrap without clipping (6-col at `lg` when the Devonxona tile is present), and both home alert banners stack their CTA below the body text on mobile.
+- [ ] **Lighthouse** — add `/approvals` to the M1 route list above; targets unchanged (Perf ≥ 85, A11y ≥ 95, Best Practices ≥ 95).
+
+---
+
 ## Cross-references
 
-- Build prompt: [`docs/dashboard-prompts/15-final-qa.md`](../docs/dashboard-prompts/15-final-qa.md)
+- Build prompt: [`docs/dashboard-prompts/15-final-qa.md`](../docs/dashboard-prompts/15-final-qa.md) · [`docs/dashboard-prompts/22-m2-home-qa.md`](../docs/dashboard-prompts/22-m2-home-qa.md)
 - Master prompt §17 (out-of-scope): [`docs/dashboard-prompts/00-master.md`](../docs/dashboard-prompts/00-master.md)
 - Build lessons (cross-step decisions): [`ai_context/LESSONS.md`](../ai_context/LESSONS.md)
 - Project snapshot: [`ai_context/AI_CONTEXT.md`](../ai_context/AI_CONTEXT.md)

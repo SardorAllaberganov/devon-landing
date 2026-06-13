@@ -3,7 +3,7 @@
 This folder contains a structured set of prompts that drive the build of the **Devon Dashboard** — a Vite + React + TypeScript single-page application demo. The prompts are designed for execution across multiple AI sessions; each step assumes the previous steps are complete.
 
 - **Milestone 1 (steps 01–15, shipped 2026-06-01):** the HR & User Management module from `../Plyma TZ xodim kiritish.docx`.
-- **Milestone 2 (steps 16–22):** the Electronic Document Management flows from the updated TLH `../Plyma 19.03.2026.docx` — BPMN §3.3 (letters) + §3.4 (documents & kelishuv), requirements §2.2–2.4 / §2.7. Diagrams: [`../bpmn/`](../bpmn/).
+- **Milestone 2 (steps 16–22, shipped 2026-06-13):** the Electronic Document Management flows from the updated TLH `../Plyma 19.03.2026.docx` — BPMN §3.3 (letters) + §3.4 (documents & kelishuv), requirements §2.2–2.4 / §2.7. Diagrams: [`../bpmn/`](../bpmn/). Step 22 wired both flows into the dashboard home (persona-aware stat cards + pending-approvals alert + quick actions) and ran the M2 QA sweep — see [`../../dashboard/QA_NOTES.md`](../../dashboard/QA_NOTES.md).
 
 ## Files
 

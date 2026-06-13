@@ -134,6 +134,8 @@
 
 **Goal:** Every letter is registered, routed to a responsible executor, responded to within deadline, and dispatched (or closed) with full audit trail.
 
+**Demo:** Walkable end-to-end in the dashboard demo (Flow 6) — `/letters` (Keluvchi / Chiquvchi registry; the Devonxona persona registers inbound letters, auto-numbered `K-2026/NNNN`) → `/letters/:uuid` (the BP-3 station timeline + the per-role action bar: route → assign → start → submit → accept → optional Rahbar ERI → dispatch, auto-numbered `CH-2026/NNNN`). Walk it by switching personas in the user-menu POV switcher. See [`../dashboard/QA_NOTES.md`](../dashboard/QA_NOTES.md).
+
 **Actors:**
 - **Devonxona / Registry office** — the team that receives and registers correspondence
 - **Department Head** — the responsible head who assigns an executor
@@ -208,6 +210,8 @@ registered → routed → assigned → in-progress → executed → [on-signatur
 **Trigger:** An employee needs to formalize an internal document — order, memo, contract draft, internal directive, policy, etc.
 
 **Goal:** Document is drafted, routed through the appropriate approval chain, signed, and archived. Every step is logged.
+
+**Demo:** Walkable end-to-end in the dashboard demo (Flow 5) — `/documents` (registry tabs: Mening hujjatlarim / Menga kelgan / Kelishuvda / Arxiv) + `/documents/new` (template-or-upload creation wizard building the kelishuv varaqasi, auto-numbered `HJ-2026/NNNN`) → `/documents/:uuid` (A4 preview + print, the sequential approval timeline with round history, ERI signing) and `/approvals` (each persona's decision / signature / acceptance queue). Walk it by switching personas in the user-menu POV switcher. See [`../dashboard/QA_NOTES.md`](../dashboard/QA_NOTES.md).
 
 **Actors:**
 - **Employee** (the author)

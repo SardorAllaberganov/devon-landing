@@ -34,6 +34,35 @@
 
 ---
 
+## Demo coverage (dashboard SPA)
+
+Which use cases are walkable in the interactive demo at `…/dashboard/`, and where. Milestone 1 (HR & ERI) shipped 2026-06-01; Milestone 2 (documents + letters) shipped 2026-06-13. Multi-actor flows are walked via the user-menu **POV switcher** (five seeded personas). Status reflects the demo only — production scope is unchanged. See [`../dashboard/QA_NOTES.md`](../dashboard/QA_NOTES.md).
+
+| UC | Demo route(s) | Status |
+|---|---|---|
+| UC-01 Authentication | `/login` | ✅ Full (single HR_ADMIN login; POV switcher for personas) |
+| UC-02 Profile self-management | `/profile` | ✅ Full (HR_ADMIN edits apply directly; request-queue path explained but unreachable) |
+| UC-03 Create document from template | `/documents/new` | ✅ Full (template gallery + live A4 preview, `HJ-2026/NNNN`) |
+| UC-04 Route document for approval | `/documents/new` (kelishuv varaqasi) → `/documents/:uuid` | ✅ Full (sequential chain; rework loop via `?edit=`) |
+| UC-05 Sign document with ERI | `/documents/:uuid` | 🟡 Simulated (1.5 s mocked E-IMZO handshake; no real plugin) |
+| UC-06 Participate in an approval chain | `/approvals` → `/documents/:uuid` | ✅ Full (decision / signature / acceptance queues, per persona) |
+| UC-07 Assign a task | — | ⬜ Milestone 3 (Task Delegation, BPMN 3.2) |
+| UC-08 Submit task deliverable | — | ⬜ Milestone 3 |
+| UC-09 Review task deliverable | — | ⬜ Milestone 3 |
+| UC-10 Monitor department dashboard | `/` (home) | 🟡 Partial (persona-aware M2 stat cards + pending-approvals alert + recent-activity; no charts/reporting yet) |
+| UC-11 Export document to PDF/Word | `/documents/:uuid` | 🟡 Partial (browser print-to-PDF of the A4 preview; no Word export) |
+| UC-12 Email a document | `/documents/:uuid` | 🟡 Simulated ("Yuborildi (demo)" toast; no real send) |
+| UC-13 Register an inbound letter | `/letters` (Devonxona persona) | ✅ Full (`K-2026/NNNN`) |
+| UC-14 Respond to an inbound letter | `/letters/:uuid` | ✅ Full (route → assign → execute → accept → optional ERI) |
+| UC-15 Dispatch an outbound letter | `/letters/:uuid` (Devonxona) | ✅ Full (creates linked `CH-2026/NNNN` outbound) |
+| UC-16 Manage organizational structure | `/units` | ✅ Full (4-level tree CRUD) |
+| UC-17 Create and onboard employee | `/employees/new` | ✅ Full (4-step wizard) |
+| UC-18 Nightly archival of finalized documents | `/documents` (Arxiv tab) | 🟡 Simulated (`archivedAt` stamped at sign/close; Arxiv groups by day) |
+| UC-19 Nightly system backup | — | ⬜ Operations (no demo surface) |
+| UC-20 Read audit log for a document | `/audit`, `/documents/:uuid` history | ✅ Full (append-only; filter by `document` / `letter`) |
+
+---
+
 ## UC-01: User authentication
 
 **Actor:** Any user with credentials.
