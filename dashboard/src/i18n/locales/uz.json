@@ -24,7 +24,10 @@
       "view-all": "Hammasini ko'rish",
       "show-more": "Ko'proq ko'rsatish",
       "show-less": "Kamroq ko'rsatish",
-      "open-profile": "Profilni ochish"
+      "open-profile": "Profilni ochish",
+      "choose-file": "Fayl tanlash",
+      "replace-file": "Almashtirish",
+      "remove-file": "Faylni olib tashlash"
     },
     "labels": {
       "loading": "Yuklanmoqda...",
@@ -49,6 +52,10 @@
       "email-must-be-corporate": "Korporativ pochta @devon.uz bilan tugashi kerak",
       "email-taken": "Bu email allaqachon ro'yxatdan o'tgan",
       "order-extract-missing": "Buyruqdan ko'chirma biriktirilmagan",
+      "position-instruction-missing": "Lavozim yo'riqnomasi biriktirilmagan",
+      "termination-extract-missing": "Ishdan bo'shatish buyrug'idan ko'chirma biriktirilmagan",
+      "file-format": "Faqat PDF, JPG yoki PNG formatdagi fayllar qabul qilinadi",
+      "file-too-large": "Fayl hajmi 10 MB dan oshmasligi kerak",
       "min-length": "Kamida {{count}} ta belgi kerak",
       "max-length": "Maksimum {{count}} ta belgi",
       "passwords-dont-match": "Parollar mos kelmadi",
@@ -895,6 +902,7 @@
           "hire-date": "Ishga qabul sanasi",
           "role": "Tizimdagi roli",
           "order-extract": "Buyruqdan ko'chirma",
+          "position-instruction": "Lavozim yo'riqnomasi",
           "login": "Login",
           "password": "Parol",
           "notify-sms": "SMS orqali yuborish",
@@ -910,7 +918,8 @@
         "hints": {
           "corporate-email": "Pochta @devon.uz bilan tugashi shart",
           "derived-login": "Login korporativ pochtadan avtomatik olinadi. O'zgartirish uchun yuqoridagi tugmani bosing.",
-          "order-extract": "Direktor tomonidan imzolangan ishga qabul qilish buyrug'ining tasdiqlangan ko'chirmasi (PDF, JPG yoki PNG, maks. 10 MB)"
+          "order-extract": "Direktor tomonidan imzolangan ishga qabul qilish buyrug'ining tasdiqlangan ko'chirmasi (PDF, JPG yoki PNG, maks. 10 MB)",
+          "position-instruction": "Xodimning lavozim majburiyatlari yozilgan yo'riqnoma hujjati (PDF, JPG yoki PNG, maks. 10 MB)"
         },
         "actions": {
           "show-password": "Parolni ko'rsatish",
@@ -918,10 +927,7 @@
           "copy-password": "Nusxalash",
           "regenerate-password": "Yangi parol yaratish",
           "use-derived-login": "Avtomatik loginni qaytarish",
-          "copied": "Nusxalandi",
-          "choose-file": "Fayl tanlash",
-          "replace-file": "Almashtirish",
-          "remove-file": "O'chirish"
+          "copied": "Nusxalandi"
         },
         "password-strength": {
           "0": "Parol juda zaif",
@@ -937,9 +943,7 @@
           "age-18": "Xodim 18 yoshdan katta bo'lishi kerak",
           "password-weak": "Parol kamida 8 belgi, katta va kichik harflar, raqam va maxsus belgini o'z ichiga olishi kerak",
           "no-units": "Faol bo'linmalar topilmadi",
-          "no-positions-for-unit": "Bu bo'linma turiga mos lavozim yo'q",
-          "order-extract-format": "Faqat PDF, JPG yoki PNG formatdagi fayllar qabul qilinadi",
-          "order-extract-too-large": "Fayl hajmi 10 MB dan oshmasligi kerak"
+          "no-positions-for-unit": "Bu bo'linma turiga mos lavozim yo'q"
         }
       },
       "profile": {
@@ -976,6 +980,8 @@
             "termination-date": "Ishdan bo'shatilgan sana",
             "employment-type": "Ish turi",
             "order-extract": "Buyruqdan ko'chirma",
+            "position-instruction": "Lavozim yo'riqnomasi",
+            "termination-order-extract": "Ishdan bo'shatish buyrug'idan ko'chirma",
             "status": "Holat"
           },
           "gender": {
@@ -996,7 +1002,9 @@
           "body": "{{name}}ni ishdan bo'shatishni tasdiqlaysizmi? Barcha faol ERI kalitlari avtomatik bekor qilinadi va ushbu amalni qaytarib bo'lmaydi.",
           "confirm": "Ha, bo'shatish",
           "cancel": "Bekor qilish",
-          "success": "{{name}} ishdan bo'shatildi"
+          "success": "{{name}} ishdan bo'shatildi",
+          "order-extract-label": "Ishdan bo'shatish buyrug'idan ko'chirma",
+          "order-extract-hint": "Direktor tomonidan imzolangan ishdan bo'shatish buyrug'ining tasdiqlangan ko'chirmasi (PDF, JPG yoki PNG, maks. 10 MB)"
         },
         "units": {
           "heading": "Biriktirmalar tarixi",

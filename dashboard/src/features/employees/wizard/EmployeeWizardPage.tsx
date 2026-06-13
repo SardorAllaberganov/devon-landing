@@ -51,10 +51,16 @@ export default function EmployeeWizardPage() {
 
   async function onSubmit() {
     const orderExtract = data.step3.employmentOrderExtract;
+    const positionInstruction = data.step3.positionInstruction;
+    // Step 3's zod gate makes these unreachable in practice; if the store is
+    // ever in a bad state, bounce back instead of failing the create.
     if (!orderExtract) {
-      // Step 3's zod gate makes this unreachable in practice; if the store is
-      // ever in a bad state, bounce back instead of failing the create.
       toast.error(t('common:errors.order-extract-missing'));
+      setCurrent(2);
+      return;
+    }
+    if (!positionInstruction) {
+      toast.error(t('common:errors.position-instruction-missing'));
       setCurrent(2);
       return;
     }
@@ -81,6 +87,7 @@ export default function EmployeeWizardPage() {
             hireDate: data.step3.hireDate,
           },
           orderExtract,
+          positionInstruction,
           password: data.step4.password,
           role: data.step3.role,
         },

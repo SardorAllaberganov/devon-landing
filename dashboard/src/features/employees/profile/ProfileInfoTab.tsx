@@ -2,22 +2,18 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Pencil, Power } from 'lucide-react';
+import { Loader2, Pencil, Power } from 'lucide-react';
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import MetaFileField, { type FileMetaInput } from '@/components/common/MetaFileField';
+import ResponsiveDialog from '@/components/common/ResponsiveDialog';
 import { formatDate } from '@/i18n/uz-locale';
 import { formatBytes } from '@/lib/format';
-import { MockNetworkError, terminateEmployee } from '@/lib/mock-backend';
+import {
+  EmployeeValidationError,
+  MockNetworkError,
+  terminateEmployee,
+} from '@/lib/mock-backend';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { Employee } from '@/types/domain';
 
@@ -39,8 +35,20 @@ export default function ProfileInfoTab({ employee, onChanged }: Props) {
   const [editOpen, setEditOpen] = useState(false);
   const [terminateOpen, setTerminateOpen] = useState(false);
   const [terminating, setTerminating] = useState(false);
+  const [terminationExtract, setTerminationExtract] = useState<FileMetaInput | null>(null);
+  const [extractErrorKey, setExtractErrorKey] = useState<string | undefined>();
 
   const terminated = employee.status === 'TERMINATED';
+
+  function onTerminateOpenChange(open: boolean) {
+    setTerminateOpen(open);
+    // Reset the attachment + any pick error whenever the dialog closes so a
+    // re-open starts clean.
+    if (!open) {
+      setTerminationExtract(null);
+      setExtractErrorKey(undefined);
+    }
+  }
 
   const rows: { key: string; label: string; value: string | null }[] = [
     {
@@ -110,21 +118,47 @@ export default function ProfileInfoTab({ employee, onChanged }: Props) {
           )})`
         : null,
     },
+    {
+      key: 'positionInstruction',
+      label: t('dashboard:employees.profile.info.fields.position-instruction'),
+      value: employee.positionInstruction
+        ? `${employee.positionInstruction.fileName} (${formatBytes(
+            employee.positionInstruction.fileSize,
+          )})`
+        : null,
+    },
+    {
+      key: 'terminationOrderExtract',
+      label: t('dashboard:employees.profile.info.fields.termination-order-extract'),
+      value: employee.terminationOrderExtract
+        ? `${employee.terminationOrderExtract.fileName} (${formatBytes(
+            employee.terminationOrderExtract.fileSize,
+          )})`
+        : null,
+    },
   ];
 
   async function onConfirmTerminate() {
+    if (!terminationExtract) {
+      // Unreachable while the Confirm button is gated, but keep the policy
+      // explicit in case the gate ever changes.
+      setExtractErrorKey('common:errors.termination-extract-missing');
+      return;
+    }
     try {
       setTerminating(true);
-      await terminateEmployee(employee.uuid, actor);
+      await terminateEmployee(employee.uuid, actor, terminationExtract);
       toast.success(
         t('dashboard:employees.profile.terminate.success', { name: employee.fullNameGenerated }),
       );
-      setTerminateOpen(false);
+      onTerminateOpenChange(false);
       // Re-navigate to the same route so the page re-fetches the now-terminated
       // employee. Replacing the entry keeps the back button intact.
       navigate(`/employees/${employee.uuid}`, { replace: true });
     } catch (err) {
-      if (err instanceof MockNetworkError) {
+      if (err instanceof EmployeeValidationError) {
+        toast.error(t(`common:errors.${err.code}`));
+      } else if (err instanceof MockNetworkError) {
         toast.error(t('common:errors.network'));
       } else {
         toast.error(t('common:errors.unknown'));
@@ -160,7 +194,15 @@ export default function ProfileInfoTab({ employee, onChanged }: Props) {
       </div>
 
       <dl className="grid grid-cols-1 gap-x-6 gap-y-3 rounded-lg border border-line bg-surface p-5 md:grid-cols-2">
-        {rows.map((row) => (
+        {rows
+          // Termination-only fields are meaningless until the employee is
+          // terminated — hide them rather than render an empty "—" row.
+          .filter(
+            (row) =>
+              terminated ||
+              (row.key !== 'terminationDate' && row.key !== 'terminationOrderExtract'),
+          )
+          .map((row) => (
           <div key={row.key} className="flex flex-col gap-0.5 border-b border-line/50 pb-2 last:border-b-0 md:border-b-0 md:pb-0">
             <dt className="text-xs font-medium text-muted-foreground">{row.label}</dt>
             <dd className="text-sm text-ink">
@@ -181,31 +223,46 @@ export default function ProfileInfoTab({ employee, onChanged }: Props) {
         onSaved={onChanged}
       />
 
-      <AlertDialog open={terminateOpen} onOpenChange={setTerminateOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('dashboard:employees.profile.terminate.title')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('dashboard:employees.profile.terminate.body', { name: employee.fullNameGenerated })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={terminating}>
-              {t('dashboard:employees.profile.terminate.cancel')}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                e.preventDefault();
-                onConfirmTerminate();
-              }}
+      <ResponsiveDialog
+        open={terminateOpen}
+        onOpenChange={onTerminateOpenChange}
+        title={t('dashboard:employees.profile.terminate.title')}
+        description={t('dashboard:employees.profile.terminate.body', {
+          name: employee.fullNameGenerated,
+        })}
+        footer={
+          <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => onTerminateOpenChange(false)}
               disabled={terminating}
+            >
+              {t('dashboard:employees.profile.terminate.cancel')}
+            </Button>
+            <Button
+              onClick={onConfirmTerminate}
+              disabled={terminating || !terminationExtract}
               className="bg-destructive text-white hover:bg-destructive/90"
             >
+              {terminating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t('dashboard:employees.profile.terminate.confirm')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </div>
+        }
+      >
+        <MetaFileField
+          id="terminationOrderExtract"
+          labelKey="dashboard:employees.profile.terminate.order-extract-label"
+          hintKey="dashboard:employees.profile.terminate.order-extract-hint"
+          value={terminationExtract}
+          errorKey={extractErrorKey}
+          onChange={(meta) => {
+            setExtractErrorKey(undefined);
+            setTerminationExtract(meta);
+          }}
+          onError={(key) => setExtractErrorKey(key)}
+        />
+      </ResponsiveDialog>
     </div>
   );
 }

@@ -51,7 +51,9 @@ const SEED_FLAG = 'devon.dashboard.seeded';
 // '8' = step 20 letters (the step prompt said '7', but step 19 had already
 // consumed it for the document `values` persistence).
 // '9' = step 21 letter audit trails (BP-3 stations for the detail timeline).
-const SEED_VERSION = '9';
+// '10' = positionInstruction ("lavozim yo'riqnomasi") backfilled on every
+//        seeded employee (new required hire-time attachment).
+const SEED_VERSION = '10';
 
 const uuid = () => crypto.randomUUID();
 const NOW = () => new Date().toISOString();
@@ -655,6 +657,13 @@ async function buildEmployeesAndUsers(byCode: Map<string, Unit>): Promise<{
         fileName: `buyruq_${hireYear}-${10 + assign.fioIdx * 3 + randInt(0, 2)}_kochirma.${extractExt}`,
         fileSize: randInt(180, 1200) * 1024,
         mimeType: extractMime,
+        uploadedAt: hireDate,
+      },
+      // "Lavozim yo'riqnomasi" — job instruction, a formal generated PDF.
+      positionInstruction: {
+        fileName: `lavozim_yoriqnomasi_${assign.positionId}.pdf`,
+        fileSize: randInt(90, 700) * 1024,
+        mimeType: 'application/pdf',
         uploadedAt: hireDate,
       },
       status: assign.status ?? 'ACTIVE',

@@ -169,6 +169,16 @@ export default function ReviewScreen() {
               : undefined
           }
         />
+        <Row
+          label={t('dashboard:employees.wizard.fields.position-instruction')}
+          value={
+            data.step3.positionInstruction
+              ? `${data.step3.positionInstruction.fileName} (${formatBytes(
+                  data.step3.positionInstruction.fileSize,
+                )})`
+              : undefined
+          }
+        />
       </Section>
 
       <Section title={t('dashboard:employees.wizard.step-4.title')} stepIndex={3}>

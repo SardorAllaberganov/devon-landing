@@ -481,9 +481,12 @@ export interface CreateEmployeeFullInput {
     | 'updatedAt'
     | 'status'
     | 'employmentOrderExtract'
+    | 'positionInstruction'
   >;
   /** Pick-time metadata from the wizard; `uploadedAt` is stamped here. */
   orderExtract: Omit<EmploymentOrderExtract, 'uploadedAt'>;
+  /** "Lavozim yo'riqnomasi" — job-instruction document; `uploadedAt` stamped here. */
+  positionInstruction: Omit<EmploymentOrderExtract, 'uploadedAt'>;
   password: string;
   role: User['roles'][number];
 }
@@ -504,6 +507,10 @@ export async function createEmployeeFull(
   // created. Enforced here (policy layer), not just by the wizard UI.
   if (!input.orderExtract?.fileName) {
     throw new EmployeeValidationError('order-extract-missing');
+  }
+  // The job instruction ("lavozim yo'riqnomasi") is likewise mandatory.
+  if (!input.positionInstruction?.fileName) {
+    throw new EmployeeValidationError('position-instruction-missing');
   }
 
   // Uniqueness checks per TZ §4.4 — fail before any writes so a partial
@@ -526,6 +533,7 @@ export async function createEmployeeFull(
     userUuid,
     fullNameGenerated,
     employmentOrderExtract: { ...input.orderExtract, uploadedAt: NOW() },
+    positionInstruction: { ...input.positionInstruction, uploadedAt: NOW() },
     status: 'ACTIVE',
     createdAt: NOW(),
     updatedAt: NOW(),
@@ -564,7 +572,10 @@ export async function createEmployeeFull(
     resourceType: 'employee',
     resourceUuid: employeeUuid,
     resourceLabel: fullNameGenerated,
-    context: { orderExtractFileName: input.orderExtract.fileName },
+    context: {
+      orderExtractFileName: input.orderExtract.fileName,
+      positionInstructionFileName: input.positionInstruction.fileName,
+    },
   });
 
   return { employee, user, assignment };
@@ -572,10 +583,20 @@ export async function createEmployeeFull(
 
 export async function updateEmployee(
   uuid: string,
-  // employmentOrderExtract is immutable post-creation (legal document signed
-  // at hire time) — same lock as PINFL.
+  // employmentOrderExtract + positionInstruction are immutable post-creation
+  // (legal documents signed at hire time) — same lock as PINFL.
+  // terminationOrderExtract is owned solely by terminateEmployee.
   patch: Partial<
-    Omit<Employee, 'uuid' | 'userUuid' | 'createdAt' | 'fullNameGenerated' | 'employmentOrderExtract'>
+    Omit<
+      Employee,
+      | 'uuid'
+      | 'userUuid'
+      | 'createdAt'
+      | 'fullNameGenerated'
+      | 'employmentOrderExtract'
+      | 'positionInstruction'
+      | 'terminationOrderExtract'
+    >
   >,
   actorUuid: string,
 ): Promise<Employee> {
@@ -609,9 +630,19 @@ export async function updateEmployee(
   return next;
 }
 
-export async function terminateEmployee(uuid: string, actorUuid: string): Promise<void> {
+export async function terminateEmployee(
+  uuid: string,
+  actorUuid: string,
+  // Certified extract of the termination order ("ishdan bo'shatish buyrug'idan
+  // ko'chirma") — required to terminate. Pick-time metadata; `uploadedAt`
+  // stamped here. Enforced at the policy layer, not just by the dialog UI.
+  orderExtract: Omit<EmploymentOrderExtract, 'uploadedAt'>,
+): Promise<void> {
   await simulatedDelay();
   maybeFail();
+  if (!orderExtract?.fileName) {
+    throw new EmployeeValidationError('termination-extract-missing');
+  }
   const employees = readEmployees();
   const idx = employees.findIndex((e) => e.uuid === uuid);
   if (idx === -1) throw new Error(`Employee not found: ${uuid}`);
@@ -620,6 +651,7 @@ export async function terminateEmployee(uuid: string, actorUuid: string): Promis
     ...target,
     status: 'TERMINATED',
     terminationDate: NOW(),
+    terminationOrderExtract: { ...orderExtract, uploadedAt: NOW() },
     updatedAt: NOW(),
   };
   writeTable(Tables.employees, employees);
@@ -655,7 +687,10 @@ export async function terminateEmployee(uuid: string, actorUuid: string): Promis
     resourceType: 'employee',
     resourceUuid: uuid,
     resourceLabel: target.fullNameGenerated,
-    context: { status: 'TERMINATED' },
+    context: {
+      status: 'TERMINATED',
+      terminationOrderExtractFileName: orderExtract.fileName,
+    },
   });
 }
 

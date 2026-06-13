@@ -55,9 +55,11 @@ export type EmployeeStatus =
 export type Gender = 'M' | 'F';
 
 /**
- * Certified extract of the hiring order ("buyruqdan ko'chirma") signed by the
- * Director — required at employee creation. Metadata only: the demo's mock
- * backend never stores file bytes (same convention as ERI certificates).
+ * Certified extract of an HR order signed by the Director, plus the job
+ * instruction document. Metadata only: the demo's mock backend never stores
+ * file bytes (same convention as ERI certificates). Used for the hiring-order
+ * extract ("buyruqdan ko'chirma"), the job instruction ("lavozim
+ * yo'riqnomasi"), and the termination-order extract — all share this shape.
  */
 export interface EmploymentOrderExtract {
   fileName: string;
@@ -87,7 +89,11 @@ export interface Employee {
   employmentType: EmploymentType;
   hireDate: string;
   employmentOrderExtract?: EmploymentOrderExtract;
+  /** "Lavozim yo'riqnomasi" — job-instruction document, required at creation. */
+  positionInstruction?: EmploymentOrderExtract;
   terminationDate?: string;
+  /** Certified extract of the termination order, required to terminate. */
+  terminationOrderExtract?: EmploymentOrderExtract;
   status: EmployeeStatus;
   avatarUrl?: string;
   createdAt: string;

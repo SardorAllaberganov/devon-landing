@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import Combobox, { type ComboboxOption } from '@/components/common/Combobox';
+import MetaFileField from '@/components/common/MetaFileField';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -19,7 +20,6 @@ import type { EmploymentType, Position, Unit, UnitType } from '@/types/domain';
 import { cn } from '@/lib/utils';
 
 import { step3Schema, type Step3Values } from './employee.schema';
-import OrderExtractField from './OrderExtractField';
 import { useWizardStore } from './wizard-store';
 
 const FORM_ID = 'wizard-step-3';
@@ -102,6 +102,7 @@ export default function Step3Work() {
   const employmentType = form.watch('employmentType');
   const role = form.watch('role');
   const employmentOrderExtract = form.watch('employmentOrderExtract');
+  const positionInstruction = form.watch('positionInstruction');
 
   return (
     <form
@@ -248,20 +249,43 @@ export default function Step3Work() {
         </div>
       </div>
 
-      <OrderExtractField
-        value={employmentOrderExtract}
-        errorKey={errors.employmentOrderExtract?.message as string | undefined}
-        onChange={(meta) => {
-          form.clearErrors('employmentOrderExtract');
-          form.setValue('employmentOrderExtract', meta, {
-            shouldDirty: true,
-            shouldValidate: meta !== null,
-          });
-        }}
-        onError={(key) =>
-          form.setError('employmentOrderExtract', { type: 'manual', message: key })
-        }
-      />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <MetaFileField
+          id="employmentOrderExtract"
+          labelKey="dashboard:employees.wizard.fields.order-extract"
+          hintKey="dashboard:employees.wizard.hints.order-extract"
+          value={employmentOrderExtract}
+          errorKey={errors.employmentOrderExtract?.message as string | undefined}
+          onChange={(meta) => {
+            form.clearErrors('employmentOrderExtract');
+            form.setValue('employmentOrderExtract', meta, {
+              shouldDirty: true,
+              shouldValidate: meta !== null,
+            });
+          }}
+          onError={(key) =>
+            form.setError('employmentOrderExtract', { type: 'manual', message: key })
+          }
+        />
+
+        <MetaFileField
+          id="positionInstruction"
+          labelKey="dashboard:employees.wizard.fields.position-instruction"
+          hintKey="dashboard:employees.wizard.hints.position-instruction"
+          value={positionInstruction}
+          errorKey={errors.positionInstruction?.message as string | undefined}
+          onChange={(meta) => {
+            form.clearErrors('positionInstruction');
+            form.setValue('positionInstruction', meta, {
+              shouldDirty: true,
+              shouldValidate: meta !== null,
+            });
+          }}
+          onError={(key) =>
+            form.setError('positionInstruction', { type: 'manual', message: key })
+          }
+        />
+      </div>
     </form>
   );
 }

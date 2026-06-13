@@ -28,6 +28,7 @@ export interface WizardStep3 {
   hireDate: string;
   role: Extract<Role, 'ROLE_EMPLOYEE' | 'ROLE_UNIT_HEAD' | 'ROLE_HR_OPERATOR' | 'ROLE_AUDITOR'>;
   employmentOrderExtract: OrderExtractMeta | null;
+  positionInstruction: OrderExtractMeta | null;
 }
 
 export interface WizardStep4 {
@@ -69,6 +70,7 @@ function emptyData(): WizardData {
       hireDate: new Date().toISOString().slice(0, 10),
       role: 'ROLE_EMPLOYEE',
       employmentOrderExtract: null,
+      positionInstruction: null,
     },
     step4: {
       login: '',
