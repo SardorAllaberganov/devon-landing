@@ -88,7 +88,7 @@ export default function LoginPage() {
           <h2 className="mb-8 text-5xl font-extrabold tracking-tight leading-[1.05] text-ink">
             {t('dashboard:login.brand-headline-line-1')}
             <br />
-            <span className="font-serif italic font-medium text-emerald">
+            <span className="font-serif font-medium text-emerald">
               {t('dashboard:login.brand-headline-accent')}
             </span>{' '}
             {t('dashboard:login.brand-headline-line-2')}
@@ -101,7 +101,7 @@ export default function LoginPage() {
         {/* Slogan at bottom */}
         <div className="absolute bottom-10 left-12 flex items-center gap-3">
           <span aria-hidden className="block h-2 w-2 rotate-45 bg-emerald" />
-          <span className="font-serif italic text-xl font-medium text-cinnamon">
+          <span className="font-serif text-xl font-medium text-cinnamon">
             {t('dashboard:sidebar.footer-slogan')}
           </span>
         </div>

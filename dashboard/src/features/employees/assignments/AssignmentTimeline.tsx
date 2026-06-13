@@ -81,7 +81,7 @@ export default function AssignmentTimeline({ assignments, units, positions }: Pr
               )}
 
               {a.reason && (
-                <p className="mt-2 text-xs italic text-muted-foreground">{a.reason}</p>
+                <p className="mt-2 text-xs text-muted-foreground">{a.reason}</p>
               )}
             </div>
           </li>

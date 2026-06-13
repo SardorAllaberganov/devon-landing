@@ -181,7 +181,7 @@ export default function ApprovalSheetCard({
                     )}
                   </div>
                   {step.comment && (
-                    <p className="mt-2 text-xs italic text-muted-foreground">{step.comment}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">{step.comment}</p>
                   )}
                 </div>
               </li>

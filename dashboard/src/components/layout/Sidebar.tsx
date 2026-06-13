@@ -100,7 +100,7 @@ export default function Sidebar({ onNavigate }: Props) {
       </div>
 
       <div className="border-t border-line/60 px-6 py-4">
-        <p className="font-serif italic text-sm text-cinnamon">
+        <p className="font-serif text-sm text-cinnamon">
           {t('dashboard:sidebar.footer-slogan')}
         </p>
       </div>
