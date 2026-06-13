@@ -1,78 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Archive,
-  ArrowRightLeft,
-  BadgeCheck,
-  ClipboardCheck,
-  Drama,
-  Eye,
-  FileCheck,
-  FileCheck2,
-  FilePenLine,
-  FilePlus,
-  FileX,
-  Forward,
-  KeyRound,
-  LogIn,
-  LogOut,
-  Mail,
-  MailCheck,
-  MailPlus,
-  Pencil,
-  PenLine,
-  Plus,
-  Send,
-  SendHorizontal,
-  ShieldCheck,
-  ShieldOff,
-  ShieldX,
-  Trash2,
-  Upload,
-  UserCheck,
-  UserCog,
-  UserPlus,
-  type LucideIcon,
-} from 'lucide-react';
 
 import LoadingState from '@/components/common/LoadingState';
+import { ACTION_ICON } from '@/lib/audit-icons';
 import { formatRelative } from '@/i18n/uz-locale';
 import { listAudit } from '@/lib/mock-backend';
-import type { AuditAction, AuditEntry, Employee } from '@/types/domain';
-
-const ACTION_ICON: Record<AuditAction, LucideIcon> = {
-  CREATE: Plus,
-  UPDATE: Pencil,
-  DELETE: Trash2,
-  ARCHIVE: Archive,
-  LOGIN: LogIn,
-  LOGOUT: LogOut,
-  PASSWORD_CHANGED: KeyRound,
-  UNIT_TRANSFER: ArrowRightLeft,
-  CERTIFICATE_UPLOADED: Upload,
-  CERTIFICATE_APPROVED: ShieldCheck,
-  CERTIFICATE_REJECTED: ShieldOff,
-  CERTIFICATE_REVOKED: ShieldX,
-  PROFILE_CHANGE_REQUESTED: UserCog,
-  PROFILE_CHANGE_APPROVED: UserCheck,
-  POV_SWITCHED: Drama,
-  DOCUMENT_CREATED: FilePlus,
-  DOCUMENT_SENT_FOR_REVIEW: Send,
-  DOCUMENT_APPROVED: FileCheck,
-  DOCUMENT_REJECTED: FileX,
-  DOCUMENT_SIGNED: FilePenLine,
-  DOCUMENT_CLOSED: FileCheck2,
-  DOCUMENT_VIEWED: Eye,
-  DOCUMENT_EMAILED: Mail,
-  LETTER_REGISTERED: MailPlus,
-  LETTER_ROUTED: Forward,
-  LETTER_ASSIGNED: UserPlus,
-  LETTER_EXECUTED: ClipboardCheck,
-  LETTER_ACCEPTED: BadgeCheck,
-  LETTER_SIGNED: PenLine,
-  LETTER_DISPATCHED: SendHorizontal,
-  LETTER_CLOSED: MailCheck,
-};
+import type { AuditEntry, Employee } from '@/types/domain';
 
 interface Props {
   employee: Employee;
