@@ -53,6 +53,8 @@ These need DevTools / a real browser / a phone. I cannot drive them from an agen
   - `/certificates` (Kanban)
   - `/audit`
   - `/profile`
+  - `/documents` (registry) + `/documents/:uuid` (detail)
+  - `/letters` (registry) + `/letters/:uuid` (detail)
   Target: Performance ≥ 85, Accessibility ≥ 95, Best Practices ≥ 95. Scores drop into the table below.
 - [ ] **Throttled-network skeleton check** — DevTools → Slow 3G → confirm `LoadingState` skeletons render on first paint of `/units`, `/employees`, `/certificates`, `/audit`, `/profile`. No blank screens.
 - [ ] **Forced-failure sweep** — temporarily raise `maybeFail(probability = 0.5)` in `lib/mock-backend/errors.ts` or set an invalid JSON on one of the `devon.dashboard.*` localStorage tables, walk every route, confirm `ErrorState` renders with a Retry where applicable.
@@ -66,6 +68,7 @@ These need DevTools / a real browser / a phone. I cannot drive them from an agen
 - [ ] **Mobile real-device check** — iPhone safe-area on `/employees/new` wizard footer + `/employees/:uuid/transfer` footer (`pb-safe`). Hamburger menu opens full-screen. Hardware back button doesn't escape the SPA mid-wizard.
 - [ ] **Hard-refresh on deep routes** on the live deploy — paste `/devon-landing/dashboard/employees/<uuid>` in a fresh tab. The SPA 404 fallback should hand off via `?/employees/<uuid>` and the right profile should load.
 - [ ] **"Reset demo" against the published bundle** — click in the user menu, confirm the localStorage tables clear + reseed, the page reloads, and the HR_ADMIN is back to `admin@devon.uz` with their original FIO and `mustChangePassword = true`.
+- [ ] **Letter detail (`/letters/:uuid`) at 360 px + POV switch (step 21)** — the BP-3 `LetterTimeline` rail stays readable (no clipped station labels, dots aligned), the route/assign/execute/dispatch dialogs render as bottom sheets with the band-padding footer, and the per-role action button is reachable. Switch POV (user menu → persona) and confirm the page re-resolves so the right lane sees its action: Rahbar (Karimov Bekzod) routes/signs, Backend Bo'lim boshlig'i (Akhmedov Akmal) assigns/accepts, XODIM (Sobirova Dilnoza) starts/submits, Devonxona (Yusupova Nilufar) dispatches. Walk **K-2026/0004** (ON_SIGNATURE — Rahbar signs via the ERI dialog) and **K-2026/0007** (overdue ASSIGNED — destructive deadline on the hero) by switching personas; confirm the timeline fills at each hop.
 
 ---
 
