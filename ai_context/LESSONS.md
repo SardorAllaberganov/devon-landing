@@ -130,6 +130,8 @@ When in doubt: if the same override would land on every consumer, push it into t
 
 ### `font-serif` was italic-only — toggling the `italic` class can't fix it
 
+> **⚠ Superseded by the 2026-06-14 brand restyle.** Fraunces is removed from **both** surfaces; the serif role is retired (display = Craftwork Grotesk via `--font-display`). Fonts are now self-hosted (no Google Fonts). This entry is kept for history. See [`docs/adr/0001-brand-restyle.md`](../docs/adr/0001-brand-restyle.md).
+
 **Trap (2026-06-13):** removing the Tailwind `italic` class from the serif slogan/wordmark (login split-pane, sidebar footer) and the A4 document-preview title did **nothing** — they still rendered slanted. Cause: [`dashboard/index.html`](../dashboard/index.html) loaded Fraunces with the italic axis only (`family=Fraunces:ital,opsz,wght@1,9..144,500;1,9..144,600`). `--font-serif: "Fraunces", Georgia, serif`, so the only Fraunces face the browser had was italic; requesting upright just used the italic face (or fell back). The slant lives in the **loaded font face**, not in a CSS `font-style`.
 
 **Fix:** load the roman variant — `family=Fraunces:opsz,wght@9..144,500;9..144,600` (drop the `ital` axis). Now every `font-serif` element renders upright. There is no `font-style: italic` anywhere in `src/**/*.css`.
@@ -137,4 +139,15 @@ When in doubt: if the same override would land on every consumer, push it into t
 **How to apply:**
 - If serif text looks italic and you find no `italic` class / `font-style`, check the Google Fonts `<link>` axis list — `ital,...@1,...` means only italic was fetched. Add/keep `@0,...` (roman) or drop the `ital` axis.
 - To support BOTH styles, request both: `ital,opsz,wght@0,...;1,...`. Devon's dashboard only needs roman now (all italic was removed per the user's request).
-- The **landing page** (`landing/index.html`) is a separate surface and intentionally keeps the italic Fraunces slogan as a brand accent — don't "fix" it there.
+- ~~The **landing page** keeps the italic Fraunces slogan as a brand accent~~ — **no longer true after the 2026-06-14 rebrand:** the landing's Fraunces is removed too; its slogan + serif accents are now upright Craftwork Grotesk.
+
+### Brand restyle — token rename, brand/primary contrast split, self-hosting (2026-06-14)
+
+**Learnings from the blue/navy + Craftwork Grotesk rebrand** (see [`docs/adr/0001-brand-restyle.md`](../docs/adr/0001-brand-restyle.md)):
+
+- **Two-layer token architecture** (shadcn semantic vars + Devon `--color-*`) made the palette swap a values-rewrite in [`index.css`](../dashboard/src/index.css) plus a per-token consumer sweep. Hue tokens were renamed to honest names (`emerald→primary`/`brand`, `cream→canvas`, `cream-deep/warm→surface-2`, `cinnamon→warning`, `signal→success`); neutral names (`ink`/`line`/`surface`/`body`/`muted-fg`) kept and repointed. Audit gate: `grep -rnw "emerald\|cinnamon\|cream" dashboard/src` → **0**.
+- **Do NOT sweep the bare word `signal`.** `AbortSignal` / `.signal` is real fetch/AbortController code; the `signal` *color* token had **zero** consumers (only `index.css`). Renaming it blanket would break the build. Use `grep -rnw` (whole-word) for audits so `AbortSignal`/`stream`/`Devonxona` never false-positive.
+- **macOS BSD `sed` has no `\b`** — use `perl -i -pe 's/\bX\b/Y/g'` for word-boundary renames; plain `sed -i ''` only for literal substrings.
+- **Contrast split is mandatory.** Brand blue `#0878FE` is ~4.1:1 on white → **fails** AA for normal text. Use `--color-brand` (`#0878FE`) for identity / focus ring / large+decorative only (≥3:1 contexts); use `--color-primary` (`#0A6BE0`, ~5:1) for all interactive text/links/buttons. Soft-tint **badge** foregrounds need the darker `*-fg` trio (`--color-success-fg #15803D`, `--color-warning-fg #B45309`, `--color-error-fg #B91C1C`, all ≥4.5:1) — the mid shades (`#16A34A`/`#D97706`/`#DC2626`) fail AA at badge text size on the light soft backgrounds.
+- **Self-host fonts** — Craftwork Grotesk vendored woff2 in [`dashboard/src/assets/fonts/`](../dashboard/src/assets/fonts/) (referenced relatively in `index.css` so Vite's base prefix doesn't break it) + Inter via `@fontsource/inter` imported in `main.tsx`; landing uses `landing/fonts/*.woff2`. **Never reintroduce `fonts.googleapis.com`** — on-premise data sovereignty is a hard constraint.
+- **Class-name collision gotcha (landing).** Renaming the landing's `btn-emerald` → `btn-primary` silently collided with a pre-existing `.btn-primary` (navy) rule, merging two button styles (the navy hero CTA went blue). Renamed to `btn-brand` instead. **Tell:** a sudden occurrence-count jump after a rename means the target name already existed — check before/after counts.
