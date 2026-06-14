@@ -4,6 +4,30 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-06-14 — `/doc_sync` checkpoint (post code-splitting + dead-primitive cleanup)
+
+Ran `/doc_sync` after the code-splitting + cleanup work (entry below). The doc cascade had already been performed inline with that change, so this pass was a **verification sweep confirming sync** — no new doc edits were needed beyond this checkpoint.
+
+- **Template-mismatch reasoning** (as in every prior checkpoint): Devon has no `docs/product_states.md` / `docs/models.md` / `docs/product_requirements_document.md` / `docs/mermaid_schemas/` — its equivalents are `README.md`, `docs/product-specification.md`, `docs/business-processes.md`, `docs/use-cases.md`, `docs/glossary.md` (+ `docs/bpmn/` PNGs).
+- **No product / persona / feature / NFR / route / flow / schema / state / error-code change** — code-splitting is an internal build/perf refactor with no user-visible behavior change and no tech-stack surface that belongs in the product docs. So `product-specification.md`, `business-processes.md`, `use-cases.md`, `glossary.md`, BPMN, and `README.md` all stand untouched.
+- **Already cascaded inline:** `dashboard/QA_NOTES.md` (both "Architectural / requires user prioritisation" items flipped to ✅, record corrected to "6 removed, not 8 — `switch` + `input-group` are live"), `AI_CONTEXT.md` "Next" (code-splitting bullet → resolved), and the work entry below.
+- **Stale-claim grep** across `ai_context/` + `docs/` + `QA_NOTES.md` + `README.md`: the only "single chunk / 922 KB / 266 KB / eight unused / vaul" hits are **dated historical records** (HISTORY step entries, the Step-15 paragraph in `AI_CONTEXT.md`, and the Step-15 automated-QA metrics table in `QA_NOTES.md` — "9 routes", pre-M2/M3) — left as-is rather than revised, since the current bundle reality now lives in the updated Architectural section.
+- `SEED_VERSION` unchanged (`'12'`); no code touched in this pass. Working tree uncommitted, awaiting `/commit`.
+
+**Files touched:** `ai_context/HISTORY.md` (this entry only).
+
+## 2026-06-14 — Dashboard code-splitting + dead-primitive cleanup
+
+Performance follow-up from `QA_NOTES.md` "Architectural / requires user prioritisation." The production build was a single ~1.21 MB raw / ~266 KB gzip chunk (it had grown past the step-15 922 KB note as M2/M3 landed), so every route paid for the whole app on first paint.
+
+- **Route-level code-splitting** — [`router.tsx`](../dashboard/src/router.tsx) now lazy-loads all 24 page components via `React.lazy()`. `AppShell` + `RequireAuth` stay eager; `Suspense` boundaries live inside `Protected` (renders an in-content skeleton so the sidebar/topbar stay mounted) and `ProtectedNoShell` (centered spinner for the full-screen wizard/transfer/upload routes), plus one around the now-lazy public `/login`. New [`components/common/RouteFallback.tsx`](../dashboard/src/components/common/RouteFallback.tsx) exports `RouteFallback` (skeleton, reuses `LoadingState`) + `FullPageFallback` (role=status spinner with `motion-reduce:animate-none` + `sr-only` "Yuklanmoqda…"). Build now emits **24 per-route chunks** behind a **645 KB raw / 195 KB gzip** shared entry (React + router + i18n + the mock-backend/seed every page imports). Home first-paint = entry + a 3.4 KB `DashboardHome` chunk; wizards, kanban (`@dnd-kit`), and detail pages load on demand. No vendor `manualChunks` (route-lazy splits cleanly; hand-chunking risks the `@dnd-kit` shared-React trap in `vite.config.ts`). The lingering Vite ">500 kB" warning is **raw**-size and pre-existing — gzip is far under the `<500 KB` target.
+- **Dead-primitive cleanup** — the step-15 "eight unused primitives" list was **stale**: by M3, `switch` (document wizard `Step3Approvers`) and `input-group` (`command.tsx` → `Combobox`) had become live, verified by grepping real consumer imports before deleting. Removed the **6** genuinely-dead files: `breadcrumb`, `drawer`, `form`, `pagination`, `scroll-area`, `tooltip` (the list-page `Pagination` is the hand-rolled `components/common/Pagination.tsx`, not the primitive). Removing `drawer.tsx` let **`vaul`** leave `package.json` (it was vaul's only importer); lockfile updated via `npm install`.
+- **Verification** — `npm run build` clean (`tsc -b` passes as part of it); `npm run lint` 55 problems, all pre-existing tolerated `set-state-in-effect` / RHF idioms (router.tsx + RouteFallback.tsx are lint-clean; baseline was ~56–57, so no new errors); no dangling refs to deleted primitives; `npm run preview` smoke — index, entry chunk, and the lazy `DashboardHome`/`LoginPage` chunks all 200 under the `/devon-landing/dashboard/` base. `SEED_VERSION` unchanged (`'12'`, no fixture change). Working tree uncommitted, awaiting `/commit`.
+
+**Files touched:** `dashboard/src/router.tsx`, `dashboard/src/components/common/RouteFallback.tsx` (new), deleted `dashboard/src/components/ui/{breadcrumb,drawer,form,pagination,scroll-area,tooltip}.tsx`, `dashboard/package.json`, `dashboard/package-lock.json`, `dashboard/QA_NOTES.md`, `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md`.
+
+---
+
 ## 2026-06-14 — `/doc_sync` checkpoint (post operations-runbook authoring)
 
 Ran `/doc_sync` after authoring `docs/operations/`. The doc cascade had already been performed inline with the runbook build, so this pass was a **verification sweep confirming sync** — no new edits were needed.
