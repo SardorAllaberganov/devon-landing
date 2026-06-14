@@ -38,6 +38,8 @@ import type {
   Position,
   Role,
   SignatureRecord,
+  TaskComment,
+  TaskEntity,
   Unit,
   UnitType,
   User,
@@ -53,7 +55,13 @@ const SEED_FLAG = 'devon.dashboard.seeded';
 // '9' = step 21 letter audit trails (BP-3 stations for the detail timeline).
 // '10' = positionInstruction ("lavozim yo'riqnomasi") backfilled on every
 //        seeded employee (new required hire-time attachment).
-const SEED_VERSION = '10';
+// '11' = step 22 (BP-2 task delegation) — 12 tasks walking the
+//        NEW → IN_PROGRESS → UNDER_REVIEW → DONE/REJECTED lifecycle, their
+//        audit trail, and task notifications across the personas.
+// '12' = deadline format normalized to date-only (YYYY-MM-DD) for all task
+//        fixtures — aligns seeded tasks with what the date input submits so
+//        updateTask's change-detection never produces false deadline diffs.
+const SEED_VERSION = '12';
 
 const uuid = () => crypto.randomUUID();
 const NOW = () => new Date().toISOString();
@@ -2078,6 +2086,544 @@ function buildLetterAudit(
   return out;
 }
 
+// === Tasks (milestone 3, step 22 — BPMN 3.2 / BP-2) ===
+//
+// 12 delegated tasks walking the BP-2 lifecycle
+// (NEW → IN_PROGRESS → UNDER_REVIEW → DONE, + terminal REJECTED). Two
+// in-scope assigner→assignee pairs only:
+//   - Akhmedov (Backend Bo'lim head) → Sobirova (API Sho'ba dasturchisi) —
+//     the bulk of the board (a001–a00a).
+//   - Karimov (root IT Departament head) → Akhmedov — populates the Rahbar's
+//     assigned board + review queue (a00b, a00c).
+// Clarification is a comment round-trip that does NOT move status; `round`
+// increments only on return → resubmit (see a004, round 2). Exactly one task
+// is overdue: a006 (past deadline, still UNDER_REVIEW).
+//
+// Fixed hex uuid block: …e001–…e00c (tasks), …e1xx (comments),
+// …e2xx (notifications), …e3xx (audit) — the a0xx / c0xx / d0xx / f0xx
+// markers are already taken; e0xx is free.
+const TASK_UUID = (hex: string) => `00000000-0000-4000-8000-00000000e0${hex}`;
+
+function buildTasks(documents: DocumentEntity[]): TaskEntity[] {
+  // Resolve real seeded document uuids so attachments / deliverable refs
+  // point at rows that actually exist (never invent uuids).
+  const docByNumber = (number: string): string => {
+    const doc = documents.find((d) => d.number === number);
+    if (!doc) throw new Error(`Seed invariant broken: no document ${number}`);
+    return doc.uuid;
+  };
+  // HJ-2026/0011 (DOC_UUID(5)) — a real BUYRUQ doc — as a task attachment.
+  const attachedDoc = docByNumber('HJ-2026/0011');
+  // HJ-2026/0007 (DOC_UUID(1)) — XODIM's mid-chain xizmat xati — as the
+  // document delivered against the Karimov → Akhmedov review task.
+  const deliverableDoc = docByNumber('HJ-2026/0007');
+
+  const AK = PERSONAS.BOLIM_BOSHLIGI; // Akhmedov — Backend Bo'lim head
+  const SO = PERSONAS.XODIM; // Sobirova — API Sho'ba dasturchisi
+  const KA = PERSONAS.RAHBAR; // Karimov — root IT Departament head
+
+  const c = (
+    hex: string,
+    authorUuid: string,
+    kind: TaskComment['kind'],
+    body: string,
+    daysAgo: number,
+  ): TaskComment => ({
+    uuid: TASK_UUID(`1${hex}`),
+    authorUuid,
+    kind,
+    body,
+    createdAt: DAYS_AGO(daysAgo),
+  });
+
+  return [
+    // a001 — NEW, HIGH, future deadline (sits in Sobirova's inbox).
+    {
+      uuid: TASK_UUID('01'),
+      number: 'TOP-2026/0001',
+      title: 'API endpointlarini hujjatlashtirish',
+      description:
+        "To'lov xizmati API endpointlari uchun OpenAPI spetsifikatsiyasini tayyorlang va misol so'rovlarni qo'shing.",
+      priority: 'HIGH',
+      status: 'NEW',
+      assignerUuid: AK,
+      assigneeUuid: SO,
+      deadline: DAYS_FROM_NOW(5).slice(0, 10),
+      comments: [],
+      round: 1,
+      createdAt: DAYS_AGO(1),
+      updatedAt: DAYS_AGO(1),
+    },
+    // a002 — NEW, MEDIUM, one CLARIFICATION_REQUEST (no reply yet).
+    {
+      uuid: TASK_UUID('02'),
+      number: 'TOP-2026/0002',
+      title: 'Integratsiya testlari uchun muhit sozlash',
+      description:
+        "CI quvurida integratsiya testlari uchun alohida ma'lumotlar bazasi muhitini sozlang.",
+      priority: 'MEDIUM',
+      status: 'NEW',
+      assignerUuid: AK,
+      assigneeUuid: SO,
+      deadline: DAYS_FROM_NOW(7).slice(0, 10),
+      comments: [
+        c(
+          '02',
+          SO,
+          'CLARIFICATION_REQUEST',
+          "Test muhiti uchun alohida server kerakmi yoki mavjud staging serveridan foydalansa bo'ladimi?",
+          0.4,
+        ),
+      ],
+      round: 1,
+      createdAt: DAYS_AGO(0.8),
+      updatedAt: DAYS_AGO(0.4),
+    },
+    // a003 — IN_PROGRESS, STANDARD, startedAt set.
+    {
+      uuid: TASK_UUID('03'),
+      number: 'TOP-2026/0003',
+      title: 'Backend birlik testlarini yozish',
+      description:
+        "Avtorizatsiya moduli uchun birlik testlarini yozing — qamrov kamida 80% bo'lsin.",
+      priority: 'STANDARD',
+      status: 'IN_PROGRESS',
+      assignerUuid: AK,
+      assigneeUuid: SO,
+      deadline: DAYS_FROM_NOW(4).slice(0, 10),
+      comments: [],
+      round: 1,
+      startedAt: DAYS_AGO(1.5),
+      createdAt: DAYS_AGO(3),
+      updatedAt: DAYS_AGO(1.5),
+    },
+    // a004 — IN_PROGRESS, MEDIUM, round 2 (returned once). Full thread:
+    // clarification request + reply, then a return after first submit.
+    {
+      uuid: TASK_UUID('04'),
+      number: 'TOP-2026/0004',
+      title: "Ma'lumotlar bazasi migratsiyalarini tayyorlash",
+      description:
+        "Yangi tranzaksiya jadvali uchun migratsiya skriptlarini yozing va orqaga qaytarish (rollback) imkonini qo'shing.",
+      priority: 'MEDIUM',
+      status: 'IN_PROGRESS',
+      assignerUuid: AK,
+      assigneeUuid: SO,
+      deadline: DAYS_FROM_NOW(3).slice(0, 10),
+      comments: [
+        c(
+          '41',
+          SO,
+          'CLARIFICATION_REQUEST',
+          "Indekslarni shu migratsiyada qo'shaymi yoki alohida bosqichda?",
+          5.5,
+        ),
+        c(
+          '42',
+          AK,
+          'CLARIFICATION_REPLY',
+          "Indekslarni shu migratsiyaning oxirida qo'shing, alohida bosqich shart emas.",
+          5.2,
+        ),
+        c(
+          '43',
+          AK,
+          'RETURN_FEEDBACK',
+          "Rollback skripti yetishmayapti — har bir migratsiya uchun qaytarish bandini qo'shib qayta yuboring.",
+          2.5,
+        ),
+      ],
+      round: 2,
+      startedAt: DAYS_AGO(5),
+      submittedAt: DAYS_AGO(3),
+      createdAt: DAYS_AGO(6),
+      updatedAt: DAYS_AGO(2.5),
+    },
+    // a005 — UNDER_REVIEW, HIGH, has deliverable (manager review queue).
+    {
+      uuid: TASK_UUID('05'),
+      number: 'TOP-2026/0005',
+      title: "Kesh qatlamini optimallashtirish",
+      description:
+        "Tez-tez so'raladigan so'rovlar uchun Redis kesh qatlamini joriy eting va javob vaqtini o'lchang.",
+      priority: 'HIGH',
+      status: 'UNDER_REVIEW',
+      assignerUuid: AK,
+      assigneeUuid: SO,
+      deadline: DAYS_FROM_NOW(2).slice(0, 10),
+      deliverable: {
+        summary:
+          "Redis kesh qatlami joriy etildi; o'rtacha javob vaqti 320 ms dan 90 ms gacha qisqardi. Natijalar PR da.",
+        submittedAt: DAYS_AGO(0.5),
+      },
+      submittedAt: DAYS_AGO(0.5),
+      comments: [],
+      round: 1,
+      startedAt: DAYS_AGO(2),
+      createdAt: DAYS_AGO(3.5),
+      updatedAt: DAYS_AGO(0.5),
+    },
+    // a006 — UNDER_REVIEW, HIGH, OVERDUE (deadline 2 days past).
+    {
+      uuid: TASK_UUID('06'),
+      number: 'TOP-2026/0006',
+      title: "Xavfsizlik auditini o'tkazish",
+      description:
+        "Autentifikatsiya oqimida xavfsizlik tekshiruvini o'tkazing va topilgan kamchiliklar bo'yicha hisobot tayyorlang.",
+      priority: 'HIGH',
+      status: 'UNDER_REVIEW',
+      assignerUuid: AK,
+      assigneeUuid: SO,
+      deadline: DAYS_AGO(2).slice(0, 10),
+      deliverable: {
+        summary:
+          "Audit yakunlandi; 3 ta o'rta darajadagi kamchilik topildi va tuzatish bo'yicha tavsiyalar berildi. Hisobot ilova qilindi.",
+        submittedAt: DAYS_AGO(0.3),
+      },
+      submittedAt: DAYS_AGO(0.3),
+      lateSubmission: true,
+      comments: [],
+      round: 1,
+      startedAt: DAYS_AGO(4),
+      createdAt: DAYS_AGO(6),
+      updatedAt: DAYS_AGO(0.3),
+    },
+    // a007 — DONE, STANDARD, accepted on time.
+    {
+      uuid: TASK_UUID('07'),
+      number: 'TOP-2026/0007',
+      title: "Loglash formatini standartlashtirish",
+      description:
+        "Barcha xizmatlar uchun yagona JSON loglash formatini joriy eting.",
+      priority: 'STANDARD',
+      status: 'DONE',
+      assignerUuid: AK,
+      assigneeUuid: SO,
+      deadline: DAYS_AGO(1).slice(0, 10),
+      deliverable: {
+        summary:
+          "Barcha mikroservislar yagona structured JSON loglash formatiga o'tkazildi.",
+        submittedAt: DAYS_AGO(2),
+      },
+      submittedAt: DAYS_AGO(2),
+      acceptedAt: DAYS_AGO(1.5),
+      comments: [],
+      round: 1,
+      startedAt: DAYS_AGO(4),
+      createdAt: DAYS_AGO(5),
+      updatedAt: DAYS_AGO(1.5),
+    },
+    // a008 — DONE, MEDIUM, lateSubmission + accept-with-note.
+    {
+      uuid: TASK_UUID('08'),
+      number: 'TOP-2026/0008',
+      title: "Webhook qayta urinish mexanizmini qo'shish",
+      description:
+        "Muvaffaqiyatsiz webhook yetkazib berishlar uchun eksponentsial qayta urinish mexanizmini joriy eting.",
+      priority: 'MEDIUM',
+      status: 'DONE',
+      assignerUuid: AK,
+      assigneeUuid: SO,
+      deadline: DAYS_AGO(4).slice(0, 10),
+      deliverable: {
+        summary:
+          "Qayta urinish mexanizmi qo'shildi; 3 martagacha eksponentsial kechikish bilan urinadi.",
+        submittedAt: DAYS_AGO(3),
+      },
+      submittedAt: DAYS_AGO(3),
+      acceptedAt: DAYS_AGO(2.5),
+      reviewNote:
+        "Ish sifati yaxshi, lekin muddatdan kechikdi — keyingi safar muddatni nazoratda tuting.",
+      lateSubmission: true,
+      comments: [
+        c(
+          '08',
+          AK,
+          'NOTE',
+          "Yaxshi bajarilgan, biroq topshiriq muddatidan kechikkan holda topshirildi.",
+          2.5,
+        ),
+      ],
+      round: 1,
+      startedAt: DAYS_AGO(7),
+      createdAt: DAYS_AGO(8),
+      updatedAt: DAYS_AGO(2.5),
+    },
+    // a009 — REJECTED, STANDARD, reject reason comment.
+    {
+      uuid: TASK_UUID('09'),
+      number: 'TOP-2026/0009',
+      title: "Eski API versiyasini olib tashlash",
+      description:
+        "v1 API endpointlarini butunlay olib tashlang — barcha mijozlar v2 ga o'tgan.",
+      priority: 'STANDARD',
+      status: 'REJECTED',
+      assignerUuid: AK,
+      assigneeUuid: SO,
+      deadline: DAYS_AGO(3).slice(0, 10),
+      deliverable: {
+        summary: "v1 endpointlari kod bazasidan olib tashlandi.",
+        submittedAt: DAYS_AGO(4),
+      },
+      submittedAt: DAYS_AGO(4),
+      rejectedAt: DAYS_AGO(3.5),
+      comments: [
+        c(
+          '09',
+          AK,
+          'REJECT_REASON',
+          "Bir nechta tashqi mijoz hali ham v1 dan foydalanmoqda — bu topshiriq hozircha bekor qilinadi.",
+          3.5,
+        ),
+      ],
+      round: 1,
+      startedAt: DAYS_AGO(6),
+      createdAt: DAYS_AGO(7),
+      updatedAt: DAYS_AGO(3.5),
+    },
+    // a00a — IN_PROGRESS, MEDIUM, with a real attached document.
+    {
+      uuid: TASK_UUID('0a'),
+      number: 'TOP-2026/0010',
+      title: "Buyruq bo'yicha tizim sozlamalarini yangilash",
+      description:
+        "Ilova qilingan buyruqqa asosan ruxsatnoma tizimi sozlamalarini yangilang.",
+      priority: 'MEDIUM',
+      status: 'IN_PROGRESS',
+      assignerUuid: AK,
+      assigneeUuid: SO,
+      deadline: DAYS_FROM_NOW(6).slice(0, 10),
+      attachedDocumentUuid: attachedDoc,
+      comments: [],
+      round: 1,
+      startedAt: DAYS_AGO(0.6),
+      createdAt: DAYS_AGO(1.2),
+      updatedAt: DAYS_AGO(0.6),
+    },
+    // a00b — Karimov → Akhmedov, NEW, HIGH (Rahbar's assigned board).
+    {
+      uuid: TASK_UUID('0b'),
+      number: 'TOP-2026/0011',
+      title: "Choraklik texnik hisobotni tayyorlash",
+      description:
+        "Backend Bo'limining choraklik texnik ko'rsatkichlari bo'yicha hisobot tayyorlang.",
+      priority: 'HIGH',
+      status: 'NEW',
+      assignerUuid: KA,
+      assigneeUuid: AK,
+      deadline: DAYS_FROM_NOW(8).slice(0, 10),
+      comments: [],
+      round: 1,
+      createdAt: DAYS_AGO(0.7),
+      updatedAt: DAYS_AGO(0.7),
+    },
+    // a00c — Karimov → Akhmedov, UNDER_REVIEW, MEDIUM, deliverable.documentUuid
+    // points at a real seeded document (Rahbar's review queue).
+    {
+      uuid: TASK_UUID('0c'),
+      number: 'TOP-2026/0012',
+      title: "Departament infratuzilma rejasini ishlab chiqish",
+      description:
+        "Kelgusi yil uchun server va infratuzilma resurslari rejasini hujjat ko'rinishida taqdim eting.",
+      priority: 'MEDIUM',
+      status: 'UNDER_REVIEW',
+      assignerUuid: KA,
+      assigneeUuid: AK,
+      deadline: DAYS_FROM_NOW(1).slice(0, 10),
+      deliverable: {
+        summary:
+          "Infratuzilma rejasi hujjat shaklida tayyorlandi va ko'rib chiqish uchun ilova qilindi.",
+        documentUuid: deliverableDoc,
+        submittedAt: DAYS_AGO(0.4),
+      },
+      submittedAt: DAYS_AGO(0.4),
+      comments: [],
+      round: 1,
+      startedAt: DAYS_AGO(2),
+      createdAt: DAYS_AGO(3),
+      updatedAt: DAYS_AGO(0.4),
+    },
+  ];
+}
+
+function buildTaskNotifications(tasks: TaskEntity[], employees: Employee[]): AppNotification[] {
+  const byNumber = (number: string): TaskEntity => {
+    const t = tasks.find((x) => x.number === number);
+    if (!t) throw new Error(`Seed invariant broken: no task ${number}`);
+    return t;
+  };
+
+  interface NSpec {
+    hex: string;
+    task: string;
+    recipient: string;
+    actor: string; // employee uuid → resolved to actorName
+    type: NotificationType;
+    isRead: boolean;
+    daysAgo: number;
+  }
+
+  const AK = PERSONAS.BOLIM_BOSHLIGI;
+  const SO = PERSONAS.XODIM;
+  const KA = PERSONAS.RAHBAR;
+  const nameOf = (uuid: string) =>
+    employees.find((e) => e.uuid === uuid)?.fullNameGenerated ?? '—';
+
+  const specs: NSpec[] = [
+    // a001 assigned → Sobirova
+    { hex: '01', task: 'TOP-2026/0001', recipient: SO, actor: AK, type: 'TASK_ASSIGNED', isRead: false, daysAgo: 1 },
+    // a002 assigned + clarification request back to Akhmedov
+    { hex: '02', task: 'TOP-2026/0002', recipient: SO, actor: AK, type: 'TASK_ASSIGNED', isRead: true, daysAgo: 0.8 },
+    { hex: '03', task: 'TOP-2026/0002', recipient: AK, actor: SO, type: 'TASK_CLARIFICATION_REQUESTED', isRead: false, daysAgo: 0.4 },
+    // a004 clarification answered (Akhmedov → Sobirova) + return
+    { hex: '04', task: 'TOP-2026/0004', recipient: SO, actor: AK, type: 'TASK_CLARIFICATION_ANSWERED', isRead: true, daysAgo: 5.2 },
+    { hex: '05', task: 'TOP-2026/0004', recipient: SO, actor: AK, type: 'TASK_RETURNED', isRead: false, daysAgo: 2.5 },
+    // a005 submitted → Akhmedov
+    { hex: '06', task: 'TOP-2026/0005', recipient: AK, actor: SO, type: 'TASK_SUBMITTED', isRead: false, daysAgo: 0.5 },
+    // a006 submitted (late) → Akhmedov
+    { hex: '07', task: 'TOP-2026/0006', recipient: AK, actor: SO, type: 'TASK_SUBMITTED', isRead: false, daysAgo: 0.3 },
+    // a007 accepted → Sobirova
+    { hex: '08', task: 'TOP-2026/0007', recipient: SO, actor: AK, type: 'TASK_ACCEPTED', isRead: true, daysAgo: 1.5 },
+    // a008 accepted-with-note → Sobirova
+    { hex: '09', task: 'TOP-2026/0008', recipient: SO, actor: AK, type: 'TASK_ACCEPTED', isRead: true, daysAgo: 2.5 },
+    // a009 rejected → Sobirova
+    { hex: '0a', task: 'TOP-2026/0009', recipient: SO, actor: AK, type: 'TASK_REJECTED', isRead: false, daysAgo: 3.5 },
+    // a00b assigned → Akhmedov (from Karimov)
+    { hex: '0b', task: 'TOP-2026/0011', recipient: AK, actor: KA, type: 'TASK_ASSIGNED', isRead: false, daysAgo: 0.7 },
+    // a00c submitted → Karimov (from Akhmedov)
+    { hex: '0c', task: 'TOP-2026/0012', recipient: KA, actor: AK, type: 'TASK_SUBMITTED', isRead: false, daysAgo: 0.4 },
+  ];
+
+  return specs.map((s) => {
+    const task = byNumber(s.task);
+    return {
+      uuid: TASK_UUID(`2${s.hex}`),
+      recipientEmployeeUuid: s.recipient,
+      type: s.type,
+      titleKey: `dashboard:notifications.title.${s.type}`,
+      params: { taskNumber: task.number, actorName: nameOf(s.actor) },
+      resourceType: 'task' as const,
+      resourceUuid: task.uuid,
+      isRead: s.isRead,
+      createdAt: DAYS_AGO(s.daysAgo),
+    };
+  });
+}
+
+function buildTaskAudit(tasks: TaskEntity[], employees: Employee[]): AuditEntry[] {
+  const nameOf = (uuid: string) =>
+    employees.find((e) => e.uuid === uuid)?.fullNameGenerated ?? '—';
+
+  interface Spec {
+    action: AuditAction;
+    actor: string;
+    context?: Record<string, unknown>;
+  }
+
+  const out: AuditEntry[] = [];
+
+  for (const task of tasks) {
+    const specs: Spec[] = [];
+    // Mutations write actorName from the persona who performed the action:
+    // create / update / review = assigner; start / submit / clarification
+    // request = assignee; clarification answer = assigner.
+    specs.push({
+      action: 'TASK_CREATED',
+      actor: task.assignerUuid,
+      context: {
+        title: task.title,
+        priority: task.priority,
+        deadline: task.deadline,
+        assigneeUuid: task.assigneeUuid,
+      },
+    });
+
+    const started =
+      task.status === 'IN_PROGRESS' ||
+      task.status === 'UNDER_REVIEW' ||
+      task.status === 'DONE' ||
+      task.status === 'REJECTED';
+    if (started) {
+      specs.push({ action: 'TASK_STARTED', actor: task.assigneeUuid });
+    }
+
+    // Clarification round-trips (do not change status). Emit in comment order.
+    for (const comment of task.comments) {
+      if (comment.kind === 'CLARIFICATION_REQUEST') {
+        specs.push({ action: 'TASK_CLARIFICATION_REQUESTED', actor: task.assigneeUuid });
+      } else if (comment.kind === 'CLARIFICATION_REPLY') {
+        specs.push({ action: 'TASK_CLARIFICATION_ANSWERED', actor: task.assignerUuid });
+      }
+    }
+
+    // a004's history: submitted once, then RETURNED (round 2), now back
+    // IN_PROGRESS. The return context mirrors reviewTask: { decision, round }.
+    const wasReturned = task.comments.some((cm) => cm.kind === 'RETURN_FEEDBACK');
+    if (wasReturned) {
+      specs.push({
+        action: 'TASK_SUBMITTED',
+        actor: task.assigneeUuid,
+        context: { late: false, replaced: false },
+      });
+      specs.push({
+        action: 'TASK_RETURNED',
+        actor: task.assignerUuid,
+        context: { decision: 'RETURN', round: task.round },
+      });
+    }
+
+    // Current-state submission for the review-bearing states.
+    if (
+      task.status === 'UNDER_REVIEW' ||
+      task.status === 'DONE' ||
+      task.status === 'REJECTED'
+    ) {
+      specs.push({
+        action: 'TASK_SUBMITTED',
+        actor: task.assigneeUuid,
+        context: { late: Boolean(task.lateSubmission), replaced: false },
+      });
+    }
+
+    if (task.status === 'DONE') {
+      const withNote = Boolean(task.reviewNote);
+      specs.push({
+        action: 'TASK_ACCEPTED',
+        actor: task.assignerUuid,
+        context: { decision: withNote ? 'ACCEPT_WITH_NOTE' : 'ACCEPT', round: task.round },
+      });
+    } else if (task.status === 'REJECTED') {
+      specs.push({
+        action: 'TASK_REJECTED',
+        actor: task.assignerUuid,
+        context: { decision: 'REJECT', round: task.round },
+      });
+    }
+
+    // Space the trail across the task's known window: created at createdAt,
+    // last transition at updatedAt, linear between.
+    const start = Date.parse(task.createdAt);
+    const end = Date.parse(task.updatedAt);
+    const n = specs.length;
+    specs.forEach((spec, i) => {
+      const frac = n <= 1 ? 0 : i / (n - 1);
+      out.push({
+        uuid: uuid(),
+        actorUuid: spec.actor,
+        actorName: nameOf(spec.actor),
+        action: spec.action,
+        resourceType: 'task',
+        resourceUuid: task.uuid,
+        resourceLabel: task.number,
+        context: spec.context,
+        createdAt: new Date(start + (end - start) * frac).toISOString(),
+      });
+    });
+  }
+
+  return out;
+}
+
 // === Public seeding API ===
 
 export async function seedIfEmpty(): Promise<void> {
@@ -2095,6 +2641,11 @@ export async function resetAndSeed(): Promise<void> {
   const { documents, approvalSteps, signatures } = buildDocumentDomain(certificates);
   const letters = buildLetters(byCode);
   const letterAudit = buildLetterAudit(letters, employees, units, certificates);
+  // Tasks built after documents so attachedDocumentUuid / deliverable
+  // documentUuid resolve against real seeded rows.
+  const tasks = buildTasks(documents);
+  const taskAudit = buildTaskAudit(tasks, employees);
+  const taskNotifications = buildTaskNotifications(tasks, employees);
 
   writeTable(Tables.positions, positions);
   writeTable(Tables.units, units);
@@ -2102,19 +2653,27 @@ export async function resetAndSeed(): Promise<void> {
   writeTable(Tables.users, users);
   writeTable(Tables.assignments, assignments);
   writeTable(Tables.certificates, certificates);
-  // Letter audit rows merge with the general trail; the audit page + the
-  // letter-detail timeline both read the combined table, newest-first.
+  // Letter + task audit rows merge with the general trail; the audit page and
+  // the resource-detail timelines all read the combined table, newest-first.
   writeTable(
     Tables.audit,
-    [...audit, ...letterAudit].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    [...audit, ...letterAudit, ...taskAudit].sort((a, b) =>
+      b.createdAt.localeCompare(a.createdAt),
+    ),
   );
   writeTable(Tables.profileRequests, []);
-  writeTable(Tables.notifications, notifications);
+  writeTable(
+    Tables.notifications,
+    [...notifications, ...taskNotifications].sort((a, b) =>
+      b.createdAt.localeCompare(a.createdAt),
+    ),
+  );
   writeTable(Tables.documentTemplates, documentTemplates);
   writeTable(Tables.documents, documents);
   writeTable(Tables.approvalSteps, approvalSteps);
   writeTable(Tables.signatures, signatures);
   writeTable(Tables.letters, letters);
+  writeTable(Tables.tasks, tasks);
 
   localStorage.setItem(SEED_FLAG, SEED_VERSION);
 }

@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 
 import ExpiringCertsAlert from './ExpiringCertsAlert';
 import PendingApprovalsAlert from './PendingApprovalsAlert';
+import PendingTasksAlert from './PendingTasksAlert';
 import QuickActions from './QuickActions';
 import RecentActivityCard from './RecentActivityCard';
 import StatsRow from './StatsRow';
@@ -32,6 +33,7 @@ export default function DashboardHome() {
         subtitle={t('dashboard:home.subtitle')}
       />
       <PendingApprovalsAlert />
+      <PendingTasksAlert />
       <ExpiringCertsAlert />
       <StatsRow />
       <QuickActions />

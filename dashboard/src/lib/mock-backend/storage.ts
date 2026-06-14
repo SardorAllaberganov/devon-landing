@@ -16,6 +16,7 @@ export const Tables = {
   // Shared with letters from step 20 — `SignatureRecord.resourceType` discriminates.
   signatures: 'signatures',
   letters: 'letters',
+  tasks: 'tasks',
 } as const;
 
 export function readTable<T>(key: string, fallback: T[]): T[] {

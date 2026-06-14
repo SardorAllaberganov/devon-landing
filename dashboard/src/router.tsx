@@ -19,6 +19,8 @@ import EmployeeTransferPage from '@/features/employees/assignments/EmployeeTrans
 import LettersPage from '@/features/letters/LettersPage';
 import LetterDetailPage from '@/features/letters/detail/LetterDetailPage';
 import ProfilePage from '@/features/profile/ProfilePage';
+import TasksPage from '@/features/tasks/TasksPage';
+import TaskDetailPage from '@/features/tasks/detail/TaskDetailPage';
 import UnitsPage from '@/features/units/UnitsPage';
 
 function Protected({ children }: { children: ReactElement }) {
@@ -166,6 +168,22 @@ export default function Router() {
         element={
           <Protected>
             <LetterDetailPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/tasks"
+        element={
+          <Protected>
+            <TasksPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/tasks/:uuid"
+        element={
+          <Protected>
+            <TaskDetailPage />
           </Protected>
         }
       />

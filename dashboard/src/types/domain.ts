@@ -203,7 +203,16 @@ export type AuditAction =
   | 'LETTER_ACCEPTED'
   | 'LETTER_SIGNED'
   | 'LETTER_DISPATCHED'
-  | 'LETTER_CLOSED';
+  | 'LETTER_CLOSED'
+  | 'TASK_CREATED'
+  | 'TASK_UPDATED'
+  | 'TASK_STARTED'
+  | 'TASK_CLARIFICATION_REQUESTED'
+  | 'TASK_CLARIFICATION_ANSWERED'
+  | 'TASK_SUBMITTED'
+  | 'TASK_ACCEPTED'
+  | 'TASK_RETURNED'
+  | 'TASK_REJECTED';
 
 export type AuditResourceType =
   | 'unit'
@@ -213,7 +222,8 @@ export type AuditResourceType =
   | 'user'
   | 'profile-request'
   | 'document'
-  | 'letter';
+  | 'letter'
+  | 'task';
 
 export interface AuditEntry {
   uuid: string;
@@ -264,7 +274,14 @@ export type NotificationType =
   | 'LETTER_EXECUTED'
   | 'LETTER_ACCEPTED'
   | 'LETTER_SIGN_REQUESTED'
-  | 'LETTER_DISPATCHED';
+  | 'LETTER_DISPATCHED'
+  | 'TASK_ASSIGNED'
+  | 'TASK_CLARIFICATION_REQUESTED'
+  | 'TASK_CLARIFICATION_ANSWERED'
+  | 'TASK_SUBMITTED'
+  | 'TASK_ACCEPTED'
+  | 'TASK_RETURNED'
+  | 'TASK_REJECTED';
 
 // Named AppNotification because `Notification` collides with lib.dom's global type.
 export interface AppNotification {
@@ -275,7 +292,7 @@ export interface AppNotification {
   titleKey: string;
   /** Interpolation values: docNumber, letterNumber, actorName, … */
   params: Record<string, string>;
-  resourceType: 'document' | 'letter';
+  resourceType: 'document' | 'letter' | 'task';
   resourceUuid: string;
   isRead: boolean;
   createdAt: string;
@@ -483,6 +500,79 @@ export interface Letter {
   registeredByUuid: string;
   dispatchedAt?: string;
   closedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// === Task delegation (milestone 3, BPMN 3.2 / BP-2) ===
+
+export type TaskPriority = 'HIGH' | 'MEDIUM' | 'STANDARD';
+
+// BP-2 canon: new → in-progress → under-review → done.
+// REJECTED ("Closed-rejected", UC-09) is terminal; renders inside the Done
+// column with a destructive badge. Clarification (BP-2 6.1/7) does NOT change
+// status. `round` increments on each return → resubmit cycle.
+export type TaskStatus =
+  | 'NEW'
+  | 'IN_PROGRESS'
+  | 'UNDER_REVIEW'
+  | 'DONE'
+  | 'REJECTED';
+
+export type TaskCommentKind =
+  | 'CLARIFICATION_REQUEST'
+  | 'CLARIFICATION_REPLY'
+  | 'RETURN_FEEDBACK'
+  | 'REJECT_REASON'
+  | 'NOTE';
+
+export interface TaskComment {
+  uuid: string;
+  authorUuid: string;
+  kind: TaskCommentKind;
+  body: string;
+  createdAt: string;
+}
+
+export interface TaskDeliverable {
+  summary: string;
+  /** Metadata-only attachment (reuses the M2 FileMeta — no bytes stored). */
+  file?: FileMeta;
+  /** OR a reference to an existing DocumentEntity. */
+  documentUuid?: string;
+  submittedAt: string;
+}
+
+export interface TaskEntity {
+  uuid: string;
+  /** Auto-numbered 'TOP-2026/0001' (topshiriq; year hardcoded per master §17). */
+  number: string;
+  title: string;
+  description: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  /** Manager (Rahbar / Bo'lim boshlig'i) — employee uuid. */
+  assignerUuid: string;
+  /** Single subordinate — employee uuid; must be in the assigner's subtree. */
+  assigneeUuid: string;
+  deadline: string;
+  /** Optional related document attached at creation. */
+  attachedDocumentUuid?: string;
+  /** OR a metadata-only file attached at creation. */
+  attachedFile?: FileMeta;
+  /** Set on first submit; replaceable while UNDER_REVIEW. */
+  deliverable?: TaskDeliverable;
+  /** Accept-with-note text (return/reject reasons live in `comments`). */
+  reviewNote?: string;
+  /** Embedded chronological clarification + feedback thread. */
+  comments: TaskComment[];
+  round: number;
+  /** True if the deliverable was submitted after the deadline (UC-09 A2). */
+  lateSubmission?: boolean;
+  startedAt?: string;
+  submittedAt?: string;
+  acceptedAt?: string;
+  rejectedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

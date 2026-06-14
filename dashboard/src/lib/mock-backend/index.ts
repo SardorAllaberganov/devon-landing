@@ -12,6 +12,7 @@ import {
   LetterValidationError,
   maybeFail,
   PasswordValidationError,
+  TaskValidationError,
   UnitValidationError,
 } from './errors';
 import { readTable, writeTable, Tables } from './storage';
@@ -61,6 +62,10 @@ import type {
   Position,
   ProfileChangeRequest,
   SignatureRecord,
+  TaskComment,
+  TaskEntity,
+  TaskPriority,
+  TaskStatus,
   Unit,
   User,
 } from '@/types/domain';
@@ -90,6 +95,9 @@ function readProfileRequests(): ProfileChangeRequest[] {
 }
 function readNotifications(): AppNotification[] {
   return readTable<AppNotification>(Tables.notifications, []);
+}
+function readPositions(): Position[] {
+  return readTable<Position>(Tables.positions, []);
 }
 
 function actorNameFor(actorUuid: string): string {
@@ -2557,6 +2565,407 @@ export async function dispatchLetter(
   return { incoming, outgoing };
 }
 
+// === Tasks (M3 — milestone 3, BPMN 3.2 / BP-2) ===
+//
+// Same policy contract as documents and letters: authorization is enforced
+// HERE against the *acting* employee uuid each function receives.
+
+function readTasks(): TaskEntity[] {
+  return readTable<TaskEntity>(Tables.tasks, []);
+}
+
+const TODAY_ISO = () => new Date().toISOString().slice(0, 10);
+
+/** Overdue = deadline strictly before today AND status not terminal. */
+export function isTaskOverdue(task: TaskEntity): boolean {
+  if (task.status === 'DONE' || task.status === 'REJECTED') return false;
+  return task.deadline.slice(0, 10) < TODAY_ISO();
+}
+
+/**
+ * True when `assigneeUuid`'s open primary unit is within a subtree headed by
+ * `assignerUuid`. Mirrors the letter-executor `path.startsWith` membership
+ * (see ~line 2226). Exported for use by Task 4 mutations (createTask, etc.).
+ */
+export function assigneeInAssignerScope(assignerUuid: string, assigneeUuid: string): boolean {
+  const units = readUnits();
+  const assignments = readAssignments();
+  const headedUnits = units.filter((u) => u.headEmployeeUuid === assignerUuid);
+  if (headedUnits.length === 0) return false;
+  const primary = assignments.find(
+    (a) => a.employeeUuid === assigneeUuid && a.isPrimary && !a.endDate,
+  );
+  if (!primary) return false;
+  const assigneeUnit = units.find((u) => u.uuid === primary.unitUuid);
+  if (!assigneeUnit) return false;
+  return headedUnits.some((h) => assigneeUnit.path.startsWith(h.path));
+}
+
+// --- Reads --- tasks ---
+
+export interface TaskFilters {
+  box: 'assigned-by-me' | 'assigned-to-me';
+  status?: TaskStatus;
+  priority?: TaskPriority;
+  overdueOnly?: boolean;
+  search?: string;
+}
+
+export async function listTasks(
+  filters: TaskFilters,
+  actingUuid: string,
+): Promise<TaskEntity[]> {
+  await simulatedDelay();
+  let rows = readTasks();
+  rows =
+    filters.box === 'assigned-by-me'
+      ? rows.filter((t) => t.assignerUuid === actingUuid)
+      : rows.filter((t) => t.assigneeUuid === actingUuid);
+  if (filters.status) rows = rows.filter((t) => t.status === filters.status);
+  if (filters.priority) rows = rows.filter((t) => t.priority === filters.priority);
+  if (filters.overdueOnly) rows = rows.filter((t) => isTaskOverdue(t));
+  if (filters.search) {
+    const q = filters.search.trim().toLowerCase();
+    rows = rows.filter(
+      (t) => t.number.toLowerCase().includes(q) || t.title.toLowerCase().includes(q),
+    );
+  }
+  return rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export interface TaskDetail extends TaskEntity {
+  assignerName: string;
+  assigneeName: string;
+  assigneePositionUz?: string;
+  assigneeUnitNameUz?: string;
+  attachedDocumentNumber?: string;
+  attachedDocumentTitle?: string;
+  deliverableDocumentNumber?: string;
+  commentAuthors: Record<string, string>;
+}
+
+export async function getTask(uuid: string): Promise<TaskDetail | null> {
+  await simulatedDelay();
+  const task = readTasks().find((t) => t.uuid === uuid);
+  if (!task) return null;
+  const documents = readDocuments();
+  const attached = task.attachedDocumentUuid
+    ? documents.find((d) => d.uuid === task.attachedDocumentUuid)
+    : undefined;
+  const deliverableDoc = task.deliverable?.documentUuid
+    ? documents.find((d) => d.uuid === task.deliverable!.documentUuid)
+    : undefined;
+  const commentAuthors: Record<string, string> = {};
+  for (const c of task.comments) {
+    if (!commentAuthors[c.authorUuid]) commentAuthors[c.authorUuid] = employeeNameFor(c.authorUuid);
+  }
+  const primary = readAssignments().find(
+    (a) => a.employeeUuid === task.assigneeUuid && a.isPrimary && !a.endDate,
+  );
+  const unit = primary ? readUnits().find((u) => u.uuid === primary.unitUuid) : undefined;
+  const position = primary ? readPositions().find((p) => p.id === primary.positionId) : undefined;
+  return {
+    ...task,
+    assignerName: employeeNameFor(task.assignerUuid),
+    assigneeName: employeeNameFor(task.assigneeUuid),
+    assigneePositionUz: position?.nameUz,
+    assigneeUnitNameUz: unit?.nameUz,
+    attachedDocumentNumber: attached?.number,
+    attachedDocumentTitle: attached?.title,
+    deliverableDocumentNumber: deliverableDoc?.number,
+    commentAuthors,
+  };
+}
+
+export interface TaskStats {
+  byStatus: Record<TaskStatus, number>;
+  overdueCount: number;
+  loadPerAssignee: { assigneeUuid: string; assigneeName: string; openCount: number }[];
+}
+
+export async function getTaskStats(actingUuid: string): Promise<TaskStats> {
+  await simulatedDelay();
+  const mine = readTasks().filter((t) => t.assignerUuid === actingUuid);
+  const byStatus: Record<TaskStatus, number> = {
+    NEW: 0, IN_PROGRESS: 0, UNDER_REVIEW: 0, DONE: 0, REJECTED: 0,
+  };
+  let overdueCount = 0;
+  const load: Record<string, number> = {};
+  for (const t of mine) {
+    byStatus[t.status] += 1;
+    if (isTaskOverdue(t)) overdueCount += 1;
+    if (t.status !== 'DONE' && t.status !== 'REJECTED') {
+      load[t.assigneeUuid] = (load[t.assigneeUuid] ?? 0) + 1;
+    }
+  }
+  const loadPerAssignee = Object.entries(load)
+    .map(([assigneeUuid, openCount]) => ({ assigneeUuid, assigneeName: employeeNameFor(assigneeUuid), openCount }))
+    .sort((a, b) => b.openCount - a.openCount);
+  return { byStatus, overdueCount, loadPerAssignee };
+}
+
+// === Mutations — tasks ===
+
+export interface CreateTaskInput {
+  title: string;
+  description: string;
+  priority: TaskPriority;
+  assigneeUuid: string;
+  deadline: string;
+  attachedDocumentUuid?: string;
+  attachedFile?: FileMeta;
+}
+
+function nextTaskNumber(): string {
+  const n = readTasks().length + 1;
+  return `TOP-2026/${String(n).padStart(4, '0')}`;
+}
+
+export async function createTask(input: CreateTaskInput, actorUuid: string): Promise<TaskEntity> {
+  await simulatedDelay();
+  if (input.assigneeUuid === actorUuid) throw new TaskValidationError('self-assign');
+  if (!assigneeInAssignerScope(actorUuid, input.assigneeUuid)) throw new TaskValidationError('out-of-scope');
+  maybeFail();
+  const tasks = readTasks();
+  const now = NOW();
+  const task: TaskEntity = {
+    uuid: uid(),
+    number: nextTaskNumber(),
+    title: input.title,
+    description: input.description,
+    priority: input.priority,
+    status: 'NEW',
+    assignerUuid: actorUuid,
+    assigneeUuid: input.assigneeUuid,
+    deadline: input.deadline,
+    attachedDocumentUuid: input.attachedDocumentUuid,
+    attachedFile: input.attachedFile,
+    comments: [],
+    round: 1,
+    createdAt: now,
+    updatedAt: now,
+  };
+  tasks.unshift(task);
+  writeTable(Tables.tasks, tasks);
+  await appendAudit({
+    actorUuid, action: 'TASK_CREATED', resourceType: 'task',
+    resourceUuid: task.uuid, resourceLabel: task.number,
+    context: { title: task.title, priority: task.priority, deadline: task.deadline, assigneeUuid: task.assigneeUuid },
+  });
+  await appendNotification({
+    recipientEmployeeUuid: task.assigneeUuid,
+    type: 'TASK_ASSIGNED',
+    titleKey: 'dashboard:notifications.title.TASK_ASSIGNED',
+    params: { taskNumber: task.number, actorName: employeeNameFor(actorUuid) },
+    resourceType: 'task', resourceUuid: task.uuid,
+  });
+  return task;
+}
+
+function findTaskOrThrow(uuid: string): { tasks: TaskEntity[]; task: TaskEntity; idx: number } {
+  const tasks = readTasks();
+  const idx = tasks.findIndex((t) => t.uuid === uuid);
+  if (idx < 0) throw new TaskValidationError('wrong-status');
+  return { tasks, task: tasks[idx]!, idx };
+}
+
+function isTerminal(t: TaskEntity): boolean {
+  return t.status === 'DONE' || t.status === 'REJECTED';
+}
+
+export interface UpdateTaskInput {
+  title?: string;
+  description?: string;
+  priority?: TaskPriority;
+  deadline?: string;
+}
+
+export async function updateTask(uuid: string, input: UpdateTaskInput, actorUuid: string): Promise<TaskEntity> {
+  await simulatedDelay();
+  const { tasks, task, idx } = findTaskOrThrow(uuid);
+  if (task.assignerUuid !== actorUuid) throw new TaskValidationError('not-assigner');
+  if (isTerminal(task)) throw new TaskValidationError('wrong-status');
+  maybeFail();
+  const changes: Record<string, { from: unknown; to: unknown }> = {};
+  const normalizedDeadline = input.deadline?.slice(0, 10);
+  const deadlineChanged = normalizedDeadline !== undefined && normalizedDeadline !== task.deadline.slice(0, 10);
+  if (input.title !== undefined && input.title !== task.title) changes.title = { from: task.title, to: input.title };
+  if (input.description !== undefined && input.description !== task.description) changes.description = { from: task.description, to: input.description };
+  if (input.priority !== undefined && input.priority !== task.priority) changes.priority = { from: task.priority, to: input.priority };
+  if (deadlineChanged) changes.deadline = { from: task.deadline.slice(0, 10), to: normalizedDeadline };
+  const updated: TaskEntity = {
+    ...task,
+    title: input.title ?? task.title,
+    description: input.description ?? task.description,
+    priority: input.priority ?? task.priority,
+    deadline: normalizedDeadline ?? task.deadline,
+    updatedAt: NOW(),
+  };
+  tasks[idx] = updated;
+  writeTable(Tables.tasks, tasks);
+  await appendAudit({
+    actorUuid, action: 'TASK_UPDATED', resourceType: 'task',
+    resourceUuid: uuid, resourceLabel: task.number, changes,
+    context: deadlineChanged ? { kind: 'deadline' } : { kind: 'scope' },
+  });
+  return updated;
+}
+
+export async function startTask(uuid: string, actorUuid: string): Promise<TaskEntity> {
+  await simulatedDelay();
+  const { tasks, task, idx } = findTaskOrThrow(uuid);
+  if (task.assigneeUuid !== actorUuid) throw new TaskValidationError('not-assignee');
+  if (task.status !== 'NEW') throw new TaskValidationError('wrong-status');
+  maybeFail();
+  const now = NOW();
+  tasks[idx] = { ...task, status: 'IN_PROGRESS', startedAt: now, updatedAt: now };
+  writeTable(Tables.tasks, tasks);
+  await appendAudit({ actorUuid, action: 'TASK_STARTED', resourceType: 'task', resourceUuid: uuid, resourceLabel: task.number });
+  return tasks[idx]!;
+}
+
+export async function requestClarification(uuid: string, body: string, actorUuid: string): Promise<TaskEntity> {
+  await simulatedDelay();
+  const { tasks, task, idx } = findTaskOrThrow(uuid);
+  if (task.assigneeUuid !== actorUuid) throw new TaskValidationError('not-assignee');
+  if (isTerminal(task)) throw new TaskValidationError('wrong-status');
+  if (!body.trim()) throw new TaskValidationError('reason-required');
+  maybeFail();
+  const now = NOW();
+  const comment: TaskComment = { uuid: uid(), authorUuid: actorUuid, kind: 'CLARIFICATION_REQUEST', body: body.trim(), createdAt: now };
+  tasks[idx] = { ...task, comments: [...task.comments, comment], updatedAt: now };
+  writeTable(Tables.tasks, tasks);
+  await appendAudit({ actorUuid, action: 'TASK_CLARIFICATION_REQUESTED', resourceType: 'task', resourceUuid: uuid, resourceLabel: task.number });
+  await appendNotification({
+    recipientEmployeeUuid: task.assignerUuid,
+    type: 'TASK_CLARIFICATION_REQUESTED',
+    titleKey: 'dashboard:notifications.title.TASK_CLARIFICATION_REQUESTED',
+    params: { taskNumber: task.number, actorName: employeeNameFor(actorUuid) },
+    resourceType: 'task', resourceUuid: uuid,
+  });
+  return tasks[idx]!;
+}
+
+export async function answerClarification(uuid: string, body: string, actorUuid: string): Promise<TaskEntity> {
+  await simulatedDelay();
+  const { tasks, task, idx } = findTaskOrThrow(uuid);
+  if (task.assignerUuid !== actorUuid) throw new TaskValidationError('not-assigner');
+  if (isTerminal(task)) throw new TaskValidationError('wrong-status');
+  if (!body.trim()) throw new TaskValidationError('reason-required');
+  maybeFail();
+  const now = NOW();
+  const comment: TaskComment = { uuid: uid(), authorUuid: actorUuid, kind: 'CLARIFICATION_REPLY', body: body.trim(), createdAt: now };
+  tasks[idx] = { ...task, comments: [...task.comments, comment], updatedAt: now };
+  writeTable(Tables.tasks, tasks);
+  await appendAudit({ actorUuid, action: 'TASK_CLARIFICATION_ANSWERED', resourceType: 'task', resourceUuid: uuid, resourceLabel: task.number });
+  await appendNotification({
+    recipientEmployeeUuid: task.assigneeUuid,
+    type: 'TASK_CLARIFICATION_ANSWERED',
+    titleKey: 'dashboard:notifications.title.TASK_CLARIFICATION_ANSWERED',
+    params: { taskNumber: task.number, actorName: employeeNameFor(actorUuid) },
+    resourceType: 'task', resourceUuid: uuid,
+  });
+  return tasks[idx]!;
+}
+
+export interface SubmitDeliverableInput {
+  summary: string;
+  file?: FileMeta;
+  documentUuid?: string;
+}
+
+export async function submitDeliverable(uuid: string, input: SubmitDeliverableInput, actorUuid: string): Promise<TaskEntity> {
+  await simulatedDelay();
+  const { tasks, task, idx } = findTaskOrThrow(uuid);
+  if (task.assigneeUuid !== actorUuid) throw new TaskValidationError('not-assignee');
+  if (task.status !== 'IN_PROGRESS' && task.status !== 'UNDER_REVIEW') throw new TaskValidationError('wrong-status');
+  maybeFail();
+  const now = NOW();
+  const late = now.slice(0, 10) > task.deadline.slice(0, 10);
+  tasks[idx] = {
+    ...task,
+    status: 'UNDER_REVIEW',
+    deliverable: { summary: input.summary, file: input.file, documentUuid: input.documentUuid, submittedAt: now },
+    submittedAt: now,
+    lateSubmission: late || task.lateSubmission,
+    updatedAt: now,
+  };
+  writeTable(Tables.tasks, tasks);
+  await appendAudit({
+    actorUuid, action: 'TASK_SUBMITTED', resourceType: 'task', resourceUuid: uuid, resourceLabel: task.number,
+    context: { late, replaced: task.status === 'UNDER_REVIEW' },
+  });
+  await appendNotification({
+    recipientEmployeeUuid: task.assignerUuid,
+    type: 'TASK_SUBMITTED',
+    titleKey: 'dashboard:notifications.title.TASK_SUBMITTED',
+    params: { taskNumber: task.number, actorName: employeeNameFor(actorUuid) },
+    resourceType: 'task', resourceUuid: uuid,
+  });
+  return tasks[idx]!;
+}
+
+export type TaskReviewDecision = 'ACCEPT' | 'ACCEPT_WITH_NOTE' | 'RETURN' | 'REJECT';
+
+export interface ReviewTaskInput {
+  decision: TaskReviewDecision;
+  text?: string;
+}
+
+export async function reviewTask(uuid: string, input: ReviewTaskInput, actorUuid: string): Promise<TaskEntity> {
+  await simulatedDelay();
+  const { tasks, task, idx } = findTaskOrThrow(uuid);
+  if (task.assignerUuid !== actorUuid) throw new TaskValidationError('not-assigner');
+  if (task.status !== 'UNDER_REVIEW') throw new TaskValidationError('wrong-status');
+  if ((input.decision === 'RETURN' || input.decision === 'REJECT') && !input.text?.trim()) {
+    throw new TaskValidationError('reason-required');
+  }
+  maybeFail();
+  const now = NOW();
+  const text = input.text?.trim();
+  let updated: TaskEntity;
+  let action: AuditAction;
+  let notifyType: NotificationType;
+  if (input.decision === 'ACCEPT' || input.decision === 'ACCEPT_WITH_NOTE') {
+    const comments = input.decision === 'ACCEPT_WITH_NOTE' && text
+      ? [...task.comments, { uuid: uid(), authorUuid: actorUuid, kind: 'NOTE' as const, body: text, createdAt: now }]
+      : task.comments;
+    updated = { ...task, status: 'DONE', acceptedAt: now, reviewNote: input.decision === 'ACCEPT_WITH_NOTE' ? text : undefined, comments, updatedAt: now };
+    action = 'TASK_ACCEPTED';
+    notifyType = 'TASK_ACCEPTED';
+  } else if (input.decision === 'RETURN') {
+    updated = {
+      ...task, status: 'IN_PROGRESS', round: task.round + 1,
+      comments: [...task.comments, { uuid: uid(), authorUuid: actorUuid, kind: 'RETURN_FEEDBACK' as const, body: text!, createdAt: now }],
+      updatedAt: now,
+    };
+    action = 'TASK_RETURNED';
+    notifyType = 'TASK_RETURNED';
+  } else {
+    updated = {
+      ...task, status: 'REJECTED', rejectedAt: now,
+      comments: [...task.comments, { uuid: uid(), authorUuid: actorUuid, kind: 'REJECT_REASON' as const, body: text!, createdAt: now }],
+      updatedAt: now,
+    };
+    action = 'TASK_REJECTED';
+    notifyType = 'TASK_REJECTED';
+  }
+  tasks[idx] = updated;
+  writeTable(Tables.tasks, tasks);
+  await appendAudit({
+    actorUuid, action, resourceType: 'task', resourceUuid: uuid, resourceLabel: task.number,
+    context: { decision: input.decision, round: updated.round },
+  });
+  await appendNotification({
+    recipientEmployeeUuid: task.assigneeUuid,
+    type: notifyType,
+    titleKey: `dashboard:notifications.title.${notifyType}`,
+    params: { taskNumber: task.number, actorName: employeeNameFor(actorUuid) },
+    resourceType: 'task', resourceUuid: uuid,
+  });
+  return updated;
+}
+
 // === Re-exports ===
 
 export { seedIfEmpty, resetAndSeed, PERSONAS } from './seed';
@@ -2569,6 +2978,7 @@ export {
   LetterValidationError,
   MockNetworkError,
   PasswordValidationError,
+  TaskValidationError,
   UnitValidationError,
 } from './errors';
 export type {
@@ -2578,5 +2988,6 @@ export type {
   EmployeeValidationCode,
   LetterValidationCode,
   PasswordValidationCode,
+  TaskValidationCode,
   UnitValidationCode,
 } from './errors';

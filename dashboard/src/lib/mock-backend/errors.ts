@@ -101,6 +101,23 @@ export class LetterValidationError extends Error {
   }
 }
 
+export type TaskValidationCode =
+  | 'not-assigner'
+  | 'not-assignee'
+  | 'out-of-scope'
+  | 'wrong-status'
+  | 'reason-required'
+  | 'self-assign';
+
+export class TaskValidationError extends Error {
+  readonly code: TaskValidationCode;
+  constructor(code: TaskValidationCode) {
+    super(`Task validation failed: ${code}`);
+    this.name = 'TaskValidationError';
+    this.code = code;
+  }
+}
+
 export type PasswordValidationCode = 'current-wrong';
 
 export class PasswordValidationError extends Error {

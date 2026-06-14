@@ -4,7 +4,9 @@ import {
   Archive,
   Check,
   CheckCheck,
+  Circle,
   Clock,
+  Eye,
   Forward,
   Hourglass,
   Inbox,
@@ -44,7 +46,11 @@ export type StatusKind =
   | 'ON_SIGNATURE'
   | 'RESPONDED'
   | 'DISPATCHED'
-  | 'CLOSED_NO_RESPONSE';
+  | 'CLOSED_NO_RESPONSE'
+  // Task statuses (M2 step 23+).
+  | 'NEW'
+  | 'UNDER_REVIEW'
+  | 'DONE';
 
 interface Style {
   cls: string;
@@ -154,6 +160,14 @@ const STYLES: Record<StatusKind, Style> = {
     icon: Archive,
     key: 'common:status.closed-no-response',
   },
+  // Task statuses.
+  NEW: { cls: 'bg-muted text-muted-foreground', icon: Circle, key: 'common:status.new' },
+  UNDER_REVIEW: {
+    cls: 'bg-cinnamon-soft text-cinnamon',
+    icon: Eye,
+    key: 'common:status.under-review',
+  },
+  DONE: { cls: 'bg-emerald-soft text-emerald-deep', icon: CheckCheck, key: 'common:status.done' },
 };
 
 interface Props {

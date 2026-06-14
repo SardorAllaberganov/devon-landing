@@ -6,6 +6,7 @@ import {
   KeySquare,
   LayoutDashboard,
   ListChecks,
+  ListTodo,
   Mail,
   Network,
   ScrollText,
@@ -29,6 +30,7 @@ const managementNav: NavItem[] = [
   { to: '/units', labelKey: 'dashboard:sidebar.nav-units', icon: Network },
   { to: '/employees', labelKey: 'dashboard:sidebar.nav-employees', icon: Users },
   { to: '/certificates', labelKey: 'dashboard:sidebar.nav-certificates', icon: KeySquare },
+  { to: '/tasks', labelKey: 'dashboard:sidebar.nav-tasks', icon: ListTodo },
   { to: '/audit', labelKey: 'dashboard:sidebar.nav-audit', icon: ScrollText },
 ];
 

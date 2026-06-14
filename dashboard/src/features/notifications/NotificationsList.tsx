@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import {
   BadgeCheck,
   BellOff,
+  CircleX,
   ClipboardCheck,
   ClipboardList,
   FileCheck,
@@ -11,7 +12,10 @@ import {
   FileSignature,
   FileX2,
   Forward,
+  MessageCircle,
+  MessageCircleReply,
   PenLine,
+  RotateCcw,
   Send,
   ShieldCheck,
   type LucideIcon,
@@ -37,6 +41,13 @@ const TYPE_ICON: Record<NotificationType, LucideIcon> = {
   LETTER_ACCEPTED: BadgeCheck,
   LETTER_SIGN_REQUESTED: PenLine,
   LETTER_DISPATCHED: Send,
+  TASK_ASSIGNED: ClipboardList,
+  TASK_CLARIFICATION_REQUESTED: MessageCircle,
+  TASK_CLARIFICATION_ANSWERED: MessageCircleReply,
+  TASK_SUBMITTED: ClipboardCheck,
+  TASK_ACCEPTED: BadgeCheck,
+  TASK_RETURNED: RotateCcw,
+  TASK_REJECTED: CircleX,
 };
 
 interface Props {

@@ -99,6 +99,15 @@ export const auditActionSchema = z.enum([
   'LETTER_SIGNED',
   'LETTER_DISPATCHED',
   'LETTER_CLOSED',
+  'TASK_CREATED',
+  'TASK_UPDATED',
+  'TASK_STARTED',
+  'TASK_CLARIFICATION_REQUESTED',
+  'TASK_CLARIFICATION_ANSWERED',
+  'TASK_SUBMITTED',
+  'TASK_ACCEPTED',
+  'TASK_RETURNED',
+  'TASK_REJECTED',
 ]);
 
 export const auditResourceTypeSchema = z.enum([
@@ -110,6 +119,7 @@ export const auditResourceTypeSchema = z.enum([
   'profile-request',
   'document',
   'letter',
+  'task',
 ]);
 
 // === Field validators reused across schemas + form schemas ===
@@ -281,6 +291,13 @@ export const notificationTypeSchema = z.enum([
   'LETTER_ACCEPTED',
   'LETTER_SIGN_REQUESTED',
   'LETTER_DISPATCHED',
+  'TASK_ASSIGNED',
+  'TASK_CLARIFICATION_REQUESTED',
+  'TASK_CLARIFICATION_ANSWERED',
+  'TASK_SUBMITTED',
+  'TASK_ACCEPTED',
+  'TASK_RETURNED',
+  'TASK_REJECTED',
 ]);
 
 export const appNotificationSchema = z.object({
@@ -289,7 +306,7 @@ export const appNotificationSchema = z.object({
   type: notificationTypeSchema,
   titleKey: z.string().min(1),
   params: z.record(z.string(), z.string()),
-  resourceType: z.enum(['document', 'letter']),
+  resourceType: z.enum(['document', 'letter', 'task']),
   resourceUuid: z.string().uuid(),
   isRead: z.boolean(),
   createdAt: z.string(),
@@ -434,6 +451,59 @@ export const letterSchema = z.object({
   registeredByUuid: z.string().uuid(),
   dispatchedAt: z.string().optional(),
   closedAt: z.string().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+// === Tasks (milestone 3, BPMN 3.2 / BP-2) ===
+
+export const taskPrioritySchema = z.enum(['HIGH', 'MEDIUM', 'STANDARD']);
+
+export const taskStatusSchema = z.enum([
+  'NEW', 'IN_PROGRESS', 'UNDER_REVIEW', 'DONE', 'REJECTED',
+]);
+
+export const taskCommentKindSchema = z.enum([
+  'CLARIFICATION_REQUEST', 'CLARIFICATION_REPLY',
+  'RETURN_FEEDBACK', 'REJECT_REASON', 'NOTE',
+]);
+
+export const taskCommentSchema = z.object({
+  uuid: z.string(),
+  authorUuid: z.string(),
+  kind: taskCommentKindSchema,
+  body: z.string(),
+  createdAt: z.string(),
+});
+
+export const taskDeliverableSchema = z.object({
+  summary: z.string(),
+  file: fileMetaSchema.optional(),
+  documentUuid: z.string().optional(),
+  submittedAt: z.string(),
+});
+
+export const taskSchema = z.object({
+  uuid: z.string(),
+  number: z.string(),
+  title: z.string(),
+  description: z.string(),
+  priority: taskPrioritySchema,
+  status: taskStatusSchema,
+  assignerUuid: z.string(),
+  assigneeUuid: z.string(),
+  deadline: z.string(),
+  attachedDocumentUuid: z.string().optional(),
+  attachedFile: fileMetaSchema.optional(),
+  deliverable: taskDeliverableSchema.optional(),
+  reviewNote: z.string().optional(),
+  comments: z.array(taskCommentSchema),
+  round: z.number(),
+  lateSubmission: z.boolean().optional(),
+  startedAt: z.string().optional(),
+  submittedAt: z.string().optional(),
+  acceptedAt: z.string().optional(),
+  rejectedAt: z.string().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

@@ -87,7 +87,10 @@
       "on-signature": "Imzolashda",
       "responded": "Javob tayyor",
       "dispatched": "Jo'natilgan",
-      "closed-no-response": "Javobsiz yopilgan"
+      "closed-no-response": "Javobsiz yopilgan",
+      "new": "Yangi",
+      "under-review": "Ko'rib chiqilmoqda",
+      "done": "Bajarildi"
     },
     "unit-types": {
       "DEPARTMENT": "Departament",
@@ -138,6 +141,7 @@
       "nav-documents": "Hujjatlar",
       "nav-approvals": "Kelishuvlar",
       "nav-letters": "Xatlar",
+      "nav-tasks": "Topshiriqlar",
       "nav-profile": "Mening profilim",
       "section-management": "BOSHQARUV",
       "section-documents": "HUJJAT AYLANMASI",
@@ -188,7 +192,14 @@
         "LETTER_EXECUTED": "{{actorName}} {{letterNumber}} xatini ijro etdi",
         "LETTER_ACCEPTED": "{{letterNumber}} xati ijrosi qabul qilindi",
         "LETTER_SIGN_REQUESTED": "{{letterNumber}} xatining javobi imzolash uchun yuborildi",
-        "LETTER_DISPATCHED": "{{letterNumber}} xati jo'natildi"
+        "LETTER_DISPATCHED": "{{letterNumber}} xati jo'natildi",
+        "TASK_ASSIGNED": "Sizga yangi topshiriq: {{taskNumber}}",
+        "TASK_CLARIFICATION_REQUESTED": "{{actorName}} {{taskNumber}} bo'yicha izoh so'radi",
+        "TASK_CLARIFICATION_ANSWERED": "{{actorName}} {{taskNumber}} izohingizga javob berdi",
+        "TASK_SUBMITTED": "{{actorName}} {{taskNumber}} topshirig'ini topshirdi",
+        "TASK_ACCEPTED": "{{taskNumber}} topshirig'ingiz qabul qilindi",
+        "TASK_RETURNED": "{{taskNumber}} topshirig'ingiz qayta ishlashga qaytarildi",
+        "TASK_REJECTED": "{{taskNumber}} topshirig'ingiz rad etildi"
       }
     },
     "login": {
@@ -235,6 +246,12 @@
         "body": "Kelishuv, imzolash yoki qabul qilishni kutayotgan hujjatlar bor.",
         "cta": "Ko'rib chiqish"
       },
+      "tasks-alert": {
+        "review": "Sizda {{count}} ta topshiriq ko'rib chiqishni kutmoqda",
+        "active": "Sizda {{count}} ta faol topshiriq",
+        "body": "Topshiriqlarni ko'rish va boshqarish uchun sahifaga o'ting.",
+        "cta": "Ko'rish"
+      },
       "expiring-alert": {
         "title": "{{count}} ta ERI muddati 30 kun ichida tugaydi",
         "body": "Xodimlarga muddati tugayotgan kalitlarni yangilashni eslatib qo'ying.",
@@ -247,7 +264,8 @@
         "register-letter": "Xat ro'yxatga olish",
         "manage-units": "Tuzilmani boshqarish",
         "upload-cert": "ERI yuklash",
-        "view-audit": "Audit jurnali"
+        "view-audit": "Audit jurnali",
+        "give-task": "Topshiriq berish"
       }
     },
     "audit": {
@@ -325,7 +343,16 @@
         "LETTER_ACCEPTED": "xat ijrosini qabul qildi",
         "LETTER_SIGNED": "xat javobini imzoladi",
         "LETTER_DISPATCHED": "javob xatini jo'natdi",
-        "LETTER_CLOSED": "xatni yopdi"
+        "LETTER_CLOSED": "xatni yopdi",
+        "TASK_CREATED": "topshiriq yaratdi",
+        "TASK_UPDATED": "topshiriqni tahrirladi",
+        "TASK_STARTED": "topshiriqni boshladi",
+        "TASK_CLARIFICATION_REQUESTED": "izoh so'radi",
+        "TASK_CLARIFICATION_ANSWERED": "izohga javob berdi",
+        "TASK_SUBMITTED": "topshiriqni topshirdi",
+        "TASK_ACCEPTED": "topshiriqni qabul qildi",
+        "TASK_RETURNED": "topshiriqni qaytardi",
+        "TASK_REJECTED": "topshiriqni rad etdi"
       }
     },
     "documents": {
@@ -773,6 +800,196 @@
           "cta": "Jo'natish",
           "success": "{{number}} raqami bilan jo'natildi"
         }
+      }
+    },
+    "tasks": {
+      "errors": {
+        "not-assigner": "Bu amalni faqat topshiriq beruvchi bajara oladi.",
+        "not-assignee": "Bu amalni faqat ijrochi bajara oladi.",
+        "out-of-scope": "Ijrochi sizning bo'linmangizga tegishli emas.",
+        "wrong-status": "Bu amal topshiriqning joriy holatida mumkin emas.",
+        "reason-required": "Sabab kiritilishi shart.",
+        "self-assign": "O'zingizga topshiriq biriktira olmaysiz.",
+        "invalid-move": "Bu o'tkazish mumkin emas."
+      },
+      "board": {
+        "col-new": "Yangi",
+        "col-in-progress": "Ijroda",
+        "col-under-review": "Ko'rib chiqilmoqda",
+        "col-done": "Bajarildi"
+      },
+      "priority": {
+        "HIGH": "Yuqori",
+        "MEDIUM": "O'rta",
+        "STANDARD": "Oddiy"
+      },
+      "card": {
+        "deadline": "Muddat",
+        "overdue": "Muddati o'tgan",
+        "assigner": "Topshiruvchi",
+        "assignee": "Ijrochi"
+      },
+      "title": "Topshiriqlar",
+      "cta-create": "Yangi topshiriq",
+      "empty-page": "Topshiriqlar yo'q",
+      "error": "Topshiriqlarni yuklashda xatolik yuz berdi",
+      "box": {
+        "by-me": "Men bergan",
+        "to-me": "Menga biriktirilgan"
+      },
+      "filters": {
+        "priority-all": "Barcha muhimlik",
+        "overdue": "Muddati o'tgan",
+        "search-placeholder": "Raqam yoki sarlavha bo'yicha qidirish"
+      },
+      "stats": {
+        "heading": "Statistika",
+        "overdue": "Muddati o'tgan",
+        "rejected": "Rad etilgan",
+        "load": "Yuklama"
+      },
+      "empty": "Bu ustunda topshiriqlar yo'q",
+      "create": {
+        "title": "Yangi topshiriq",
+        "label-title": "Sarlavha",
+        "label-description": "Tavsif",
+        "label-priority": "Muhimlik darajasi",
+        "label-assignee": "Ijrochi",
+        "label-deadline": "Muddat",
+        "label-attachment": "Fayl ilova (ixtiyoriy)",
+        "file-hint": "PDF, JPG yoki PNG · 10 MB gacha",
+        "err-title": "Sarlavha kamida 3 ta belgi bo'lishi kerak",
+        "err-description": "Tavsif kiritilishi shart",
+        "err-assignee": "Ijrochi tanlanishi shart",
+        "err-deadline": "Muddat kiritilishi shart",
+        "on-leave-warning": "{{name}} hozir ta'tilda",
+        "past-deadline-confirm": "Muddat o'tib ketgan. Davom etish uchun yana \"Yaratish\" tugmasini bosing.",
+        "file-format-error": "Faqat PDF, JPG yoki PNG fayllar qabul qilinadi",
+        "file-too-large": "Fayl hajmi 10 MB dan oshmasligi kerak",
+        "assignee-empty": "Sizning bo'linmangizda ijrochilar topilmadi",
+        "cta-submit": "Yaratish",
+        "success": "{{number}} topshirig'i yaratildi"
+      },
+      "actions": {
+        "start": "Boshlash",
+        "submit": "Topshirish",
+        "request-clarification": "Izoh so'rash",
+        "answer": "Javob berish",
+        "accept": "Qabul qilish",
+        "accept-note": "Izoh bilan qabul",
+        "return": "Qaytarish",
+        "reject": "Rad etish",
+        "edit": "Tahrirlash",
+        "extend": "Muddatni uzaytirish",
+        "waiting": "Hozir {{name}} navbati",
+        "done-closed": "Topshiriq yakunlandi",
+        "rejected-closed": "Topshiriq rad etilgan",
+        "start-success": "Topshiriq bajarilishga olindi"
+      },
+      "dialogs": {
+        "submit": {
+          "title": "Ijroni topshirish",
+          "summary": "Bajarilgan ish bayoni",
+          "summary-placeholder": "Nima qilinganini qisqacha yozing",
+          "err-summary": "Bajarilgan ish bayoni kiritilishi shart",
+          "attachment-kind": "Ilova turi",
+          "kind-file": "Fayl yuklash",
+          "kind-document": "Hujjatni biriktirish",
+          "kind-none": "Ilovasiz",
+          "file-label": "Natija fayli",
+          "file-hint": "PDF, JPG yoki PNG · 10 MB gacha",
+          "document-label": "Hujjat",
+          "document-placeholder": "Hujjatni tanlang",
+          "no-documents": "Sizda biriktiriladigan hujjat yo'q",
+          "no-attachment-confirm": "Ilovasiz topshirilsinmi?",
+          "cta": "Topshirish",
+          "cta-confirm": "Ha, topshirilsin",
+          "success": "Ijro qabul qilish uchun topshirildi"
+        },
+        "review": {
+          "title": "Ijroni ko'rib chiqish",
+          "description": "Topshiriq bo'yicha qarorni tanlang.",
+          "option": {
+            "ACCEPT": "Qabul qilish",
+            "ACCEPT_WITH_NOTE": "Izoh bilan qabul qilish",
+            "RETURN": "Qayta ishlashga qaytarish",
+            "REJECT": "Rad etish"
+          },
+          "option-hint": {
+            "ACCEPT": "Topshiriq bajarilgan deb belgilanadi.",
+            "ACCEPT_WITH_NOTE": "Qabul qilinadi, izoh ijrochiga yetkaziladi.",
+            "RETURN": "Ijrochi qayta ishlashi uchun qaytariladi.",
+            "REJECT": "Topshiriq yakuniy rad etiladi."
+          },
+          "note-label": "Izoh (ixtiyoriy)",
+          "note-placeholder": "Ijrochiga izoh qoldiring",
+          "reason-label": "Sabab",
+          "reason-placeholder": "Qaytarish yoki rad etish sababini yozing",
+          "reason-required": "Sabab kamida 5 ta belgi bo'lishi kerak",
+          "consequence-RETURN": "Topshiriq qayta ishlashga qaytariladi.",
+          "consequence-REJECT": "Topshiriq rad etiladi.",
+          "cta": "Tasdiqlash",
+          "success-accept": "Topshiriq qabul qilindi",
+          "success-return": "Topshiriq qayta ishlashga qaytarildi",
+          "success-reject": "Topshiriq rad etildi"
+        },
+        "clarification": {
+          "request-title": "Izoh so'rash",
+          "reply-title": "Izohga javob berish",
+          "body-label": "Xabar",
+          "request-placeholder": "Topshiriq bo'yicha savolingizni yozing",
+          "reply-placeholder": "Javobingizni yozing",
+          "err-body": "Xabar kiritilishi shart",
+          "request-cta": "So'rash",
+          "reply-cta": "Javob berish",
+          "request-success": "Izoh so'rovi yuborildi",
+          "reply-success": "Javob yuborildi"
+        },
+        "edit": {
+          "title": "Topshiriqni tahrirlash",
+          "cta": "Saqlash",
+          "success": "Topshiriq yangilandi"
+        },
+        "extend": {
+          "title": "Muddatni uzaytirish",
+          "deadline-label": "Yangi muddat",
+          "err-deadline": "Muddat kiritilishi shart",
+          "cta": "Saqlash",
+          "success": "Muddat yangilandi"
+        }
+      },
+      "detail": {
+        "back": "Topshiriqlarga qaytish",
+        "not-found": "Topshiriq topilmadi",
+        "description-heading": "Tavsif",
+        "deliverable-heading": "Ijro natijasi",
+        "deliverable-empty": "Hali ijro natijasi topshirilmagan",
+        "deliverable-late": "Kechikkan",
+        "comments-heading": "Izohlar",
+        "comments-empty": "Hozircha izohlar yo'q",
+        "comment-kind": {
+          "CLARIFICATION_REQUEST": "Izoh so'rovi",
+          "CLARIFICATION_REPLY": "Javob",
+          "RETURN_FEEDBACK": "Qaytarish izohi",
+          "REJECT_REASON": "Rad etish sababi",
+          "NOTE": "Eslatma"
+        },
+        "meta": {
+          "heading": "Ma'lumotlar",
+          "assigner": "Topshiruvchi",
+          "assignee": "Ijrochi",
+          "unit": "Bo'linma",
+          "deadline": "Muddat",
+          "priority": "Muhimlik",
+          "round": "Tur",
+          "late": "Kechikish",
+          "created": "Yaratilgan"
+        },
+        "attached-heading": "Biriktirilgan hujjat",
+        "attached-empty": "Hujjat mavjud emas",
+        "outcome-heading": "Ko'rib chiqish natijasi",
+        "outcome-note": "Izoh",
+        "outcome-rejected": "Rad etish sababi"
       }
     },
     "profile": {

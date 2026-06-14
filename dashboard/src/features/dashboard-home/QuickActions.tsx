@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
+  ClipboardPlus,
   FilePlus2,
   FileText,
   KeySquare,
@@ -19,6 +20,8 @@ interface Item {
   key: string;
   /** When set, the tile renders only if the acting persona has the role. */
   devonxonaOnly?: boolean;
+  /** When set, the tile renders only if the acting persona is a manager. */
+  managerOnly?: boolean;
 }
 
 const items: Item[] = [
@@ -33,17 +36,27 @@ const items: Item[] = [
   { to: '/units', icon: Network, key: 'dashboard:home.quick.manage-units' },
   { to: '/certificates', icon: KeySquare, key: 'dashboard:home.quick.upload-cert' },
   { to: '/audit', icon: FileText, key: 'dashboard:home.quick.view-audit' },
+  {
+    to: '/tasks?create=1',
+    icon: ClipboardPlus,
+    key: 'dashboard:home.quick.give-task',
+    managerOnly: true,
+  },
 ];
 
 export default function QuickActions() {
   const { t } = useTranslation(['dashboard']);
   const acting = useActingEmployee();
   const isDevonxona = acting?.roles.includes('ROLE_DEVONXONA') ?? false;
+  const isManager = (acting?.headedUnitUuids.length ?? 0) > 0;
 
   // Letter registration is a Devonxona action — hide the tile for everyone
   // else (the backend enforces `not-devonxona` regardless; this is the
   // "don't render controls irrelevant to the role" admin pattern).
-  const visible = items.filter((it) => !it.devonxonaOnly || isDevonxona);
+  // "Topshiriq berish" is a manager action — hide for non-managers.
+  const visible = items.filter(
+    (it) => (!it.devonxonaOnly || isDevonxona) && (!it.managerOnly || isManager),
+  );
 
   return (
     <Card className="p-2">
