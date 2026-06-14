@@ -36,7 +36,7 @@
 
 ## Demo coverage (dashboard SPA)
 
-Which use cases are walkable in the interactive demo at `…/dashboard/`, and where. Milestone 1 (HR & ERI) shipped 2026-06-01; Milestone 2 (documents + letters) shipped 2026-06-13. Multi-actor flows are walked via the user-menu **POV switcher** (five seeded personas). Status reflects the demo only — production scope is unchanged. See [`../dashboard/QA_NOTES.md`](../dashboard/QA_NOTES.md).
+Which use cases are walkable in the interactive demo at `…/dashboard/`, and where. Milestone 1 (HR & ERI) shipped 2026-06-01; Milestone 2 (documents + letters) shipped 2026-06-13; Milestone 3 (task delegation) shipped 2026-06-14. Multi-actor flows are walked via the user-menu **POV switcher** (five seeded personas). Status reflects the demo only — production scope is unchanged. See [`../dashboard/QA_NOTES.md`](../dashboard/QA_NOTES.md).
 
 | UC | Demo route(s) | Status |
 |---|---|---|
@@ -46,10 +46,10 @@ Which use cases are walkable in the interactive demo at `…/dashboard/`, and wh
 | UC-04 Route document for approval | `/documents/new` (kelishuv varaqasi) → `/documents/:uuid` | ✅ Full (sequential chain; rework loop via `?edit=`) |
 | UC-05 Sign document with ERI | `/documents/:uuid` | 🟡 Simulated (1.5 s mocked E-IMZO handshake; no real plugin) |
 | UC-06 Participate in an approval chain | `/approvals` → `/documents/:uuid` | ✅ Full (decision / signature / acceptance queues, per persona) |
-| UC-07 Assign a task | — | ⬜ Milestone 3 (Task Delegation, BPMN 3.2) |
-| UC-08 Submit task deliverable | — | ⬜ Milestone 3 |
-| UC-09 Review task deliverable | — | ⬜ Milestone 3 |
-| UC-10 Monitor department dashboard | `/` (home) | 🟡 Partial (persona-aware M2 stat cards + pending-approvals alert + recent-activity; no charts/reporting yet) |
+| UC-07 Assign a task | `/tasks` (Kanban "Topshiriq berish" action + `CreateTaskDialog`) | ✅ Full (`TOP-2026/NNNN`; scope guard enforced) |
+| UC-08 Submit task deliverable | `/tasks/:uuid` (assignee action bar → submit deliverable dialog) | ✅ Full (moves task to Ko'rib chiqilmoqda) |
+| UC-09 Review task deliverable | `/tasks/:uuid` (assigner action bar → Accept / Accept-with-note / Return / Reject) | ✅ Full (all four review variants; reason required for Return/Reject) |
+| UC-10 Monitor department dashboard | `/` (home), `/tasks` (manager stats band) | 🟡 Partial (persona-aware stat cards + pending-approvals alert + pending-tasks alert + manager stats band with counts/overdue/load; no charts/reporting yet) |
 | UC-11 Export document to PDF/Word | `/documents/:uuid` | 🟡 Partial (browser print-to-PDF of the A4 preview; no Word export) |
 | UC-12 Email a document | `/documents/:uuid` | 🟡 Simulated ("Yuborildi (demo)" toast; no real send) |
 | UC-13 Register an inbound letter | `/letters` (Devonxona persona) | ✅ Full (`K-2026/NNNN`) |

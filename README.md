@@ -217,7 +217,7 @@ Backup restoration is tested monthly against a staging environment as part of th
 | Glossary (Uzbek/Russian terms) | All non-Uzbek-speaking team members | [`docs/glossary.md`](./docs/glossary.md) |
 | Competitive analysis & positioning | Sales, Product, BA | [`docs/competitive-analysis.md`](./docs/competitive-analysis.md) |
 | **HR & ERI module — focused TZ (Uzbek)** | Product, BA, Eng, QA — canonical spec for the dashboard's first milestone | [`docs/Plyma TZ xodim kiritish.docx`](./docs/Plyma%20TZ%20xodim%20kiritish.docx) |
-| **Dashboard build prompt set** (master + 22 step prompts; M1 HR & ERI + M2 document/letter flows) | AI assistants and contributors building the SPA | [`docs/dashboard-prompts/`](./docs/dashboard-prompts/) |
+| **Dashboard build prompt set** (master + step prompts; M1 HR & ERI + M2 document/letter flows + M3 task delegation) | AI assistants and contributors building the SPA | [`docs/dashboard-prompts/`](./docs/dashboard-prompts/) |
 | User manual (Uzbek) | End users, admins | `docs/user-manual-uz.md` |
 | Operations runbook | Sysadmins | `docs/operations/` |
 | BPMN business process diagrams | Business analysts | `docs/bpmn/` |

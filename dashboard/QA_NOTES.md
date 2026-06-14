@@ -150,6 +150,55 @@ These need DevTools / a real browser / a phone, and the **POV switcher** (user m
 
 ---
 
+## Milestone 3 QA — 2026-06-14 (task delegation)
+
+M3 wrap-up: task delegation (BPMN 3.2 / BP-2) is demo-complete. The Kanban board at `/tasks` and the task detail page at `/tasks/:uuid` are fully walkable via the POV switcher.
+
+### Automated checks
+
+| Check | Result |
+|---|---|
+| Production build (`npm run build`) | **2970 modules** · CSS · JS / **≪ 500 KB gzip** target **PASS** |
+| Bundle size vs. < 500 KB gzipped target | **PASS** |
+| i18n referenced-key resolution (whole `src`) | All static + dynamic-family roots resolve; 0 unresolved; UZ keys only (RU/EN fall back per roadmap) |
+| Cyrillic literals in `src` (excl. locale files) | Clean |
+| `toast.<level>("literal")` non-`t()` calls | Clean |
+| `PLYMA` / `PLYMO` in source | Clean |
+| `NotificationType` title keys — M3 additions (`TASK_*` ×7) | All keyed |
+| `AuditAction` — M3 additions (`TASK_*` ×9) | All keyed + icons in `audit-icons.ts` |
+| State-machine conformance (status literals in tasks code) | Clean — only `NEW`/`IN_PROGRESS`/`UNDER_REVIEW`/`DONE`/`REJECTED` (canonical) |
+| tsc (`--noEmit`) | Clean (only tolerated `set-state-in-effect` + RHF `incompatible-library` idioms) |
+| Lint (`eslint .`) | Clean (only the project's tolerated pre-existing clones) |
+| BP-2 node harness (full lifecycle walk) | **23/23 PASS** (initial run) |
+| BP-2 node harness re-run (post adversarial review fixes) | **15/15 PASS** |
+| Route reachability (`/tasks`, `/tasks/:uuid`) | All 200 |
+
+**Adversarial review findings — 4 confirmed, 4 fixed:**
+- **(A) Deadline date-only vs. ISO-timestamp mismatch** — `updateTask` stored deadlines as full ISO timestamps while the seed and the audit comparison used `YYYY-MM-DD` date-only strings. Scope-only edits produced phantom audit diffs ("deadline changed" when no deadline was touched). Fix: normalized `updateTask` + seed to date-only throughout. *(See LESSONS.md — Deadline date-only trap.)*
+- **(B) `CreateTaskDialog` forked `MetaFileField`** — the dialog had an inline copy of the attachment picker instead of reusing the shared `MetaFileField` primitive (introduced in post-M2 HR-attachments). Fix: refactored to import `MetaFileField` from `components/common`.
+- **(C) Duplicate `sr-only` overdue label on the detail hero** — two adjacent `sr-only` spans both announced "muddati o'tgan" to screen readers. Fix: removed the duplicate.
+- **(D) Two icons missing `aria-hidden`** — two purely decorative Lucide icons in the task action bar lacked `aria-hidden="true"`. Fix: added the attribute.
+
+### Pending observational sweep — M3 surfaces (human operator)
+
+These need DevTools / a real browser / a phone, and the **POV switcher** (user menu → "Rol almashtirish").
+
+- [ ] **Six-viewport sweep at 360 / 390 / 768 / 1024 / 1280 / 1920 px** — walk `/tasks` and `/tasks/:uuid`. Look for: Kanban columns clipping on narrow screens, card tap targets below 44 pt, the stats band reflow on mobile (collapses to a stacked list), drag handles not covering adjacent columns at 360 px.
+- [ ] **Touch-drag caveat on mobile board** — `@dnd-kit` drag is desktop-only (mouse events). On mobile ≤ `lg`, the board collapses to tabs (one column at a time); task movement uses the dialog-based action bar instead of drag. Confirm the column tabs render and the action dialogs open correctly on a real iPhone/Android.
+- [ ] **Keyboard-only task walk via the detail action bar** — from `/tasks`, Tab to a task card, Enter to open `/tasks/:uuid`, Tab to the action bar, complete the full BP-2 lifecycle (start → submit deliverable → accept/return) using only keyboard. No mouse. Confirm focus returns to the action bar after each dialog closes.
+- [ ] **`prefers-reduced-motion`** — toggle in DevTools Rendering panel and reload the Kanban. Card drag animations and column transitions should either skip or use instant transitions.
+- [ ] **Focus ring and contrast** — Tab through the Kanban board and the detail page. Confirm the emerald focus ring is visible on: task cards (drag handle), column headers, action bar buttons, dialog form fields.
+- [ ] **Drag-opens-dialog rollback-on-cancel** — drag a task to a column that requires input (e.g., In Progress → Under Review prompts for a deliverable). Cancel the dialog. Confirm the task card visually snaps back to its original column (optimistic UI rolled back) and no state change was written to the mock backend.
+- [ ] **Manager stats band** (manager personas only) — switch to Karimov (IT Departament rahbari) and confirm the stats band appears on `/tasks` showing task counts / overdue count / load-per-employee. Switch to Sobirova (XODIM) and confirm the stats band is absent.
+- [ ] **`PendingTasksAlert` on home** — on `/` as a manager persona with tasks in their queue, confirm the pending-tasks alert banner appears and links to `/tasks`. As a persona with no pending tasks, confirm it is absent.
+- [ ] **Lighthouse** — add `/tasks` and `/tasks/:uuid` to the standard route list; targets unchanged (Perf ≥ 85, A11y ≥ 95, Best Practices ≥ 95).
+
+### Known limitation — `getTask` view-scope
+
+`getTask(uuid)` is actor-less: navigating directly to `/tasks/:uuid` discloses task content (title, description, deliverable details) to any currently-signed-in persona, regardless of whether they are the assigner or assignee. Mutations (start, submit, accept, return, reject) remain policy-gated and are locked to the correct persona. **This matches the established M2 behavior** of `/documents/:uuid` and `/letters/:uuid`, which are also actor-less reads. It is not an M3 regression; logged here as a known demo limitation to align expectations. Addressing it would require threading `actorUuid` into all `getDocument` / `getLetter` / `getTask` reads — a consistent change deferred to a future pass.
+
+---
+
 ## Cross-references
 
 - Build prompt: [`docs/dashboard-prompts/15-final-qa.md`](../docs/dashboard-prompts/15-final-qa.md) · [`docs/dashboard-prompts/22-m2-home-qa.md`](../docs/dashboard-prompts/22-m2-home-qa.md)

@@ -79,9 +79,9 @@ The four-level Uzbek corporate hierarchy Devon models natively.
 | Term | Approx. English | Devon-specific meaning |
 |---|---|---|
 | **Vazifa** | Task | A named work item with an assignee, deadline, priority, and deliverable. |
-| **Vazifa doskasi** | Task board | The Kanban board (4 columns: New / In Progress / Under Review / Done). |
-| **Topshiriq** | Assignment / Order to execute | Often used interchangeably with *vazifa*; in some org cultures, *topshiriq* implies a more formal/written assignment. |
-| **Muddat** | Deadline / Term | The due date on a task or letter. |
+| **Vazifa doskasi** | Task board | The Kanban board (4 columns: Yangi / Ijroda / Ko'rib chiqilmoqda / Bajarildi; plus terminal Rad etilgan). |
+| **Topshiriq** | Task / Assignment | The BP-2 unit of delegated work. A manager (Rahbar or Bo'lim boshlig'i — the *assigner*) creates a topshiriq and assigns it to a single subordinate employee (*assignee / ijrochi*). Auto-numbered `TOP-{year}/{NNNN}`. Lifecycle: Yangi → Ijroda → Ko'rib chiqilmoqda → Bajarildi, with terminal Rad etilgan. The assigner reviews the deliverable and chooses Accept / Accept-with-note / Return for revision / Reject. Often used interchangeably with *vazifa*; in practice *topshiriq* implies a more formal manager-to-employee delegation. |
+| **Muddat** | Deadline / Term | The due date on a task or letter. Stored as a date-only value (`YYYY-MM-DD`). |
 | **Ustuvorlik** | Priority | High / Medium / Standard. |
 | **Natija** | Result / Deliverable | The artifact the assignee produces and submits for review. |
 | **Bildirishnoma** | Notification | An in-app, email, or push notification fired by Devon on a state change. |

@@ -74,10 +74,14 @@
 
 **Goal:** Work is assigned with clear scope and deadline; the deliverable is reviewed; the task is closed with an explicit outcome.
 
+**Demo:** Walkable end-to-end in the dashboard demo (Flow 7) — `/tasks` (Kanban board: Yangi / Ijroda / Ko'rib chiqilmoqda / Bajarildi; drag transitions are policy-gated; input-bearing moves open a dialog; `TOP-2026/NNNN` auto-numbering) → `/tasks/:uuid` (lifecycle action bar + clarification/comment thread). Walk it by switching personas in the user-menu POV switcher (Akhmedov → Sobirova; Karimov → Akhmedov within the IT Departament subtree). See [`../dashboard/QA_NOTES.md`](../dashboard/QA_NOTES.md).
+
+**Single-assignee canon:** each task has exactly one assignee. The BPMN 3.2 diagram's Xodim lane caption reads "Xodim yoki xodimlarga" (employee *or employees*) — this plural wording is superseded by the single-assignee product decision documented in UC-07/08/09 and §4.5. The PNG is not re-rendered; this text is authoritative.
+
 **Actors:**
 - **Manager** (Department Head or delegated assigner)
 - **Devon platform**
-- **Employee** (the assignee)
+- **Employee** (the assignee — single per task)
 
 ### Steps (swim lanes)
 
