@@ -655,7 +655,8 @@
         "received-at-required": "Kelgan sanani kiriting",
         "deadline-past": "Ijro muddati bugundan oldin bo'lishi mumkin emas",
         "submit": "Ro'yxatga olish",
-        "success": "{{number}} raqami bilan ro'yxatga olindi"
+        "success": "{{number}} raqami bilan ro'yxatga olindi",
+        "back": "Xatlar ro'yxatiga qaytish"
       },
       "channels": {
         "POCHTA": "Pochta",
@@ -851,6 +852,8 @@
       "empty": "Bu ustunda topshiriqlar yo'q",
       "create": {
         "title": "Yangi topshiriq",
+        "subtitle": "Bo'linmangiz xodimiga topshiriq bering",
+        "back": "Topshiriqlarga qaytish",
         "label-title": "Sarlavha",
         "label-description": "Tavsif",
         "label-priority": "Muhimlik darajasi",
