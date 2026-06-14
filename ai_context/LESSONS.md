@@ -61,6 +61,26 @@ When in doubt: if the same override would land on every consumer, push it into t
 
 ---
 
+## Data modeling
+
+### Deadline fields: store and compare as date-only (`YYYY-MM-DD`), not full ISO timestamps
+
+**Trap (2026-06-14, M3 adversarial review finding A):** `updateTask` was storing the deadline as a full ISO timestamp (e.g., `2026-06-30T00:00:00.000Z`) while the seed populated deadlines as date-only strings (`2026-06-30`) and audit comparisons used the date string from the task form. Result: a scope-only edit that didn't touch the deadline field would still produce a `TASK_UPDATED` audit entry showing `deadline: { from: "2026-06-30", to: "2026-06-30T00:00:00.000Z" }` — a phantom diff that polluted the audit trail and caused the verification harness deadline-assertion to fail.
+
+**Fix:** `updateTask` normalizes the deadline to date-only (`value.slice(0, 10)`) before writing it to storage. The seed produces date-only strings from the start. The audit `changes` block compares date-only against date-only — no phantom diffs.
+
+**Why this matters:** Devon's audit trail is append-only and legally significant. A phantom "deadline changed" entry is a correctness bug that undermines the audit's trustworthiness, even if the visual UI shows the right date.
+
+**How to apply:**
+- For any field that semantically represents a calendar date (deadline, hireDate, birthDate, receivedAt, etc.), store it as `YYYY-MM-DD` throughout: in the seed, in form values, in mutations, and in audit comparisons.
+- Do not let a `<input type="date">` value (date string) get written as a full ISO timestamp by passing it through `new Date(value).toISOString()` — that converts `"2026-06-30"` to `"2026-06-30T00:00:00.000Z"` and breaks date-only equality checks.
+- The `isLetterOverdue` helper already follows this pattern (comparing `letter.deadline` date string against `today` date string via `formatDate`). Match that pattern in all date-semantic fields.
+- If you need to check `deadline < today`, use a date-string comparison: `"2026-06-14" < "2026-06-30"` is correct for ISO 8601 date strings without timestamps.
+
+**Reference:** `dashboard/src/lib/mock-backend/index.ts` (`updateTask`), `dashboard/src/lib/mock-backend/seed.ts` (deadline values), M3 harness deadline assertions.
+
+---
+
 ## Mock backend
 
 ### Bump `SEED_VERSION` whenever `seed.ts` changes identity (rename, status mix, hierarchy)

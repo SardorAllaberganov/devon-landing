@@ -4,6 +4,59 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-06-14 — `/doc_sync` checkpoint (post M3 task delegation)
+
+Ran `/doc_sync` after the M3 build below. The full doc cascade was performed inline with the build; the explicit `/doc_sync` invocation was then a **verification sweep** that confirmed sync and **corrected residual drift** in the M3 work entry's "Files touched" list — it had carried hallucinated component names (`KanbanBoard`/`KanbanColumn`/`TaskActionBar`/`CommentThread`/`ManagerStatsBand`/"task utils") that don't match the actual tree (`TasksKanban`/`TasksTabsMobile`/`TaskFilters`/`TaskStatsBand` + `detail/{TaskActions,TaskCommentThread,SubmitDeliverableDialog,ReviewDialog,ClarificationDialog,EditTaskDialog,ExtendDeadlineDialog}`), plus a wrong type name (`Task` → `TaskEntity`, and `TaskValidationCode` lives in `errors.ts` not `domain.ts`). Both corrected. Verified consistent: `SEED_VERSION '12'` (seed.ts ↔ AI_CONTEXT), 2970-module build state, no hallucinated filenames anywhere in `ai_context/`/`docs/`/`QA_NOTES.md`.
+
+**Summary of cascade:** `README.md` (prompt-set row updated to cover M1 + M2 + M3); `docs/bpmn/README.md` (BP-2 row: "M3 — planned" → "M3 — shipped"); `docs/business-processes.md` (BP-2 gained a **Demo** line + single-assignee canon note; BPMN plural wording superseded); `docs/use-cases.md` (UC-07/08/09 flipped to ✅ Full with `/tasks` + `/tasks/:uuid` routes; UC-10 updated with manager stats band; milestone header updated to include M3 shipped 2026-06-14); `docs/glossary.md` (**Topshiriq** entry expanded with BP-2 semantics, assigner/assignee, Kanban columns, auto-number, single-assignee canon; **Muddat** note about date-only storage); `docs/product-specification.md` — **confirmed aligned, no edit** (§4.5 single assignee + 4 columns + Accept/Return/Reject all match what shipped); `dashboard/QA_NOTES.md` (new **Milestone 3 QA** section: automated results + adversarial review 4-found-4-fixed + observational sweep checklist + known `getTask` view-scope limitation); `ai_context/AI_CONTEXT.md` (M3 demo-complete paragraph, SEED_VERSION `'12'`, 2970 modules, "Next" section rewritten, known `getTask` limitation added to open questions); `ai_context/LESSONS.md` (deadline date-only trap entry added).
+
+**`product-specification.md` confirmed aligned reasoning:** §4.5 names single assignee (singular "assignee" throughout), 4 Kanban columns (New / In Progress / Under Review / Done), and the review actions (Accept / Return for revision / Reject). "Accept-with-note" is a sub-variant of Accept not enumerated separately in the spec — it adds a manager note to an otherwise accepted task, which is compatible with the spec's Accept action. No contradiction; no edit required.
+
+**Files touched (this checkpoint):** `README.md`, `docs/bpmn/README.md`, `docs/business-processes.md`, `docs/use-cases.md`, `docs/glossary.md`, `dashboard/QA_NOTES.md`, `ai_context/AI_CONTEXT.md`, `ai_context/LESSONS.md`, `ai_context/HISTORY.md` (this entry).
+
+---
+
+## 2026-06-14 — Milestone 3: Task Delegation (Kanban) — BP-2 demo-complete
+
+M3 build: full BP-2 task delegation lifecycle, built spec→plan→subagent-driven execution, verified 23/23 + 15/15, adversarial review 4-found-4-fixed. Started via `/start_task`; tracked with TodoWrite; no commit (working tree left for `/commit`).
+
+**What was built:**
+
+- **Kanban board at `/tasks`** — 4 columns (Yangi / Ijroda / Ko'rib chiqilmoqda / Bajarildi; Rad etilgan shown in the Bajarildi column). `@dnd-kit` drag-and-drop on desktop; policy-gated transitions (input-bearing moves open a dialog for comment or deliverable). Manager-only **stats band** (task counts / overdue / load-per-employee). Auto-numbering `TOP-2026/NNNN`. "Topshiriq berish" quick action → `CreateTaskDialog`.
+- **Detail page at `/tasks/:uuid`** — lifecycle action bar + clarification/comment thread. All BP-2 states: `NEW → IN_PROGRESS → UNDER_REVIEW → DONE` plus terminal `REJECTED`. `round` increments on return→resubmit. Four review variants: Accept / Accept-with-note / Return for revision / Reject (reason required for the latter two). Scope guard enforced: assignees must be within the assigner's org subtree; self-assign blocked.
+- **Home integration** — `PendingTasksAlert` banner on `/` for manager personas with tasks under review. Manager-only "Topshiriq berish" quick-action tile.
+- **Seed** (`SEED_VERSION = '12'`) — ~12 seeded tasks across all states within the IT Departament subtree; one overdue, one returned-round-2, one rejected, one accepted-late. `buildTaskAudit` seeds each task's full BP-2 audit trail. ~12 task notifications. Deadlines stored date-only (`YYYY-MM-DD`).
+- **Types/cross-cutting** — `AuditAction` += 9 `TASK_*`; `AuditResourceType` += `task`; `NotificationType` += 7 `TASK_*`; `AppNotification.resourceType` += `task`; `StatusBadge` += NEW / UNDER_REVIEW / DONE kinds; `audit-icons.ts` += 9 task icons. UZ copy only.
+- **Design spec** — [`docs/superpowers/specs/2026-06-14-m3-task-delegation-design.md`](../docs/superpowers/specs/2026-06-14-m3-task-delegation-design.md)
+- **Implementation plan** — [`docs/superpowers/plans/2026-06-14-m3-task-delegation.md`](../docs/superpowers/plans/2026-06-14-m3-task-delegation.md) (17 implementation tasks executed via subagent-driven development)
+
+**Verification:** `npm run build` clean — **2970 modules**, ≪ 500 KB gzip. tsc + lint clean. Node harness: **23/23** (full BP-2 walk, scope/self-assign guards, terminal immutability, audit-per-transition, notification routing) + **15/15 re-run** after fixes. Adversarial 2-dimension review (correctness/policy/state-machine + a11y/i18n/reuse) raised **4 confirmed findings — all fixed:** (A) deadline date-only vs. ISO-timestamp mismatch → `updateTask` + seed normalized to date-only; (B) `CreateTaskDialog` forked `MetaFileField` → refactored to reuse; (C) duplicate `sr-only` overdue label on detail hero → removed; (D) two icons missing `aria-hidden` → added.
+
+**Known limitation (logged, not fixed):** `getTask(uuid)` is actor-less, consistent with the existing M2 `getDocument` / `getLetter` pattern. Direct URL navigation discloses task content to any persona (read-only; mutations stay gated). Not an M3 regression.
+
+**Files touched:**
+- `dashboard/src/features/tasks/` (new tree — board: `TasksPage.tsx`, `TasksKanban.tsx`, `TasksTabsMobile.tsx`, `TaskCard.tsx`, `TaskFilters.tsx`, `TaskStatsBand.tsx`, `CreateTaskDialog.tsx`, `task.schema.ts`, `taskErrors.ts`; detail: `detail/{TaskDetailPage,TaskActions,TaskCommentThread,SubmitDeliverableDialog,ReviewDialog,ClarificationDialog,EditTaskDialog,ExtendDeadlineDialog}.tsx`)
+- `dashboard/src/features/dashboard-home/PendingTasksAlert.tsx` (new)
+- `dashboard/src/features/dashboard-home/QuickActions.tsx` (manager tile)
+- `dashboard/src/features/dashboard-home/DashboardHome.tsx` (alert integration)
+- `dashboard/src/lib/mock-backend/index.ts` (task mutations + reads)
+- `dashboard/src/lib/mock-backend/seed.ts` (`buildTaskAudit`; `SEED_VERSION` `'11'` → `'12'`)
+- `dashboard/src/lib/mock-backend/errors.ts` (`TaskValidationError`)
+- `dashboard/src/lib/mock-backend/schemas.ts` (task zod schemas)
+- `dashboard/src/lib/mock-backend/storage.ts` (`tasks` table)
+- `dashboard/src/types/domain.ts` (`TaskEntity`, `TaskStatus`, `TaskPriority`, `TaskCommentKind`, `TaskComment`, `TaskDeliverable`; `AuditAction` += 9 `TASK_*`; `AuditResourceType` += `task`; `NotificationType` += 7 `TASK_*`; `AppNotification.resourceType` += `task`) — note `TaskValidationCode` lives in `errors.ts`, not `domain.ts`
+- `dashboard/src/lib/audit-icons.ts` (9 task action icons)
+- `dashboard/src/components/common/StatusBadge.tsx` (NEW / UNDER_REVIEW / DONE kinds)
+- `dashboard/src/components/layout/Sidebar.tsx` ("Topshiriqlar" nav item)
+- `dashboard/src/router.tsx` (`/tasks` + `/tasks/:uuid` routes)
+- `dashboard/src/i18n/locales/uz.json` (all task + notification + audit copy)
+- `dashboard/src/features/notifications/NotificationsList.tsx` (TASK_* icon entries)
+- `docs/superpowers/specs/2026-06-14-m3-task-delegation-design.md` (new)
+- `docs/superpowers/plans/2026-06-14-m3-task-delegation.md` (new)
+- `docs/bpmn/README.md`, `docs/business-processes.md`, `docs/use-cases.md`, `docs/glossary.md`, `dashboard/QA_NOTES.md`, `ai_context/AI_CONTEXT.md`, `ai_context/LESSONS.md`, `ai_context/HISTORY.md` (doc cascade — this `/doc_sync` pass)
+
+---
+
 ## 2026-06-14 — `/doc_sync` checkpoint (post step 22)
 
 Ran `/doc_sync` after the step-22 M2 wrap-up below. Step 22's task 4 had already executed the full doc cascade inline, so this pass was a **verification sweep that confirmed no residual drift** rather than a fix pass:
