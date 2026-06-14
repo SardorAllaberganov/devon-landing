@@ -4,6 +4,34 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-06-14 — `/doc_sync` checkpoint (post operations-runbook authoring)
+
+Ran `/doc_sync` after authoring `docs/operations/`. The doc cascade had already been performed inline with the runbook build, so this pass was a **verification sweep confirming sync** — no new edits were needed.
+
+- **Template-mismatch reasoning** (as in every prior checkpoint): Devon has no `docs/product_states.md` / `docs/models.md` / `docs/product_requirements_document.md` / `docs/mermaid_schemas/` — its equivalents are `README.md`, `docs/product-specification.md`, `docs/business-processes.md`, `docs/use-cases.md`, `docs/glossary.md` (+ `docs/bpmn/` PNGs). All were checked.
+- **No module/surface status flip; no schema / state / error-code / route / flow / persona / NFR change** — the operations runbook *consumes* existing canonical facts (backup cadence, rotation, RPO, uptime, P95 targets from `product-specification.md` §11/§14) rather than changing any. So the product-spec, business-processes, use-cases, and BPMN charts all stand untouched.
+- **Forward references now resolve:** `README.md` ("The full recovery runbook lives in `docs/operations/recovery.md`"; Support → `oncall.md`) and `docs/product-specification.md` §11.1/§11.3 (→ `recovery.md`) pointed at these files before they existed; the links now land.
+- **`AI_CONTEXT.md`** — verified the inline cascade: canonical-documents table gained an operations-runbook row; both the "Next" remaining-work item and the "Open questions" gap were flipped to resolved.
+- `SEED_VERSION` unchanged (`'12'`); no code touched. Working tree uncommitted, awaiting `/commit`.
+
+**Files touched:** `ai_context/HISTORY.md` (this entry only — the cascade itself landed in the runbook session below).
+
+---
+
+## 2026-06-14 — Operations runbook authored (`docs/operations/`)
+
+Filled the long-standing empty `docs/operations/` gap — flagged in `AI_CONTEXT.md` "Open questions" and referenced by `CLAUDE.md` as a source of truth, by `README.md` (Backup-and-recovery + Support sections), and by `docs/product-specification.md` §11.3. Wrote **five files**: a `README.md` index plus the four canonical runbooks `deployment.md` · `backup.md` · `recovery.md` · `oncall.md`.
+
+- **Grounded in real architecture, not invented topology.** Extracted the Laravel-stack facts from the canonical TLH [`docs/Plyma 19.03.2026.docx`](../docs/Plyma%2019.03.2026.docx) §4.1/§4.2 (via `textutil` docx→txt): Laravel 11 / PHP 8.3 monolith (Blade + Livewire 3 + Alpine.js), PostgreSQL 16, Redis, MinIO (S3-compatible, on-prem), Meilisearch (with PG-FTS fallback), beyondcode/laravel-websockets, Laravel Horizon, Docker Compose + Nginx + PHP-FPM, `phpseclib` ERI against a local PKI CA, Postfix internal SMTP, owen-it/laravel-auditing.
+- **Canonical ops facts mirrored, not re-invented.** Backup window (nightly **02:00**), rotation (**30 daily / 12 weekly / 24 monthly**), org-backup-key encryption, monthly restore drill against staging, **99.5%** business-hours uptime, and the **P95 NFR targets** all sourced from `product-specification.md` §11/§14 + the README — the runbook defers to those (source-wins rule). Derived **RPO ≤ 24h** (from nightly cadence) and tiered **RTO** targets (1h single-item / 4h DB / 1 business-day full DR).
+- **Compliance discipline threaded throughout** per `CLAUDE.md`: append-only audit log must be restored exactly and never edited; signed-document protection must survive recovery; data sovereignty holds even mid-incident (nothing leaves on-prem, no external paging/telemetry); `APP_KEY` + `BACKUP_ENCRYPTION_KEY` are DR-critical and stored off-host. `oncall.md` carries severity tiers (SEV1–4, with audit/signed-doc/encryption/sovereignty issues = SEV1 by default), 9 first-response playbooks, a "do-not" guardrail list, and shift/handover checklists.
+- **The one intentional tech-stack surface.** Per the brand-voice rule (no stack in README/landing/product-spec), the operations runbook is explicitly the place engineering specifics belong — audience is sysadmins, not buyers. Each file states this and points back at its source of truth.
+- **Doc cascade:** `README.md` Documentation table row upgraded to a clickable link with the four-runbook breakdown; `AI_CONTEXT.md` gained a canonical-docs table row and had both the "Next" item and the "Open questions" gap flipped to resolved.
+
+**Files touched:** `docs/operations/README.md`, `docs/operations/deployment.md`, `docs/operations/backup.md`, `docs/operations/recovery.md`, `docs/operations/oncall.md` (all created), `README.md`, `ai_context/AI_CONTEXT.md`, `ai_context/HISTORY.md`. No code touched; `SEED_VERSION` unchanged (`'12'`). Working tree uncommitted, awaiting `/commit`.
+
+---
+
 ## 2026-06-14 — `/doc_sync` checkpoint (post user-manual authoring)
 
 Ran `/doc_sync` after authoring `docs/user-manual-uz.md`. The doc cascade had already been performed inline with the manual build, so this pass was a **verification sweep confirming sync**, plus one small addition:
