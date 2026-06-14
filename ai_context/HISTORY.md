@@ -4,6 +4,18 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-06-14 — `/doc_sync` checkpoint (mid brand restyle — dashboard rebranded)
+
+Ran `/doc_sync` after **Phase B** of the brand restyle landed in the working tree. The rebrand replaces Devon's warm emerald/cream/cinnamon + Inter/Fraunces identity with the new **blue `#0878FE` / navy `#011528` "cool corporate"** system + **Craftwork Grotesk** (display) / **Inter** (body), per the delivered brand assets. Work is on branch `feature/brand-restyle`, **uncommitted** (per the repo's "no commit without `/commit`" rule).
+
+- **State captured this pass:** Dashboard is fully rebranded (in working tree); landing page recolor (Phase C) and the LESSONS/ADR/QA_NOTES doc cascade (Phase D) are **still pending**. `landing/index.html` therefore still shows the OLD warm design.
+- **What landed (Phase A + B):** self-hosted fonts (Craftwork Grotesk woff2 in `dashboard/src/assets/fonts/`, Inter via `@fontsource/inter`) — **Google Fonts removed** (on-premise); `dashboard/src/index.css` palette rewrite (shadcn vars + renamed `--color-*` brand tokens: `emerald→primary`/`brand`, `cream→canvas`, `cream-deep/warm→surface-2`, `cinnamon→warning`, `signal→success`; neutral names kept + repointed; new `success/warning/error` + darker `*-fg` badge foregrounds for WCAG AA); `--font-display` = Craftwork Grotesk on headings/buttons/wordmark/stat numerals/slogan, `--font-sans` = Inter on body/tables; Fraunces removed; `BrandMark` icon component + mixed-case "Devon" wordmark in Sidebar/TopBar/Login; new blue favicon; `theme-color` → navy. White sidebar (cool-corporate). ~90 dashboard files swept; build clean (196 KB JS gzip), tsc clean, lint at baseline. A two-stage subagent review caught and fixed: AA badge-foreground contrast, white sidebar, a duplicate token, and an orphaned `signal` tone.
+- **Template-mismatch reasoning (as every prior checkpoint):** Devon has no `docs/product_states.md` / `docs/models.md` / `docs/product_requirements_document.md` / `docs/mermaid_schemas/`. A **visual rebrand changes no product/persona/feature/NFR/route/flow/schema/state/error-code** — so `product-specification.md`, `business-processes.md`, `use-cases.md`, `glossary.md`, BPMN, and `README.md` all stand untouched. This sync is **AI_CONTEXT + HISTORY only**; LESSONS + the first ADR (`docs/adr/0001-brand-restyle.md`) + QA_NOTES are authored in Phase D.
+- **Files touched (this checkpoint):** `ai_context/AI_CONTEXT.md` (dashboard "Visual direction" rewritten for the new system; landing section flagged "rebrand pending — Phase C"), `ai_context/HISTORY.md` (this entry).
+- **Artifacts:** spec [`docs/superpowers/specs/2026-06-14-brand-restyle-design.md`](../docs/superpowers/specs/2026-06-14-brand-restyle-design.md); plan [`docs/superpowers/plans/2026-06-14-brand-restyle.md`](../docs/superpowers/plans/2026-06-14-brand-restyle.md).
+
+---
+
 ## 2026-06-14 — `/doc_sync` checkpoint (post code-splitting + dead-primitive cleanup)
 
 Ran `/doc_sync` after the code-splitting + cleanup work (entry below). The doc cascade had already been performed inline with that change, so this pass was a **verification sweep confirming sync** — no new doc edits were needed beyond this checkpoint.
