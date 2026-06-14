@@ -17,9 +17,11 @@ import EmployeeWizardPage from '@/features/employees/wizard/EmployeeWizardPage';
 import EmployeeProfilePage from '@/features/employees/profile/EmployeeProfilePage';
 import EmployeeTransferPage from '@/features/employees/assignments/EmployeeTransferPage';
 import LettersPage from '@/features/letters/LettersPage';
+import RegisterLetterPage from '@/features/letters/RegisterLetterPage';
 import LetterDetailPage from '@/features/letters/detail/LetterDetailPage';
 import ProfilePage from '@/features/profile/ProfilePage';
 import TasksPage from '@/features/tasks/TasksPage';
+import CreateTaskPage from '@/features/tasks/CreateTaskPage';
 import TaskDetailPage from '@/features/tasks/detail/TaskDetailPage';
 import UnitsPage from '@/features/units/UnitsPage';
 
@@ -164,6 +166,14 @@ export default function Router() {
         }
       />
       <Route
+        path="/letters/new"
+        element={
+          <ProtectedNoShell>
+            <RegisterLetterPage />
+          </ProtectedNoShell>
+        }
+      />
+      <Route
         path="/letters/:uuid"
         element={
           <Protected>
@@ -177,6 +187,14 @@ export default function Router() {
           <Protected>
             <TasksPage />
           </Protected>
+        }
+      />
+      <Route
+        path="/tasks/new"
+        element={
+          <ProtectedNoShell>
+            <CreateTaskPage />
+          </ProtectedNoShell>
         }
       />
       <Route

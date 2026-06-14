@@ -28,7 +28,7 @@ const items: Item[] = [
   { to: '/employees/new', icon: UserPlus, key: 'dashboard:home.quick.new-employee' },
   { to: '/documents/new', icon: FilePlus2, key: 'dashboard:home.quick.new-document' },
   {
-    to: '/letters?register=1',
+    to: '/letters/new',
     icon: MailPlus,
     key: 'dashboard:home.quick.register-letter',
     devonxonaOnly: true,
@@ -37,7 +37,7 @@ const items: Item[] = [
   { to: '/certificates', icon: KeySquare, key: 'dashboard:home.quick.upload-cert' },
   { to: '/audit', icon: FileText, key: 'dashboard:home.quick.view-audit' },
   {
-    to: '/tasks?create=1',
+    to: '/tasks/new',
     icon: ClipboardPlus,
     key: 'dashboard:home.quick.give-task',
     managerOnly: true,

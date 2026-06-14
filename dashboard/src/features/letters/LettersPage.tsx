@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Inbox, Mail, Plus, Send } from 'lucide-react';
 
@@ -19,7 +19,6 @@ import type { Letter, LetterDirection } from '@/types/domain';
 import LetterFilters from './LetterFilters';
 import LetterCardMobile from './LetterCardMobile';
 import LettersTable from './LettersTable';
-import RegisterLetterDialog from './RegisterLetterDialog';
 import { defaultFilters, type LettersFiltersState } from './filters';
 
 const TAB_TRIGGER_CN =
@@ -38,6 +37,7 @@ export default function LettersPage() {
   const { t } = useTranslation(['dashboard', 'common']);
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const acting = useActingEmployee();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [tab, setTab] = useState<LetterDirection>('INCOMING');
@@ -45,7 +45,6 @@ export default function LettersPage() {
   const [letters, setLetters] = useState<Letter[] | null>(null);
   const [error, setError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
-  const [registerOpen, setRegisterOpen] = useState(false);
 
   // Registry CTA is Devonxona-only; the policy layer enforces regardless
   // (a console call from any other persona throws `not-devonxona`).
@@ -60,18 +59,6 @@ export default function LettersPage() {
     next.delete('overdue');
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
-
-  // Deep-link from the home "Xat ro'yxatga olish" quick action: open the
-  // register dialog once the acting persona resolves (so the role is known).
-  // Consume the param either way so it can't linger and re-open on refresh.
-  useEffect(() => {
-    if (!acting) return;
-    if (searchParams.get('register') !== '1') return;
-    if (isDevonxona) setRegisterOpen(true);
-    const next = new URLSearchParams(searchParams);
-    next.delete('register');
-    setSearchParams(next, { replace: true });
-  }, [acting, isDevonxona, searchParams, setSearchParams]);
 
   // Static lookups for the Bo'linma / Ijrochi column — fetched once on mount.
   const [unitNames, setUnitNames] = useState<Map<string, string>>(new Map());
@@ -137,7 +124,7 @@ export default function LettersPage() {
         subtitle={t('dashboard:letters.registry.subtitle')}
         actions={
           isDevonxona ? (
-            <Button onClick={() => setRegisterOpen(true)} className="w-full md:w-auto">
+            <Button onClick={() => navigate('/letters/new')} className="w-full md:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               {t('dashboard:letters.registry.cta-register')}
             </Button>
@@ -203,15 +190,6 @@ export default function LettersPage() {
           </TabsContent>
         ))}
       </Tabs>
-
-      {acting && (
-        <RegisterLetterDialog
-          open={registerOpen}
-          onOpenChange={setRegisterOpen}
-          actorUuid={acting.employee.uuid}
-          onDone={() => setRetryKey((k) => k + 1)}
-        />
-      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ClipboardList, Plus } from 'lucide-react';
 
@@ -15,7 +15,6 @@ import { listTasks } from '@/lib/mock-backend';
 import { useMediaQuery } from '@/lib/use-media-query';
 import type { TaskEntity } from '@/types/domain';
 
-import CreateTaskDialog from './CreateTaskDialog';
 import ReviewDialog from './detail/ReviewDialog';
 import SubmitDeliverableDialog from './detail/SubmitDeliverableDialog';
 import TaskFilters, {
@@ -101,7 +100,7 @@ export default function TasksPage() {
   const { t } = useTranslation(['dashboard', 'common']);
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const acting = useActingEmployee();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const isManager = (acting?.headedUnitUuids.length ?? 0) > 0;
 
@@ -120,23 +119,10 @@ export default function TasksPage() {
   const [error, setError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [version, setVersion] = useState(0);
-  const [createOpen, setCreateOpen] = useState(false);
 
   // Board drops that need a dialog (submit deliverable / review decision) lift
   // their request here; the page hosts the matching dialog. Null = closed.
   const [transition, setTransition] = useState<TaskTransitionRequest | null>(null);
-
-  // Deep-link: ?create=1 opens the create dialog once acting resolves (managers only).
-  // Strip the param either way so it doesn't linger on refresh.
-  useEffect(() => {
-    if (!acting) return;
-    if (searchParams.get('create') !== '1') return;
-    if (isManager) setCreateOpen(true); // eslint-disable-line react-hooks/set-state-in-effect
-    const next = new URLSearchParams(searchParams);
-    next.delete('create');
-    setSearchParams(next, { replace: true });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [acting, isManager]);
 
   // Fetch tasks whenever acting persona, box, filters, or version changes.
   useEffect(() => {
@@ -193,7 +179,7 @@ export default function TasksPage() {
         title={t('dashboard:tasks.title')}
         actions={
           isManager ? (
-            <Button onClick={() => setCreateOpen(true)} className="w-full md:w-auto">
+            <Button onClick={() => navigate('/tasks/new')} className="w-full md:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               {t('dashboard:tasks.cta-create')}
             </Button>
@@ -244,16 +230,6 @@ export default function TasksPage() {
           <TaskFilters filters={filters} onChange={setFilters} />
           <BoardSection {...boardProps} currentBox="assigned-to-me" />
         </div>
-      )}
-
-      {/* Create dialog — managers only */}
-      {isManager && (
-        <CreateTaskDialog
-          open={createOpen}
-          onOpenChange={setCreateOpen}
-          acting={acting}
-          onCreated={bumpVersion}
-        />
       )}
 
       {/* Board-drop transition dialogs — hosted at the page so the card moves
