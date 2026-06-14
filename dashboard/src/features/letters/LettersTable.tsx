@@ -31,7 +31,7 @@ export default function LettersTable({ rows, unitNames, employeeNames }: Props) 
   return (
     <div className="overflow-hidden rounded-lg border border-line bg-surface">
       <Table>
-        <TableHeader className="bg-cream-warm/40">
+        <TableHeader className="bg-surface-2/40">
           <TableRow>
             <TableHead>{t('dashboard:letters.registry.col-number')}</TableHead>
             <TableHead>{t('dashboard:letters.registry.col-org')}</TableHead>
@@ -53,7 +53,7 @@ export default function LettersTable({ rows, unitNames, employeeNames }: Props) 
             return (
               <TableRow
                 key={letter.uuid}
-                className="cursor-pointer hover:bg-cream-warm/30"
+                className="cursor-pointer hover:bg-surface-2/30"
                 onClick={() => navigate(`/letters/${letter.uuid}`)}
               >
                 <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">

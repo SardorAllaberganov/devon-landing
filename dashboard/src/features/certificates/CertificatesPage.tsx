@@ -225,7 +225,7 @@ export default function CertificatesPage() {
       />
 
       {selected.size > 0 && (
-        <Alert className="flex flex-col gap-3 border-emerald/30 bg-cream-deep md:flex-row md:items-center md:justify-between">
+        <Alert className="flex flex-col gap-3 border-primary/30 bg-surface-2 md:flex-row md:items-center md:justify-between">
           <AlertDescription className="text-ink">
             {t('dashboard:certificates.bulk.selected', { count: selected.size })}
           </AlertDescription>

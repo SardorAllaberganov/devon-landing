@@ -170,7 +170,7 @@ export default function SubmitDeliverableDialog({
               <Label
                 key={k}
                 htmlFor={`submit-kind-${k}`}
-                className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border border-line bg-surface p-3 text-sm has-[[data-state=checked]]:border-emerald has-[[data-state=checked]]:bg-emerald-soft/30"
+                className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border border-line bg-surface p-3 text-sm has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-brand-soft/30"
               >
                 <RadioGroupItem id={`submit-kind-${k}`} value={k} />
                 {t(`dashboard:tasks.dialogs.submit.kind-${k}`)}

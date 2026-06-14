@@ -14,6 +14,7 @@ import {
   Users,
 } from 'lucide-react';
 
+import { BrandMark } from '@/components/common/BrandMark';
 import { useActingEmployee } from '@/lib/acting';
 import { listMyApprovals } from '@/lib/mock-backend';
 import { cn } from '@/lib/utils';
@@ -76,10 +77,10 @@ export default function Sidebar({ onNavigate }: Props) {
   }, [actingUuid, version, setCount]);
 
   return (
-    <nav className="flex h-full flex-col bg-cream-deep border-r border-line">
+    <nav className="flex h-full flex-col bg-surface border-r border-line">
       <div className="flex h-16 items-center gap-3 border-b border-line/60 px-6">
-        <span aria-hidden className="block h-3 w-3 rotate-45 bg-emerald" />
-        <span className="font-black text-lg tracking-[0.16em] text-ink">DEVON</span>
+        <BrandMark className="size-7 text-brand" />
+        <span className="font-display text-xl font-extrabold tracking-tight text-ink">Devon</span>
       </div>
 
       <div className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
@@ -102,7 +103,7 @@ export default function Sidebar({ onNavigate }: Props) {
       </div>
 
       <div className="border-t border-line/60 px-6 py-4">
-        <p className="font-serif text-sm text-cinnamon">
+        <p className="font-display text-sm text-primary">
           {t('dashboard:sidebar.footer-slogan')}
         </p>
       </div>
@@ -138,8 +139,8 @@ function NavSection({ title, items, badges, onNavigate }: SectionProps) {
                   cn(
                     'flex h-11 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors',
                     isActive
-                      ? 'bg-emerald text-cream'
-                      : 'text-body hover:bg-cream/60 hover:text-ink',
+                      ? 'bg-primary text-canvas'
+                      : 'text-body hover:bg-surface-2 hover:text-ink',
                   )
                 }
               >
@@ -151,7 +152,7 @@ function NavSection({ title, items, badges, onNavigate }: SectionProps) {
                       <span
                         className={cn(
                           'flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold tabular-nums',
-                          isActive ? 'bg-cream text-emerald' : 'bg-cinnamon text-cream',
+                          isActive ? 'bg-canvas text-primary' : 'bg-warning text-canvas',
                         )}
                       >
                         {badge > 9 ? '9+' : badge}

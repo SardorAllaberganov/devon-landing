@@ -52,26 +52,26 @@ const COLUMNS: Array<{
 }> = [
   {
     key: 'NEW',
-    headerBg: 'bg-cream-deep',
+    headerBg: 'bg-surface-2',
     headerText: 'text-ink-soft',
     labelKey: 'dashboard:tasks.board.col-new',
   },
   {
     key: 'IN_PROGRESS',
-    headerBg: 'bg-cinnamon-soft',
-    headerText: 'text-cinnamon',
+    headerBg: 'bg-warning-soft',
+    headerText: 'text-warning',
     labelKey: 'dashboard:tasks.board.col-in-progress',
   },
   {
     key: 'UNDER_REVIEW',
-    headerBg: 'bg-cinnamon-soft',
-    headerText: 'text-cinnamon',
+    headerBg: 'bg-warning-soft',
+    headerText: 'text-warning',
     labelKey: 'dashboard:tasks.board.col-under-review',
   },
   {
     key: 'DONE',
-    headerBg: 'bg-emerald-soft',
-    headerText: 'text-emerald-deep',
+    headerBg: 'bg-brand-soft',
+    headerText: 'text-primary-deep',
     labelKey: 'dashboard:tasks.board.col-done',
   },
 ];
@@ -334,13 +334,13 @@ function DroppableColumn({
   return (
     <div
       ref={setNodeRef}
-      className="flex min-h-120 flex-col rounded-xl border border-line bg-cream-deep/40 p-3 transition-shadow"
+      className="flex min-h-120 flex-col rounded-xl border border-line bg-surface-2/40 p-3 transition-shadow"
     >
       <div className={`mb-3 flex items-center justify-between rounded-md px-3 py-2 ${headerBg}`}>
         <span className={`text-xs font-semibold uppercase tracking-wider ${headerText}`}>
           {label}
         </span>
-        <Badge variant="outline" className="border-line bg-cream tabular-nums">
+        <Badge variant="outline" className="border-line bg-canvas tabular-nums">
           {rows.length}
         </Badge>
       </div>

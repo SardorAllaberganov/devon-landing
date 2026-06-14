@@ -99,20 +99,20 @@ export default function StatsRow() {
         icon={Users}
         label={t('dashboard:home.stats.employees')}
         value={org.emp}
-        tone="emerald"
+        tone="primary"
       />
       <StatCard icon={Network} label={t('dashboard:home.stats.units')} value={org.units} />
       <StatCard
         icon={KeySquare}
         label={t('dashboard:home.stats.active-certs')}
         value={org.activeCerts}
-        tone="signal"
+        tone="neutral"
       />
       <StatCard
         icon={FileClock}
         label={t('dashboard:home.stats.my-approvals')}
         value={persona.myApprovals}
-        tone="cinnamon"
+        tone="warning"
         to="/approvals"
       />
       <StatCard

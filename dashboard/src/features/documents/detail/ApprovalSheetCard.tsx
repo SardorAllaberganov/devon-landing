@@ -34,12 +34,12 @@ const DECISION_BADGE: Record<
   },
   APPROVED: {
     icon: Check,
-    cls: 'bg-emerald-soft text-emerald-deep',
+    cls: 'bg-brand-soft text-primary-deep',
     key: 'dashboard:documents.detail.approval-sheet.decision.APPROVED',
   },
   APPROVED_WITH_COMMENT: {
     icon: MessageSquareText,
-    cls: 'bg-emerald-soft text-emerald-deep',
+    cls: 'bg-brand-soft text-primary-deep',
     key: 'dashboard:documents.detail.approval-sheet.decision.APPROVED_WITH_COMMENT',
   },
   REJECTED: {
@@ -132,10 +132,10 @@ export default function ApprovalSheetCard({
                   className={cn(
                     'absolute top-2 -left-[27px] h-3 w-3 rounded-full',
                     isCurrent
-                      ? 'border-2 border-emerald bg-surface ring-4 ring-emerald-soft'
+                      ? 'border-2 border-primary bg-surface ring-4 ring-brand-soft'
                       : step.decision === 'APPROVED' ||
                           step.decision === 'APPROVED_WITH_COMMENT'
-                        ? 'bg-emerald'
+                        ? 'bg-primary'
                         : step.decision === 'REJECTED'
                           ? 'bg-destructive'
                           : 'border-2 border-line bg-surface',
@@ -145,7 +145,7 @@ export default function ApprovalSheetCard({
                 <div className="rounded-lg border border-line bg-background/60 p-3">
                   <div className="flex items-start gap-2.5">
                     <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarFallback className="bg-emerald text-cream text-[10px] font-bold">
+                      <AvatarFallback className="bg-primary text-canvas text-[10px] font-bold">
                         {emp ? initials(emp.fullNameGenerated) : step.order}
                       </AvatarFallback>
                     </Avatar>
@@ -170,7 +170,7 @@ export default function ApprovalSheetCard({
                       {t(badge.key)}
                     </Badge>
                     {isCurrent && (
-                      <span className="text-xs font-medium text-emerald">
+                      <span className="text-xs font-medium text-primary">
                         {t('dashboard:documents.detail.approval-sheet.queue-here')}
                       </span>
                     )}

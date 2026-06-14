@@ -42,8 +42,8 @@ export default function PendingApprovalsAlert() {
   if (count === 0) return null;
 
   return (
-    <Alert className="border-emerald/30 bg-cream-warm text-ink">
-      <ClipboardCheck className="h-4 w-4 text-emerald" />
+    <Alert className="border-primary/30 bg-surface-2 text-ink">
+      <ClipboardCheck className="h-4 w-4 text-primary" />
       <AlertTitle className="text-ink">
         {t('dashboard:home.approvals-alert.title', { count })}
       </AlertTitle>
@@ -53,7 +53,7 @@ export default function PendingApprovalsAlert() {
           asChild
           variant="outline"
           size="sm"
-          className="border-emerald/40 bg-cream text-ink hover:bg-cream-deep"
+          className="border-primary/40 bg-canvas text-ink hover:bg-surface-2"
         >
           <Link to="/approvals">{t('dashboard:home.approvals-alert.cta')}</Link>
         </Button>

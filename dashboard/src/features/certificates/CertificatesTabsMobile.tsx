@@ -19,10 +19,10 @@ const STATUSES: Certificate['status'][] = [
 // the indicator sits flush on the TabsList's border-b baseline.
 const TAB_TRIGGER_CN =
   'h-auto flex-none rounded-none px-3 py-2.5 text-sm ' +
-  'data-active:text-emerald data-active:font-semibold ' +
+  'data-active:text-primary data-active:font-semibold ' +
   'group-data-horizontal/tabs:after:-bottom-px ' +
   'group-data-horizontal/tabs:after:h-0.5 ' +
-  'group-data-horizontal/tabs:after:bg-emerald';
+  'group-data-horizontal/tabs:after:bg-primary';
 
 interface Props {
   certs: Certificate[];
@@ -62,7 +62,7 @@ export default function CertificatesTabsMobile({
         {STATUSES.map((s) => (
           <TabsTrigger key={s} value={s} className={TAB_TRIGGER_CN}>
             {t(`dashboard:certificates.columns.${s}`)}
-            <span className="ml-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-cream-deep px-1.5 text-[10px] font-semibold tabular-nums text-ink">
+            <span className="ml-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-surface-2 px-1.5 text-[10px] font-semibold tabular-nums text-ink">
               {countOf(s)}
             </span>
           </TabsTrigger>
@@ -72,7 +72,7 @@ export default function CertificatesTabsMobile({
       {STATUSES.map((s) => (
         <TabsContent key={s} value={s} className="space-y-2">
           {s === tab && rows.length === 0 && (
-            <p className="rounded-lg border border-dashed border-line bg-cream-warm/40 py-8 text-center text-sm text-muted-foreground">
+            <p className="rounded-lg border border-dashed border-line bg-surface-2/40 py-8 text-center text-sm text-muted-foreground">
               {t('dashboard:certificates.empty-column')}
             </p>
           )}

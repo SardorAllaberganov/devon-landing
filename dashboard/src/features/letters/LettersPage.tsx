@@ -23,10 +23,10 @@ import { defaultFilters, type LettersFiltersState } from './filters';
 
 const TAB_TRIGGER_CN =
   'h-auto flex-none rounded-none px-3 py-2.5 text-sm ' +
-  'data-active:text-emerald data-active:font-semibold ' +
+  'data-active:text-primary data-active:font-semibold ' +
   'group-data-horizontal/tabs:after:-bottom-px ' +
   'group-data-horizontal/tabs:after:h-0.5 ' +
-  'group-data-horizontal/tabs:after:bg-emerald';
+  'group-data-horizontal/tabs:after:bg-primary';
 
 const TABS: { value: LetterDirection; icon: typeof Inbox; key: string }[] = [
   { value: 'INCOMING', icon: Inbox, key: 'dashboard:letters.registry.tab-incoming' },

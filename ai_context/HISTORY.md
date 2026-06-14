@@ -4,6 +4,29 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-06-14 — `/doc_sync` checkpoint (post brand restyle)
+
+Verification sweep after the brand restyle (entry below). The doc cascade had already run inline as **Phase D** of that work, so this pass was confirm-sync — **one stale claim fixed**: `ai_context/AI_CONTEXT.md` "Open questions" said `docs/adr/` was empty; it now points at the first ADR ([`docs/adr/0001-brand-restyle.md`](../docs/adr/0001-brand-restyle.md)) with the still-wanted retroactive ADRs listed.
+
+- **Template-mismatch reasoning (as every prior checkpoint):** Devon has no `docs/product_states.md` / `docs/models.md` / `docs/product_requirements_document.md` / `docs/mermaid_schemas/`. A visual rebrand changes no product/persona/feature/NFR/route/flow/schema/state/error-code — `product-specification.md`, `business-processes.md`, `use-cases.md`, `glossary.md`, BPMN, and `README.md` stand untouched.
+- **Files touched (this checkpoint):** `ai_context/AI_CONTEXT.md` (ADR open-question updated), `ai_context/HISTORY.md` (this entry).
+
+---
+
+## 2026-06-14 — Brand restyle complete (dashboard + landing) + doc cascade
+
+Full visual rebrand of **both surfaces**, replacing Devon's warm emerald/cream/cinnamon + Inter/Fraunces identity with the new **blue `#0878FE` / navy `#011528` "cool corporate"** system + **Craftwork Grotesk** (display) / **Inter** (body), self-hosted, per the delivered brand assets. Branch `feature/brand-restyle`. (A `/doc_sync` was run mid-way after Phase B; this entry now covers the whole rebrand.)
+
+- **State:** Both surfaces fully rebranded. Dashboard (Phase A+B) committed in 5 commits + pushed; landing (Phase C) + doc cascade (Phase D: LESSONS, ADR 0001, QA_NOTES, AI_CONTEXT/HISTORY) in the working tree pending `/commit`.
+- **Phase C (landing):** `landing/index.html` recolored — cool section rotation (canvas → white → brand-soft → navy), ~210 hardcoded hexes swept incl. inline SVG illustrations (Kanban/org-tree/flow recolored to blue/navy/slate + amber-warning/green-success), self-hosted CWG+Inter (Google Fonts removed), Fraunces retired (slogan/accents upright CWG), icon-mark + "Devon" wordmark in nav/footer, new blue favicon, navy `theme-color`. Fixed a `btn-emerald`→`btn-primary` class collision (became `btn-brand`). Landing brand assets (`landing/devon_*.svg`, `landing/fonts/`) held for the Phase C commit.
+- **Phase D (doc cascade):** first ADR [`docs/adr/0001-brand-restyle.md`](../docs/adr/0001-brand-restyle.md); LESSONS Typography entries superseded + a rebrand lesson added; `QA_NOTES.md` brand-restyle QA section; README verified (no brand/color/font facts — product-facing, untouched).
+- **What landed (Phase A + B):** self-hosted fonts (Craftwork Grotesk woff2 in `dashboard/src/assets/fonts/`, Inter via `@fontsource/inter`) — **Google Fonts removed** (on-premise); `dashboard/src/index.css` palette rewrite (shadcn vars + renamed `--color-*` brand tokens: `emerald→primary`/`brand`, `cream→canvas`, `cream-deep/warm→surface-2`, `cinnamon→warning`, `signal→success`; neutral names kept + repointed; new `success/warning/error` + darker `*-fg` badge foregrounds for WCAG AA); `--font-display` = Craftwork Grotesk on headings/buttons/wordmark/stat numerals/slogan, `--font-sans` = Inter on body/tables; Fraunces removed; `BrandMark` icon component + mixed-case "Devon" wordmark in Sidebar/TopBar/Login; new blue favicon; `theme-color` → navy. White sidebar (cool-corporate). ~90 dashboard files swept; build clean (196 KB JS gzip), tsc clean, lint at baseline. A two-stage subagent review caught and fixed: AA badge-foreground contrast, white sidebar, a duplicate token, and an orphaned `signal` tone.
+- **Template-mismatch reasoning (as every prior checkpoint):** Devon has no `docs/product_states.md` / `docs/models.md` / `docs/product_requirements_document.md` / `docs/mermaid_schemas/`. A **visual rebrand changes no product/persona/feature/NFR/route/flow/schema/state/error-code** — so `product-specification.md`, `business-processes.md`, `use-cases.md`, `glossary.md`, BPMN, and `README.md` all stand untouched. This sync is **AI_CONTEXT + HISTORY only**; LESSONS + the first ADR (`docs/adr/0001-brand-restyle.md`) + QA_NOTES are authored in Phase D.
+- **Files touched:** ~90 dashboard files (`dashboard/src/index.css`, `index.html`, `main.tsx`, `package.json`, `public/favicon.svg` + logo SVGs, `src/assets/fonts/`, new `BrandMark.tsx`, + the token-sweep across components); `landing/index.html` + `landing/favicon.svg` + `landing/fonts/` + `landing/devon_*.svg`; `assets/` (source brand kit); docs: `docs/adr/0001-brand-restyle.md` (new), `ai_context/{AI_CONTEXT,HISTORY,LESSONS}.md`, `dashboard/QA_NOTES.md`; `.gitignore`.
+- **Artifacts:** ADR [`docs/adr/0001-brand-restyle.md`](../docs/adr/0001-brand-restyle.md); spec [`docs/superpowers/specs/2026-06-14-brand-restyle-design.md`](../docs/superpowers/specs/2026-06-14-brand-restyle-design.md); plan [`docs/superpowers/plans/2026-06-14-brand-restyle.md`](../docs/superpowers/plans/2026-06-14-brand-restyle.md).
+
+---
+
 ## 2026-06-14 — `/doc_sync` checkpoint (post code-splitting + dead-primitive cleanup)
 
 Ran `/doc_sync` after the code-splitting + cleanup work (entry below). The doc cascade had already been performed inline with that change, so this pass was a **verification sweep confirming sync** — no new doc edits were needed beyond this checkpoint.

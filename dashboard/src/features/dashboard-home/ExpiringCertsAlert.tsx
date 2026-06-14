@@ -30,8 +30,8 @@ export default function ExpiringCertsAlert() {
   if (count === 0) return null;
 
   return (
-    <Alert className="border-cinnamon/30 bg-cinnamon-soft text-ink">
-      <AlertCircle className="h-4 w-4 text-cinnamon" />
+    <Alert className="border-warning/30 bg-warning-soft text-ink">
+      <AlertCircle className="h-4 w-4 text-warning" />
       <AlertTitle className="text-ink">
         {t('dashboard:home.expiring-alert.title', { count })}
       </AlertTitle>
@@ -41,7 +41,7 @@ export default function ExpiringCertsAlert() {
           asChild
           variant="outline"
           size="sm"
-          className="border-cinnamon/40 bg-cream text-ink hover:bg-cream-deep"
+          className="border-warning/40 bg-canvas text-ink hover:bg-surface-2"
         >
           <Link to="/certificates?filter=expiring">
             {t('dashboard:home.expiring-alert.cta')}

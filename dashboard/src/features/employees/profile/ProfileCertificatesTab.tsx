@@ -48,7 +48,7 @@ export default function ProfileCertificatesTab({ employee }: Props) {
       </div>
 
       {rows.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-line bg-cream-warm/40 py-8 text-center text-sm text-muted-foreground">
+        <p className="rounded-lg border border-dashed border-line bg-surface-2/40 py-8 text-center text-sm text-muted-foreground">
           {t('dashboard:employees.profile.certs.empty')}
         </p>
       ) : (
@@ -59,7 +59,7 @@ export default function ProfileCertificatesTab({ employee }: Props) {
               className="flex flex-col gap-2 rounded-lg border border-line bg-surface p-4 md:flex-row md:items-center md:justify-between"
             >
               <div className="flex items-start gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-emerald-deep">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-primary-deep">
                   <KeyRound className="h-4 w-4" />
                 </span>
                 <div className="min-w-0">

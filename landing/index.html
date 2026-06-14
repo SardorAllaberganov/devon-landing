@@ -5,105 +5,107 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Devon — Korxonalar uchun hujjat aylanish platformasi</title>
 <meta name="description" content="Devon — O'zbekiston tashkilotlari uchun on-premise ichki hujjat aylanishi, kelishuvi va vazifa boshqaruvi platformasi.">
-<meta name="theme-color" content="#1F4E3F">
+<meta name="theme-color" content="#011528">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" href="favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@1,9..144,500;1,9..144,600&display=swap" rel="stylesheet">
 <style>
+@font-face{font-family:"Craftwork Grotesk";src:url("fonts/CraftworkGrotesk-Variable.woff2") format("woff2");font-weight:400 800;font-display:swap}
+@font-face{font-family:"Inter";src:url("fonts/inter-400.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Inter";src:url("fonts/inter-500.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Inter";src:url("fonts/inter-600.woff2") format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"Inter";src:url("fonts/inter-700.woff2") format("woff2");font-weight:700;font-display:swap}
 :root{
-  --cream:#FBF9F4;
-  --cream-deep:#F2EDDF;
-  --cream-warm:#F6F1E4;
+  --canvas:#F7F9FC;
+  --canvas-deep:#EEF2F8;
   --surface:#FFFFFF;
-  --ink:#0F1014;
-  --ink-soft:#1A1D24;
-  --body:#5A5E6A;
-  --muted:#9DA0A8;
-  --line:#E8E3D6;
-  --line-soft:#EFEBE0;
-  --emerald:#1F4E3F;
-  --emerald-deep:#173A30;
-  --emerald-soft:#E5EEEA;
-  --cinnamon:#BC6E2B;
-  --cinnamon-soft:#F5E6D2;
-  --signal:#3D7B66;
+  --ink:#011528;
+  --ink-soft:#0A2540;
+  --body:#475569;
+  --muted:#64748B;
+  --line:#E6EAF0;
+  --line-soft:#EEF2F8;
+  --brand:#0878FE;
+  --primary:#0A6BE0;
+  --primary-deep:#0850A8;
+  --brand-soft:#EAF2FE;
+  --warning:#D97706;
+  --warning-soft:#FEF3C7;
+  --success:#16A34A;
   --ease:cubic-bezier(0.22,1,0.36,1);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{font-family:'Inter','Helvetica Neue',system-ui,sans-serif;background:var(--cream);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden;font-feature-settings:"ss01","cv11"}
+body{font-family:'Inter','Helvetica Neue',system-ui,sans-serif;background:var(--canvas);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden;font-feature-settings:"ss01","cv11"}
 img,svg{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
 button{font-family:inherit;cursor:pointer;border:none;background:none}
-.serif{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:500}
+.serif{font-family:'Craftwork Grotesk',sans-serif;font-weight:500}
 
 .container{max-width:1280px;margin:0 auto;padding:0 32px;width:100%}
 .section{padding:140px 0;position:relative}
-.section--cream{background:var(--cream)}
-.section--warm{background:var(--cream-warm)}
+.section--cream{background:var(--canvas)}
+.section--warm{background:var(--brand-soft)}
 .section--surface{background:var(--surface)}
-.section--ink{background:var(--ink);color:var(--cream)}
-.section--emerald{background:var(--emerald);color:var(--cream)}
+.section--ink{background:var(--ink);color:var(--canvas)}
+.section--brand{background:var(--primary);color:var(--canvas)}
 .section--compact{padding:88px 0}
 
-.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--emerald);margin-bottom:28px}
-.eyebrow .eyebrow-dot{width:6px;height:6px;background:var(--emerald);border-radius:50%}
-.section--ink .eyebrow,.section--emerald .eyebrow{color:var(--cinnamon)}
-.section--ink .eyebrow-dot,.section--emerald .eyebrow-dot{background:var(--cinnamon)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--primary);margin-bottom:28px}
+.eyebrow .eyebrow-dot{width:6px;height:6px;background:var(--primary);border-radius:50%}
+.section--ink .eyebrow,.section--brand .eyebrow{color:var(--warning)}
+.section--ink .eyebrow-dot,.section--brand .eyebrow-dot{background:var(--warning)}
 h1,h2,h3,h4{font-weight:800;letter-spacing:-0.03em;line-height:1.02;color:inherit}
 h1{font-size:clamp(40px,7.5vw,112px);letter-spacing:-0.045em;font-weight:900;overflow-wrap:break-word;word-break:normal;hyphens:auto}
 .section-title{font-size:clamp(36px,5vw,72px);letter-spacing:-0.035em;line-height:1.04;margin-bottom:28px;font-weight:800}
 .subhead{font-size:clamp(17px,1.4vw,21px);font-weight:400;color:var(--body);line-height:1.55;max-width:640px}
-.section--ink .subhead,.section--emerald .subhead{color:rgba(251,249,244,0.7)}
+.section--ink .subhead,.section--brand .subhead{color:rgba(247,249,252,0.7)}
 
 .btn{display:inline-flex;align-items:center;gap:10px;font-size:15.5px;font-weight:600;padding:15px 28px;border-radius:999px;transition:all 0.25s var(--ease);white-space:nowrap;letter-spacing:-0.005em}
-.btn-primary{background:var(--ink);color:var(--cream)}
-.btn-primary:hover{background:var(--emerald);transform:translateY(-1px);box-shadow:0 14px 28px rgba(31,78,63,0.28)}
-.btn-emerald{background:var(--emerald);color:var(--cream)}
-.btn-emerald:hover{background:var(--emerald-deep);transform:translateY(-1px);box-shadow:0 14px 28px rgba(31,78,63,0.28)}
+.btn-primary{background:var(--ink);color:var(--canvas)}
+.btn-primary:hover{background:var(--primary);transform:translateY(-1px);box-shadow:0 14px 28px rgba(10,107,224,0.28)}
+.btn-brand{background:var(--primary);color:var(--canvas)}
+.btn-brand:hover{background:var(--primary-deep);transform:translateY(-1px);box-shadow:0 14px 28px rgba(10,107,224,0.28)}
 .btn-ghost{color:var(--ink);padding:15px 8px}
-.btn-ghost:hover{color:var(--emerald)}
-.btn-light{background:var(--cream);color:var(--ink);border:1px solid var(--line)}
+.btn-ghost:hover{color:var(--primary)}
+.btn-light{background:var(--canvas);color:var(--ink);border:1px solid var(--line)}
 .btn-light:hover{border-color:var(--ink);transform:translateY(-1px)}
 .btn .arrow{display:inline-block;transition:transform 0.25s var(--ease)}
 .btn:hover .arrow{transform:translateX(5px)}
 .cta-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:40px}
 
-.navbar{position:fixed;top:0;left:0;right:0;height:72px;z-index:100;background:rgba(251,249,244,0.78);backdrop-filter:saturate(140%) blur(18px);border-bottom:1px solid transparent;transition:border-color 0.2s ease}
+.navbar{position:fixed;top:0;left:0;right:0;height:72px;z-index:100;background:rgba(247,249,252,0.88);backdrop-filter:saturate(140%) blur(18px);border-bottom:1px solid transparent;transition:border-color 0.2s ease}
 .navbar.solid{border-bottom-color:var(--line)}
 .nav-inner{display:flex;align-items:center;justify-content:space-between;height:100%;gap:48px}
-.nav-logo{font-size:18px;font-weight:900;letter-spacing:0.16em;color:var(--ink);text-transform:uppercase;display:flex;align-items:center;gap:10px}
-.nav-logo .dot{width:9px;height:9px;background:var(--emerald);border-radius:2px;transform:rotate(45deg)}
+.nav-logo{font-family:'Craftwork Grotesk',sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.01em;color:var(--ink);display:flex;align-items:center;gap:10px}
+.nav-logo .dot{width:9px;height:9px;background:var(--brand);border-radius:2px;transform:rotate(45deg)}
 .nav-links{display:flex;align-items:center;gap:36px}
 .nav-links a{font-size:14.5px;font-weight:500;color:var(--body);transition:color 0.2s ease;display:flex;align-items:center;gap:6px}
 .nav-links a:hover{color:var(--ink)}
 .nav-links .caret{width:7px;height:7px;border-right:1.4px solid currentColor;border-bottom:1.4px solid currentColor;transform:rotate(45deg) translate(-1px,-1px);opacity:0.55}
 .nav-right{display:flex;align-items:center;gap:18px}
 .nav-right .signin{font-size:14.5px;font-weight:500;color:var(--ink)}
-.nav-right .signin:hover{color:var(--emerald)}
-.nav-cta{font-size:14px;font-weight:600;color:var(--cream);background:var(--ink);padding:10px 20px;border-radius:999px;transition:all 0.2s var(--ease);letter-spacing:-0.005em}
-.nav-cta:hover{background:var(--emerald);transform:translateY(-1px)}
+.nav-right .signin:hover{color:var(--primary)}
+.nav-cta{font-size:14px;font-weight:600;color:var(--canvas);background:var(--ink);padding:10px 20px;border-radius:999px;transition:all 0.2s var(--ease);letter-spacing:-0.005em}
+.nav-cta:hover{background:var(--primary);transform:translateY(-1px)}
 
-.hero{padding:180px 0 120px;position:relative;overflow:hidden;background:var(--cream)}
+.hero{padding:180px 0 120px;position:relative;overflow:hidden;background:var(--canvas)}
 .hero-inner{position:relative;z-index:2;max-width:980px;margin:0 auto;text-align:center}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:12.5px;font-weight:600;color:var(--body);background:var(--surface);border:1px solid var(--line);padding:9px 18px;border-radius:999px;margin-bottom:40px;letter-spacing:0.04em}
-.hero-eyebrow .badge-dot{width:7px;height:7px;border-radius:50%;background:var(--signal);box-shadow:0 0 0 3px rgba(61,123,102,0.18);animation:pulseDot 2.4s ease-in-out infinite}
-@keyframes pulseDot{0%,100%{box-shadow:0 0 0 3px rgba(61,123,102,0.18)}50%{box-shadow:0 0 0 7px rgba(61,123,102,0.06)}}
+.hero-eyebrow .badge-dot{width:7px;height:7px;border-radius:50%;background:var(--success);box-shadow:0 0 0 3px rgba(22,163,74,0.18);animation:pulseDot 2.4s ease-in-out infinite}
+@keyframes pulseDot{0%,100%{box-shadow:0 0 0 3px rgba(22,163,74,0.18)}50%{box-shadow:0 0 0 7px rgba(22,163,74,0.06)}}
 .hero h1{margin:0 auto 32px;max-width:920px}
-.hero h1 .serif-accent{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:500;color:var(--emerald);font-size:0.96em}
+.hero h1 .serif-accent{font-family:'Craftwork Grotesk',sans-serif;font-weight:500;color:var(--primary);font-size:0.96em}
 .hero .subhead{margin:0 auto 0;max-width:600px;font-size:clamp(18px,1.5vw,22px);color:var(--body)}
 .hero .cta-row{justify-content:center;margin-top:48px}
 .hero-meta{margin-top:36px;display:flex;justify-content:center;gap:32px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}
 .hero-meta span{display:flex;align-items:center;gap:8px}
-.hero-meta .ck{color:var(--signal);width:14px;height:14px}
+.hero-meta .ck{color:var(--success);width:14px;height:14px}
 
 .hero-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.hero-bg::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle at 20% 30%, rgba(31,78,63,0.06), transparent 50%),radial-gradient(circle at 80% 70%, rgba(188,110,43,0.05), transparent 50%);opacity:0.9}
-.hero-grid-lines{position:absolute;inset:0;background-image:linear-gradient(rgba(15,16,20,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(15,16,20,0.04) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse at center 40%, black 0%, transparent 65%);-webkit-mask-image:radial-gradient(ellipse at center 40%, black 0%, transparent 65%)}
+.hero-bg::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle at 20% 30%, rgba(8,120,254,0.06), transparent 50%),radial-gradient(circle at 80% 70%, rgba(10,107,224,0.05), transparent 50%);opacity:0.9}
+.hero-grid-lines{position:absolute;inset:0;background-image:linear-gradient(rgba(1,21,40,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(1,21,40,0.04) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse at center 40%, black 0%, transparent 65%);-webkit-mask-image:radial-gradient(ellipse at center 40%, black 0%, transparent 65%)}
 
-.chip{position:absolute;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 16px;box-shadow:0 12px 32px rgba(15,16,20,0.06),0 2px 8px rgba(15,16,20,0.04);font-size:13px;color:var(--ink);z-index:1;animation:float 8s ease-in-out infinite}
+.chip{position:absolute;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 16px;box-shadow:0 12px 32px rgba(1,21,40,0.06),0 2px 8px rgba(1,21,40,0.04);font-size:13px;color:var(--ink);z-index:1;animation:float 8s ease-in-out infinite}
 @keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-12px) rotate(0.4deg)}}
 .chip strong{font-weight:600;display:block;font-size:13px;color:var(--ink);letter-spacing:-0.01em}
 .chip small{font-size:11.5px;color:var(--muted);font-weight:500}
@@ -116,137 +118,137 @@ h1{font-size:clamp(40px,7.5vw,112px);letter-spacing:-0.045em;font-weight:900;ove
 .chip-4{bottom:18%;left:calc(50% + 510px);animation-delay:1.5s;animation-duration:10s}
 .chip-5{top:54%;right:calc(50% + 530px);animation-delay:3s;animation-duration:8.5s}
 .chip-status{display:flex;align-items:center;gap:10px}
-.chip-status .pip{width:8px;height:8px;border-radius:50%;background:var(--signal);box-shadow:0 0 0 3px rgba(61,123,102,0.16)}
+.chip-status .pip{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 0 3px rgba(22,163,74,0.16)}
 .chip-stack{display:flex;align-items:center;gap:10px}
 .chip-stack .av-row{display:flex}
-.chip-stack .av-row .av{width:24px;height:24px;border-radius:50%;border:2px solid var(--surface);font-size:9px;font-weight:700;color:var(--emerald);background:var(--emerald-soft);display:flex;align-items:center;justify-content:center;margin-left:-7px}
+.chip-stack .av-row .av{width:24px;height:24px;border-radius:50%;border:2px solid var(--surface);font-size:9px;font-weight:700;color:var(--primary);background:var(--brand-soft);display:flex;align-items:center;justify-content:center;margin-left:-7px}
 .chip-stack .av-row .av:first-child{margin-left:0}
-.chip-stack .av-row .av.b{background:var(--cinnamon-soft);color:var(--cinnamon)}
+.chip-stack .av-row .av.b{background:var(--warning-soft);color:var(--warning)}
 .chip-stack .av-row .av.c{background:#EEF2F8;color:#3E5D8C}
 .chip-stat{display:flex;align-items:flex-end;gap:8px}
 .chip-stat .big{font-size:24px;font-weight:800;color:var(--ink);letter-spacing:-0.025em;line-height:1}
 .chip-stat .lbl{font-size:11px;color:var(--muted);margin-bottom:3px}
 .chip-sig{display:flex;align-items:center;gap:10px}
-.chip-sig .sig-icon{width:26px;height:26px;border-radius:8px;background:var(--emerald);display:flex;align-items:center;justify-content:center}
+.chip-sig .sig-icon{width:26px;height:26px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center}
 
-.logos{padding:64px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--cream)}
+.logos{padding:64px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--canvas)}
 .logos-label{text-align:center;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:36px}
 .logos-row{display:grid;grid-template-columns:repeat(6,1fr);gap:36px;align-items:center;opacity:0.7}
-.logo-ph{height:28px;background:linear-gradient(90deg,#D6D2C6,#C6C2B6);border-radius:6px}
+.logo-ph{height:28px;background:linear-gradient(90deg,#C8D6E8,#B8C8DC);border-radius:6px}
 
-.pillars{padding:140px 0;background:var(--cream)}
+.pillars{padding:140px 0;background:var(--canvas)}
 .pillars-header{display:flex;justify-content:space-between;align-items:flex-end;gap:48px;margin-bottom:72px;flex-wrap:wrap}
 .pillars-header .left{max-width:680px}
 .pillars-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:20px;align-items:stretch}
 .pillar{border-radius:24px;padding:36px;display:flex;flex-direction:column;justify-content:space-between;min-height:420px;position:relative;overflow:hidden;transition:transform 0.35s var(--ease),box-shadow 0.35s var(--ease)}
-.pillar:hover{transform:translateY(-4px);box-shadow:0 30px 60px rgba(15,16,20,0.10)}
-.pillar.p1{background:var(--ink);color:var(--cream)}
-.pillar.p2{background:var(--cream-deep);color:var(--ink)}
-.pillar.p3{background:var(--emerald);color:var(--cream)}
+.pillar:hover{transform:translateY(-4px);box-shadow:0 30px 60px rgba(1,21,40,0.10)}
+.pillar.p1{background:var(--ink);color:var(--canvas)}
+.pillar.p2{background:var(--canvas-deep);color:var(--ink)}
+.pillar.p3{background:var(--primary);color:var(--canvas)}
 .pillar .p-label{font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.7;margin-bottom:16px}
 .pillar h3{font-size:32px;font-weight:800;letter-spacing:-0.03em;line-height:1.05;margin-bottom:16px;max-width:280px}
 .pillar p{font-size:15.5px;line-height:1.55;opacity:0.78;max-width:340px;margin-bottom:24px}
 .pillar .p-art{margin-top:auto;align-self:flex-end}
 
-.bento{padding:140px 0;background:var(--cream-warm)}
+.bento{padding:140px 0;background:var(--brand-soft)}
 .bento-header{margin-bottom:72px;max-width:760px}
 .bento-grid{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:minmax(380px,auto);gap:20px}
 .bento-card{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:32px;position:relative;overflow:hidden;transition:transform 0.35s var(--ease),box-shadow 0.35s var(--ease);display:flex;flex-direction:column;min-height:380px}
-.bento-card:hover{transform:translateY(-4px);box-shadow:0 24px 48px rgba(15,16,20,0.08)}
+.bento-card:hover{transform:translateY(-4px);box-shadow:0 24px 48px rgba(1,21,40,0.08)}
 .bento-card h4{font-size:21px;font-weight:700;letter-spacing:-0.02em;line-height:1.2;margin-bottom:10px}
 .bento-card p{font-size:14px;color:var(--body);line-height:1.55;max-width:340px;margin-bottom:20px}
-.bento-card .b-eyebrow{font-size:11.5px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--emerald);margin-bottom:14px}
+.bento-card .b-eyebrow{font-size:11.5px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--primary);margin-bottom:14px}
 .bento-card .b-visual{margin-top:auto;align-self:stretch;display:flex;align-items:flex-end;justify-content:center;padding-top:20px;min-height:140px;width:100%}
 .b-wide{grid-column:span 4}
 .b-half{grid-column:span 2}
 .b-thirds{grid-column:span 3}
-.bento-card.dark{background:var(--ink);color:var(--cream);border-color:var(--ink)}
-.bento-card.dark .b-eyebrow{color:var(--cinnamon)}
-.bento-card.dark p{color:rgba(251,249,244,0.7)}
+.bento-card.dark{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
+.bento-card.dark .b-eyebrow{color:var(--warning)}
+.bento-card.dark p{color:rgba(247,249,252,0.7)}
 
-.stats{padding:120px 0;background:var(--ink);color:var(--cream)}
+.stats{padding:120px 0;background:var(--ink);color:var(--canvas)}
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
-.stat-cell{padding:36px 24px;border-left:1px solid rgba(251,249,244,0.12)}
+.stat-cell{padding:36px 24px;border-left:1px solid rgba(247,249,252,0.12)}
 .stat-cell:first-child{border-left:none;padding-left:0}
-.stat-cell .num{font-size:clamp(56px,5.5vw,84px);font-weight:900;letter-spacing:-0.045em;line-height:0.95;color:var(--cream);margin-bottom:14px}
-.stat-cell .num .u{color:var(--cinnamon);font-size:0.55em;font-weight:700;vertical-align:top;margin-left:4px}
-.stat-cell .lbl{font-size:13.5px;color:rgba(251,249,244,0.6);line-height:1.5;max-width:200px}
+.stat-cell .num{font-size:clamp(56px,5.5vw,84px);font-weight:900;letter-spacing:-0.045em;line-height:0.95;color:var(--canvas);margin-bottom:14px}
+.stat-cell .num .u{color:var(--warning);font-size:0.55em;font-weight:700;vertical-align:top;margin-left:4px}
+.stat-cell .lbl{font-size:13.5px;color:rgba(247,249,252,0.6);line-height:1.5;max-width:200px}
 
-.arch{padding:160px 0;background:var(--cream)}
+.arch{padding:160px 0;background:var(--canvas)}
 .arch-grid-wrap{display:grid;grid-template-columns:1fr 1fr;gap:96px;align-items:center;margin-top:80px}
 .arch-cubes{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .arch-cube{aspect-ratio:1;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;transition:all 0.3s var(--ease);cursor:default}
-.arch-cube:hover{transform:translateY(-3px) rotate(-1deg);border-color:var(--emerald);box-shadow:0 16px 32px rgba(31,78,63,0.12)}
+.arch-cube:hover{transform:translateY(-3px) rotate(-1deg);border-color:var(--primary);box-shadow:0 16px 32px rgba(10,107,224,0.12)}
 .arch-cube .ac-num{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.1em}
 .arch-cube .ac-name{font-size:13px;font-weight:700;letter-spacing:-0.01em;line-height:1.2}
 .arch-cube .ac-icon{align-self:flex-end}
-.arch-cube.featured{background:var(--emerald);color:var(--cream);border-color:var(--emerald)}
-.arch-cube.featured .ac-num{color:rgba(251,249,244,0.55)}
+.arch-cube.featured{background:var(--primary);color:var(--canvas);border-color:var(--primary)}
+.arch-cube.featured .ac-num{color:rgba(247,249,252,0.55)}
 
 .flow-section{padding:140px 0;background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .flow-art{margin:80px auto 64px;max-width:1100px}
 .flow-svg{width:100%;height:auto}
 .flow-bottom{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;max-width:920px;margin:0 auto;padding-top:48px;border-top:1px solid var(--line)}
 .flow-bottom .fb{text-align:center}
-.flow-bottom .fb .big{font-size:36px;font-weight:800;letter-spacing:-0.03em;color:var(--emerald);margin-bottom:6px}
+.flow-bottom .fb .big{font-size:36px;font-weight:800;letter-spacing:-0.03em;color:var(--primary);margin-bottom:6px}
 .flow-bottom .fb .lbl{font-size:13.5px;color:var(--body)}
 
-.industries{padding:140px 0;background:var(--cream)}
+.industries{padding:140px 0;background:var(--canvas)}
 .ind-header{margin-bottom:72px;max-width:720px}
 .ind-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
 .ind-card{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:44px;display:flex;flex-direction:column;gap:20px;transition:transform 0.35s var(--ease),box-shadow 0.35s var(--ease);position:relative;overflow:hidden}
-.ind-card:hover{transform:translateY(-4px);box-shadow:0 24px 48px rgba(15,16,20,0.08)}
-.ind-card .ind-icon{width:64px;height:64px;border-radius:18px;background:var(--emerald-soft);display:flex;align-items:center;justify-content:center}
+.ind-card:hover{transform:translateY(-4px);box-shadow:0 24px 48px rgba(1,21,40,0.08)}
+.ind-card .ind-icon{width:64px;height:64px;border-radius:18px;background:var(--brand-soft);display:flex;align-items:center;justify-content:center}
 .ind-card h3{font-size:26px;font-weight:700;letter-spacing:-0.02em;line-height:1.1}
 .ind-card p{font-size:15px;color:var(--body);line-height:1.6;max-width:440px}
 .ind-card ul{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:8px}
 .ind-card li{font-size:14px;color:var(--ink);display:flex;align-items:flex-start;gap:10px;line-height:1.5}
-.ind-card li::before{content:'';width:16px;height:16px;border-radius:50%;background:var(--emerald-soft);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='%231F4E3F' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M4 8.5l2.5 2.5L12 5.5'/></svg>");background-position:center;background-repeat:no-repeat;flex-shrink:0;margin-top:2px}
+.ind-card li::before{content:'';width:16px;height:16px;border-radius:50%;background:var(--brand-soft);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='%230A6BE0' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M4 8.5l2.5 2.5L12 5.5'/></svg>");background-position:center;background-repeat:no-repeat;flex-shrink:0;margin-top:2px}
 
-.quote-section{padding:160px 0;background:var(--cream-warm);text-align:center}
+.quote-section{padding:160px 0;background:var(--brand-soft);text-align:center}
 .quote-inner{max-width:920px;margin:0 auto}
-.quote-mark{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:600;font-size:88px;color:var(--emerald);line-height:0.5;margin-bottom:24px}
+.quote-mark{font-family:'Craftwork Grotesk',sans-serif;font-weight:600;font-size:88px;color:var(--primary);line-height:0.5;margin-bottom:24px}
 .quote-text{font-size:clamp(26px,3.4vw,42px);font-weight:600;letter-spacing:-0.025em;line-height:1.25;color:var(--ink);margin-bottom:40px}
-.quote-text .serif{color:var(--emerald)}
+.quote-text .serif{color:var(--primary)}
 .quote-author{display:inline-flex;align-items:center;gap:16px}
-.quote-author .av{width:48px;height:48px;border-radius:50%;background:var(--emerald);color:var(--cream);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
+.quote-author .av{width:48px;height:48px;border-radius:50%;background:var(--primary);color:var(--canvas);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
 .quote-author .who{text-align:left}
 .quote-author strong{display:block;font-size:15px;font-weight:600;color:var(--ink)}
 .quote-author span{font-size:13.5px;color:var(--body)}
 
-.final{padding:160px 0;background:var(--ink);color:var(--cream);position:relative;overflow:hidden}
-.final::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%, rgba(31,78,63,0.4), transparent 50%),radial-gradient(ellipse at 70% 60%, rgba(188,110,43,0.18), transparent 50%);pointer-events:none}
+.final{padding:160px 0;background:var(--ink);color:var(--canvas);position:relative;overflow:hidden}
+.final::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%, rgba(8,120,254,0.22), transparent 50%),radial-gradient(ellipse at 70% 60%, rgba(10,107,224,0.12), transparent 50%);pointer-events:none}
 .final-inner{position:relative;z-index:2;text-align:center;max-width:820px;margin:0 auto}
 .final h2{font-size:clamp(44px,6vw,84px);font-weight:900;letter-spacing:-0.04em;line-height:0.98;margin-bottom:28px}
-.final h2 .serif{color:var(--cinnamon)}
-.final .subhead{margin:0 auto 0;max-width:540px;color:rgba(251,249,244,0.7)}
-.final-form{display:flex;gap:8px;max-width:480px;margin:44px auto 0;padding:6px;background:rgba(251,249,244,0.06);border:1px solid rgba(251,249,244,0.12);border-radius:999px}
-.final-form input{flex:1;background:transparent;border:none;padding:13px 20px;font-size:15px;color:var(--cream);font-family:inherit;outline:none}
-.final-form input::placeholder{color:rgba(251,249,244,0.4)}
-.final-form button{background:var(--cream);color:var(--ink);padding:13px 24px;border-radius:999px;font-size:14.5px;font-weight:600;transition:all 0.2s var(--ease)}
-.final-form button:hover{background:var(--cinnamon);color:var(--cream);transform:translateY(-1px)}
-.final-trust{margin-top:28px;font-size:13px;color:rgba(251,249,244,0.5);display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
+.final h2 .serif{color:var(--warning)}
+.final .subhead{margin:0 auto 0;max-width:540px;color:rgba(247,249,252,0.7)}
+.final-form{display:flex;gap:8px;max-width:480px;margin:44px auto 0;padding:6px;background:rgba(247,249,252,0.06);border:1px solid rgba(247,249,252,0.12);border-radius:999px}
+.final-form input{flex:1;background:transparent;border:none;padding:13px 20px;font-size:15px;color:var(--canvas);font-family:inherit;outline:none}
+.final-form input::placeholder{color:rgba(247,249,252,0.4)}
+.final-form button{background:var(--canvas);color:var(--ink);padding:13px 24px;border-radius:999px;font-size:14.5px;font-weight:600;transition:all 0.2s var(--ease)}
+.final-form button:hover{background:var(--warning);color:var(--canvas);transform:translateY(-1px)}
+.final-trust{margin-top:28px;font-size:13px;color:rgba(247,249,252,0.5);display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
 
-footer{background:var(--ink);color:var(--cream);padding:0 0 36px;border-top:1px solid rgba(251,249,244,0.08)}
-.footer-mega{padding:120px 0 80px;border-bottom:1px solid rgba(251,249,244,0.08)}
+footer{background:var(--ink);color:var(--canvas);padding:0 0 36px;border-top:1px solid rgba(247,249,252,0.08)}
+.footer-mega{padding:120px 0 80px;border-bottom:1px solid rgba(247,249,252,0.08)}
 .footer-mega h3{font-size:clamp(40px,5vw,72px);font-weight:900;letter-spacing:-0.04em;line-height:0.98;max-width:760px}
-.footer-mega .serif{color:var(--cinnamon)}
-.footer-top{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:48px;padding:64px 0;border-bottom:1px solid rgba(251,249,244,0.08)}
-.footer-brand .logo{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:900;letter-spacing:0.14em;text-transform:uppercase;color:var(--cream);margin-bottom:18px}
-.footer-brand .logo .dot{width:9px;height:9px;background:var(--cinnamon);border-radius:2px;transform:rotate(45deg)}
-.footer-brand .slogan{font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:15px;color:var(--cinnamon);margin-bottom:14px}
-.footer-brand p{font-size:14px;color:rgba(251,249,244,0.55);line-height:1.6;max-width:280px;margin-bottom:24px}
+.footer-mega .serif{color:var(--warning)}
+.footer-top{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:48px;padding:64px 0;border-bottom:1px solid rgba(247,249,252,0.08)}
+.footer-brand .logo{font-family:'Craftwork Grotesk',sans-serif;display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800;letter-spacing:-0.01em;color:var(--canvas);margin-bottom:18px}
+.footer-brand .logo .dot{width:9px;height:9px;background:var(--brand);border-radius:2px;transform:rotate(45deg)}
+.footer-brand .slogan{font-family:'Craftwork Grotesk',sans-serif;font-size:15px;color:var(--warning);margin-bottom:14px}
+.footer-brand p{font-size:14px;color:rgba(247,249,252,0.55);line-height:1.6;max-width:280px;margin-bottom:24px}
 .footer-social{display:flex;gap:8px}
-.footer-social a{width:36px;height:36px;border-radius:10px;background:rgba(251,249,244,0.06);border:1px solid rgba(251,249,244,0.1);display:flex;align-items:center;justify-content:center;color:rgba(251,249,244,0.6);transition:all 0.2s ease}
-.footer-social a:hover{color:var(--cream);background:rgba(251,249,244,0.1)}
-.footer-col h5{font-size:11.5px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--cream);margin-bottom:22px}
-.footer-col a{display:block;font-size:14.5px;color:rgba(251,249,244,0.55);margin-bottom:13px;transition:color 0.2s ease}
-.footer-col a:hover{color:var(--cream)}
+.footer-social a{width:36px;height:36px;border-radius:10px;background:rgba(247,249,252,0.06);border:1px solid rgba(247,249,252,0.1);display:flex;align-items:center;justify-content:center;color:rgba(247,249,252,0.6);transition:all 0.2s ease}
+.footer-social a:hover{color:var(--canvas);background:rgba(247,249,252,0.1)}
+.footer-col h5{font-size:11.5px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--canvas);margin-bottom:22px}
+.footer-col a{display:block;font-size:14.5px;color:rgba(247,249,252,0.55);margin-bottom:13px;transition:color 0.2s ease}
+.footer-col a:hover{color:var(--canvas)}
 .footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:32px;flex-wrap:wrap;gap:20px}
-.footer-bottom p{font-size:13px;color:rgba(251,249,244,0.4)}
+.footer-bottom p{font-size:13px;color:rgba(247,249,252,0.4)}
 .footer-bottom .links{display:flex;gap:24px}
-.footer-bottom .links a{font-size:13px;color:rgba(251,249,244,0.4)}
-.footer-bottom .links a:hover{color:var(--cream)}
+.footer-bottom .links a{font-size:13px;color:rgba(247,249,252,0.4)}
+.footer-bottom .links a:hover{color:var(--canvas)}
 
 .reveal{opacity:0;transform:translateY(24px);transition:opacity 0.8s var(--ease),transform 0.8s var(--ease)}
 .reveal.in{opacity:1;transform:translateY(0)}
@@ -268,14 +270,14 @@ footer{background:var(--ink);color:var(--cream);padding:0 0 36px;border-top:1px 
 .nav-toggle[aria-expanded="true"] span:nth-child(2){opacity:0}
 .nav-toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
-.mobile-menu{position:fixed;top:72px;left:0;right:0;bottom:0;background:var(--cream);z-index:99;opacity:0;visibility:hidden;transition:opacity 0.32s var(--ease),visibility 0.32s var(--ease);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.mobile-menu{position:fixed;top:72px;left:0;right:0;bottom:0;background:var(--canvas);z-index:99;opacity:0;visibility:hidden;transition:opacity 0.32s var(--ease),visibility 0.32s var(--ease);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .mobile-menu.open{opacity:1;visibility:visible}
 .mobile-menu-inner{padding:32px 24px 64px;display:flex;flex-direction:column;gap:4px;max-width:480px;margin:0 auto}
 .mm-link{font-size:22px;font-weight:600;color:var(--ink);letter-spacing:-0.02em;padding:14px 4px;border-bottom:1px solid var(--line);transition:color 0.2s ease}
-.mm-link:hover,.mm-link:focus-visible{color:var(--emerald)}
+.mm-link:hover,.mm-link:focus-visible{color:var(--primary)}
 .mm-secondary{font-size:17px;font-weight:500;color:var(--body);border-bottom:none;padding:14px 4px}
-.mm-cta{display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:var(--cream);background:var(--ink);padding:16px 28px;border-radius:999px;margin-top:8px;transition:background 0.2s var(--ease)}
-.mm-cta:hover,.mm-cta:focus-visible{background:var(--emerald)}
+.mm-cta{display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:var(--canvas);background:var(--ink);padding:16px 28px;border-radius:999px;margin-top:8px;transition:background 0.2s var(--ease)}
+.mm-cta:hover,.mm-cta:focus-visible{background:var(--primary)}
 body.menu-open{overflow:hidden}
 
 /* ═════ RESPONSIVE BREAKPOINTS ═════ */
@@ -326,9 +328,9 @@ body.menu-open{overflow:hidden}
   .bento-header{margin-bottom:40px}
   .stats{padding:64px 0}
   .stats-grid{grid-template-columns:1fr 1fr;gap:0}
-  .stat-cell{border-left:none;border-top:1px solid rgba(251,249,244,0.12);padding:24px 16px}
+  .stat-cell{border-left:none;border-top:1px solid rgba(247,249,252,0.12);padding:24px 16px}
   .stat-cell:nth-child(-n+2){border-top:none}
-  .stat-cell:nth-child(odd){border-right:1px solid rgba(251,249,244,0.12)}
+  .stat-cell:nth-child(odd){border-right:1px solid rgba(247,249,252,0.12)}
   .stat-cell .num{font-size:clamp(40px,11vw,56px)}
   .arch{padding:80px 0}
   .arch-grid-wrap{gap:40px;margin-top:48px}
@@ -386,7 +388,7 @@ body.menu-open{overflow:hidden}
   .arch-cube{padding:12px;border-radius:14px}
   .arch-cube .ac-name{font-size:11.5px}
   .stats-grid{grid-template-columns:1fr}
-  .stat-cell{border-top:1px solid rgba(251,249,244,0.12)!important;border-right:none!important;padding:24px 0;text-align:left}
+  .stat-cell{border-top:1px solid rgba(247,249,252,0.12)!important;border-right:none!important;padding:24px 0;text-align:left}
   .stat-cell:first-child{border-top:none!important}
   .stat-cell .num{font-size:48px}
   .stat-cell .lbl{max-width:none}
@@ -413,7 +415,7 @@ body.menu-open{overflow:hidden}
 <header class="navbar" role="banner">
   <div class="container nav-inner">
     <a href="#" class="nav-logo" aria-label="Devon — bosh sahifa">
-      <span class="dot"></span>DEVON
+      <svg width="24" height="24" viewBox="0 0 715.15 712.76" aria-hidden="true" style="flex-shrink:0;color:#0878FE"><path fill="currentColor" d="M341.05,557.1l54.54-1.34,58.28,129.84c-149.13,49.03-312.65-11.78-397.7-143.83C-31.75,405.26-14.67,227.79,94.84,110.91,205.64-7.34,383.13-34.67,524.95,46.54c138.15,79.11,208.93,244.03,161.49,403.62l-132.48-58.73c12.68-73.68-11.34-147.38-64.81-194.16-56.62-49.54-133.77-67.97-204.82-42.36-96.38,34.75-153.08,126.85-138.38,226.99,13.93,94.9,92.55,170.93,195.11,175.19Z"/><path fill="currentColor" d="M694.2,598.65l-94.4,94.3c-16.56,16.54-38.17,23.08-60.76,18.28-22.3-4.74-36.61-20.65-46.8-43.55l-75.37-169.2c-11.95-26.83-6.09-53.37,13.4-72.23,19.32-18.69,46.68-22.67,73.05-10.5l184.2,85c37.18,17.16,34.2,70.41,6.68,97.9Z"/></svg>Devon
     </a>
     <nav class="nav-links" aria-label="Asosiy navigatsiya">
       <a href="#mahsulot">Mahsulot <span class="caret"></span></a>
@@ -459,8 +461,8 @@ body.menu-open{overflow:hidden}
   </div>
   <div class="chip chip-2 chip-stat" aria-hidden="true">
     <div>
-      <div style="font-size:11px;color:#9DA0A8;letter-spacing:0.08em;font-weight:600;margin-bottom:4px">TASDIQLASH VAQTI</div>
-      <div style="display:flex;align-items:baseline;gap:6px"><span class="big">70%</span><span style="color:#3D7B66;font-size:13px;font-weight:600">↓ qisqardi</span></div>
+      <div style="font-size:11px;color:#64748B;letter-spacing:0.08em;font-weight:600;margin-bottom:4px">TASDIQLASH VAQTI</div>
+      <div style="display:flex;align-items:baseline;gap:6px"><span class="big">70%</span><span style="color:#16A34A;font-size:13px;font-weight:600">↓ qisqardi</span></div>
     </div>
   </div>
   <div class="chip chip-3 chip-stack" aria-hidden="true">
@@ -473,12 +475,12 @@ body.menu-open{overflow:hidden}
   </div>
   <div class="chip chip-4 chip-sig" aria-hidden="true">
     <div class="sig-icon">
-      <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 7l2.5 2.5L11 4" stroke="#FBF9F4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 7l2.5 2.5L11 4" stroke="#F7F9FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
     </div>
     <div><strong>ERI bilan imzolandi</strong><small>2026/0128 · arxiv</small></div>
   </div>
   <div class="chip chip-5" aria-hidden="true" style="display:flex;align-items:center;gap:10px">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="6" height="6" rx="1" fill="#1F4E3F"/><rect x="11" y="4" width="6" height="6" rx="1" fill="#E5EEEA"/><rect x="4" y="11" width="6" height="6" rx="1" fill="#E5EEEA"/><rect x="11" y="11" width="6" height="6" rx="1" fill="#BC6E2B"/></svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="6" height="6" rx="1" fill="#0A6BE0"/><rect x="11" y="4" width="6" height="6" rx="1" fill="#EAF2FE"/><rect x="4" y="11" width="6" height="6" rx="1" fill="#EAF2FE"/><rect x="11" y="11" width="6" height="6" rx="1" fill="#D97706"/></svg>
     <div><strong>8 modul</strong><small>yagona platformada</small></div>
   </div>
 
@@ -531,10 +533,10 @@ body.menu-open{overflow:hidden}
         <div class="p-art">
           <svg width="160" height="100" viewBox="0 0 160 100" fill="none">
             <rect x="0" y="40" width="160" height="3" rx="1.5" fill="rgba(251,249,244,0.18)"/>
-            <rect x="0" y="40" width="120" height="3" rx="1.5" fill="#BC6E2B"/>
-            <circle cx="20" cy="42" r="10" fill="#BC6E2B"/>
-            <circle cx="60" cy="42" r="10" fill="#BC6E2B"/>
-            <circle cx="100" cy="42" r="10" fill="#BC6E2B"/>
+            <rect x="0" y="40" width="120" height="3" rx="1.5" fill="#D97706"/>
+            <circle cx="20" cy="42" r="10" fill="#D97706"/>
+            <circle cx="60" cy="42" r="10" fill="#D97706"/>
+            <circle cx="100" cy="42" r="10" fill="#D97706"/>
             <circle cx="140" cy="42" r="10" fill="none" stroke="rgba(251,249,244,0.25)" stroke-width="2" stroke-dasharray="3 2"/>
             <text x="80" y="80" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="rgba(251,249,244,0.55)" font-weight="500">14 kun · ishga tushdi</text>
           </svg>
@@ -549,18 +551,18 @@ body.menu-open{overflow:hidden}
         </div>
         <div class="p-art">
           <svg width="140" height="120" viewBox="0 0 140 120" fill="none">
-            <rect x="55" y="6" width="30" height="22" rx="4" fill="#1F4E3F"/>
-            <line x1="70" y1="28" x2="70" y2="46" stroke="#1F4E3F" stroke-width="1.6"/>
-            <line x1="22" y1="46" x2="118" y2="46" stroke="#1F4E3F" stroke-width="1.6"/>
-            <line x1="22" y1="46" x2="22" y2="60" stroke="#1F4E3F" stroke-width="1.6"/>
-            <line x1="70" y1="46" x2="70" y2="60" stroke="#1F4E3F" stroke-width="1.6"/>
-            <line x1="118" y1="46" x2="118" y2="60" stroke="#1F4E3F" stroke-width="1.6"/>
-            <rect x="7" y="60" width="30" height="22" rx="4" fill="#FBF9F4" stroke="#1F4E3F" stroke-width="1.4"/>
-            <rect x="55" y="60" width="30" height="22" rx="4" fill="#FBF9F4" stroke="#1F4E3F" stroke-width="1.4"/>
-            <rect x="103" y="60" width="30" height="22" rx="4" fill="#BC6E2B"/>
-            <circle cx="22" cy="100" r="6" fill="#1F4E3F"/>
-            <circle cx="70" cy="100" r="6" fill="#1F4E3F"/>
-            <circle cx="118" cy="100" r="6" fill="#BC6E2B"/>
+            <rect x="55" y="6" width="30" height="22" rx="4" fill="#0A6BE0"/>
+            <line x1="70" y1="28" x2="70" y2="46" stroke="#0A6BE0" stroke-width="1.6"/>
+            <line x1="22" y1="46" x2="118" y2="46" stroke="#0A6BE0" stroke-width="1.6"/>
+            <line x1="22" y1="46" x2="22" y2="60" stroke="#0A6BE0" stroke-width="1.6"/>
+            <line x1="70" y1="46" x2="70" y2="60" stroke="#0A6BE0" stroke-width="1.6"/>
+            <line x1="118" y1="46" x2="118" y2="60" stroke="#0A6BE0" stroke-width="1.6"/>
+            <rect x="7" y="60" width="30" height="22" rx="4" fill="#F7F9FC" stroke="#0A6BE0" stroke-width="1.4"/>
+            <rect x="55" y="60" width="30" height="22" rx="4" fill="#F7F9FC" stroke="#0A6BE0" stroke-width="1.4"/>
+            <rect x="103" y="60" width="30" height="22" rx="4" fill="#D97706"/>
+            <circle cx="22" cy="100" r="6" fill="#0A6BE0"/>
+            <circle cx="70" cy="100" r="6" fill="#0A6BE0"/>
+            <circle cx="118" cy="100" r="6" fill="#D97706"/>
           </svg>
         </div>
       </article>
@@ -573,8 +575,8 @@ body.menu-open{overflow:hidden}
         </div>
         <div class="p-art">
           <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
-            <path d="M60 16l36 14v22c0 22-16 34-36 42-20-8-36-20-36-42V30l36-14z" fill="rgba(251,249,244,0.08)" stroke="#FBF9F4" stroke-width="1.6"/>
-            <path d="M44 60l10 10 24-26" stroke="#BC6E2B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M60 16l36 14v22c0 22-16 34-36 42-20-8-36-20-36-42V30l36-14z" fill="rgba(251,249,244,0.08)" stroke="#F7F9FC" stroke-width="1.6"/>
+            <path d="M44 60l10 10 24-26" stroke="#D97706" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
           </svg>
         </div>
       </article>
@@ -601,23 +603,23 @@ body.menu-open{overflow:hidden}
               <animateTransform attributeName="transform" type="translate" values="0 0;0 -32;0 -32;0 0" keyTimes="0;0.45;0.9;1" dur="6s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1;0 0 0 0;0.4 0 0.2 1"/>
               <g opacity="0">
                 <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.45;0.9;1" dur="6s" repeatCount="indefinite"/>
-                <rect x="0" y="0" width="460" height="28" rx="8" fill="#E5EEEA"/>
-                <circle cx="18" cy="14" r="5" fill="#1F4E3F"/>
-                <text x="32" y="18" font-family="Inter,sans-serif" font-size="11.5" fill="#1F4E3F" font-weight="600">imzolandi · Buyruq №2026/142</text>
-                <text x="420" y="18" font-family="Inter,sans-serif" font-size="11" fill="#5A5E6A" font-weight="500">hozir</text>
+                <rect x="0" y="0" width="460" height="28" rx="8" fill="#EAF2FE"/>
+                <circle cx="18" cy="14" r="5" fill="#0A6BE0"/>
+                <text x="32" y="18" font-family="Inter,sans-serif" font-size="11.5" fill="#0A6BE0" font-weight="600">imzolandi · Buyruq №2026/142</text>
+                <text x="420" y="18" font-family="Inter,sans-serif" font-size="11" fill="#475569" font-weight="500">hozir</text>
               </g>
-              <rect x="0" y="32" width="460" height="28" rx="8" fill="#FBF9F4"/>
-              <circle cx="18" cy="46" r="5" fill="#BC6E2B"/>
-              <text x="32" y="50" font-family="Inter,sans-serif" font-size="11.5" fill="#1A1D24" font-weight="500">tasdiqlash kutilmoqda · PLY-0128</text>
-              <text x="420" y="50" font-family="Inter,sans-serif" font-size="11" fill="#5A5E6A" font-weight="500">2 min</text>
-              <rect x="0" y="64" width="460" height="28" rx="8" fill="#FBF9F4"/>
-              <circle cx="18" cy="78" r="5" fill="#3D7B66"/>
-              <text x="32" y="82" font-family="Inter,sans-serif" font-size="11.5" fill="#1A1D24" font-weight="500">yangi vazifa yaratildi · A.K.</text>
-              <text x="420" y="82" font-family="Inter,sans-serif" font-size="11" fill="#5A5E6A" font-weight="500">5 min</text>
-              <rect x="0" y="96" width="460" height="28" rx="8" fill="#FBF9F4"/>
-              <circle cx="18" cy="110" r="5" fill="#9DA0A8"/>
-              <text x="32" y="114" font-family="Inter,sans-serif" font-size="11.5" fill="#1A1D24" font-weight="500">arxivga o'tkazildi · 042</text>
-              <text x="420" y="114" font-family="Inter,sans-serif" font-size="11" fill="#5A5E6A" font-weight="500">3 soat</text>
+              <rect x="0" y="32" width="460" height="28" rx="8" fill="#F7F9FC"/>
+              <circle cx="18" cy="46" r="5" fill="#D97706"/>
+              <text x="32" y="50" font-family="Inter,sans-serif" font-size="11.5" fill="#0A2540" font-weight="500">tasdiqlash kutilmoqda · PLY-0128</text>
+              <text x="420" y="50" font-family="Inter,sans-serif" font-size="11" fill="#475569" font-weight="500">2 min</text>
+              <rect x="0" y="64" width="460" height="28" rx="8" fill="#F7F9FC"/>
+              <circle cx="18" cy="78" r="5" fill="#16A34A"/>
+              <text x="32" y="82" font-family="Inter,sans-serif" font-size="11.5" fill="#0A2540" font-weight="500">yangi vazifa yaratildi · A.K.</text>
+              <text x="420" y="82" font-family="Inter,sans-serif" font-size="11" fill="#475569" font-weight="500">5 min</text>
+              <rect x="0" y="96" width="460" height="28" rx="8" fill="#F7F9FC"/>
+              <circle cx="18" cy="110" r="5" fill="#64748B"/>
+              <text x="32" y="114" font-family="Inter,sans-serif" font-size="11.5" fill="#0A2540" font-weight="500">arxivga o'tkazildi · 042</text>
+              <text x="420" y="114" font-family="Inter,sans-serif" font-size="11" fill="#475569" font-weight="500">3 soat</text>
             </g>
           </svg>
         </div>
@@ -631,77 +633,77 @@ body.menu-open{overflow:hidden}
           <svg width="100%" viewBox="0 0 280 180" fill="none" preserveAspectRatio="xMidYMid meet">
             <!-- 8 modules as connected nodes — one highlights at a time -->
             <!-- Background connection lines -->
-            <line x1="50" y1="40" x2="140" y2="40" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="140" y1="40" x2="230" y2="40" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="50" y1="90" x2="140" y2="90" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="140" y1="90" x2="230" y2="90" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="50" y1="140" x2="140" y2="140" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="140" y1="140" x2="230" y2="140" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="50" y1="40" x2="50" y2="140" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="140" y1="40" x2="140" y2="140" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="230" y1="40" x2="230" y2="140" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="50" y1="40" x2="140" y2="40" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="140" y1="40" x2="230" y2="40" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="50" y1="90" x2="140" y2="90" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="140" y1="90" x2="230" y2="90" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="50" y1="140" x2="140" y2="140" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="140" y1="140" x2="230" y2="140" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="50" y1="40" x2="50" y2="140" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="140" y1="40" x2="140" y2="140" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="230" y1="40" x2="230" y2="140" stroke="#E6EAF0" stroke-width="1.4"/>
             <!-- Animated active connection -->
-            <line x1="50" y1="40" x2="140" y2="40" stroke="#1F4E3F" stroke-width="2" stroke-linecap="round" opacity="0">
+            <line x1="50" y1="40" x2="140" y2="40" stroke="#0A6BE0" stroke-width="2" stroke-linecap="round" opacity="0">
               <animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.1;0.25;0.35;1" dur="8s" repeatCount="indefinite"/>
             </line>
-            <line x1="140" y1="40" x2="140" y2="90" stroke="#1F4E3F" stroke-width="2" stroke-linecap="round" opacity="0">
+            <line x1="140" y1="40" x2="140" y2="90" stroke="#0A6BE0" stroke-width="2" stroke-linecap="round" opacity="0">
               <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.25;0.35;0.5;0.6;1" dur="8s" repeatCount="indefinite"/>
             </line>
-            <line x1="140" y1="90" x2="230" y2="90" stroke="#BC6E2B" stroke-width="2" stroke-linecap="round" opacity="0">
+            <line x1="140" y1="90" x2="230" y2="90" stroke="#D97706" stroke-width="2" stroke-linecap="round" opacity="0">
               <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.5;0.6;0.75;0.85;1" dur="8s" repeatCount="indefinite"/>
             </line>
             <!-- Module nodes -->
             <g>
-              <circle cx="50" cy="40" r="18" fill="#1F4E3F"/>
-              <text x="50" y="38" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#FBF9F4" font-weight="700">HUJJAT</text>
-              <text x="50" y="47" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#FBF9F4" font-weight="700">LAR</text>
+              <circle cx="50" cy="40" r="18" fill="#0A6BE0"/>
+              <text x="50" y="38" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#F7F9FC" font-weight="700">HUJJAT</text>
+              <text x="50" y="47" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#F7F9FC" font-weight="700">LAR</text>
             </g>
             <g>
-              <circle cx="140" cy="40" r="18" fill="#FBF9F4" stroke="#1F4E3F" stroke-width="1.6">
-                <animate attributeName="fill" values="#FBF9F4;#FBF9F4;#1F4E3F;#1F4E3F;#FBF9F4;#FBF9F4" keyTimes="0;0.25;0.35;0.5;0.6;1" dur="8s" repeatCount="indefinite"/>
+              <circle cx="140" cy="40" r="18" fill="#F7F9FC" stroke="#0A6BE0" stroke-width="1.6">
+                <animate attributeName="fill" values="#F7F9FC;#F7F9FC;#0A6BE0;#0A6BE0;#F7F9FC;#F7F9FC" keyTimes="0;0.25;0.35;0.5;0.6;1" dur="8s" repeatCount="indefinite"/>
               </circle>
-              <text x="140" y="43" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#1F4E3F" font-weight="700">
-                <animate attributeName="fill" values="#1F4E3F;#1F4E3F;#FBF9F4;#FBF9F4;#1F4E3F;#1F4E3F" keyTimes="0;0.25;0.35;0.5;0.6;1" dur="8s" repeatCount="indefinite"/>
+              <text x="140" y="43" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#0A6BE0" font-weight="700">
+                <animate attributeName="fill" values="#0A6BE0;#0A6BE0;#F7F9FC;#F7F9FC;#0A6BE0;#0A6BE0" keyTimes="0;0.25;0.35;0.5;0.6;1" dur="8s" repeatCount="indefinite"/>
                 IMZO
               </text>
             </g>
             <g>
-              <circle cx="230" cy="40" r="18" fill="#FBF9F4" stroke="#E8E3D6" stroke-width="1.6"/>
-              <text x="230" y="38" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#5A5E6A" font-weight="700">KELI-</text>
-              <text x="230" y="47" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#5A5E6A" font-weight="700">SHUV</text>
+              <circle cx="230" cy="40" r="18" fill="#F7F9FC" stroke="#E6EAF0" stroke-width="1.6"/>
+              <text x="230" y="38" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#475569" font-weight="700">KELI-</text>
+              <text x="230" y="47" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#475569" font-weight="700">SHUV</text>
             </g>
             <g>
-              <circle cx="50" cy="90" r="18" fill="#FBF9F4" stroke="#E8E3D6" stroke-width="1.6"/>
-              <text x="50" y="88" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#5A5E6A" font-weight="700">VAZI-</text>
-              <text x="50" y="97" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#5A5E6A" font-weight="700">FALAR</text>
+              <circle cx="50" cy="90" r="18" fill="#F7F9FC" stroke="#E6EAF0" stroke-width="1.6"/>
+              <text x="50" y="88" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#475569" font-weight="700">VAZI-</text>
+              <text x="50" y="97" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#475569" font-weight="700">FALAR</text>
             </g>
             <g>
-              <circle cx="140" cy="90" r="22" fill="#BC6E2B" opacity="0.18">
+              <circle cx="140" cy="90" r="22" fill="#D97706" opacity="0.18">
                 <animate attributeName="r" values="14;24;14" dur="8s" repeatCount="indefinite" keyTimes="0;0.5;1"/>
                 <animate attributeName="opacity" values="0;0.25;0;0;0" keyTimes="0;0.5;0.7;0.9;1" dur="8s" repeatCount="indefinite"/>
               </circle>
-              <circle cx="140" cy="90" r="18" fill="#BC6E2B"/>
-              <text x="140" y="93" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#FBF9F4" font-weight="700">AUDIT</text>
+              <circle cx="140" cy="90" r="18" fill="#D97706"/>
+              <text x="140" y="93" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#F7F9FC" font-weight="700">AUDIT</text>
             </g>
             <g>
-              <circle cx="230" cy="90" r="18" fill="#FBF9F4" stroke="#E8E3D6" stroke-width="1.6">
-                <animate attributeName="fill" values="#FBF9F4;#FBF9F4;#BC6E2B;#FBF9F4;#FBF9F4" keyTimes="0;0.6;0.75;0.85;1" dur="8s" repeatCount="indefinite"/>
+              <circle cx="230" cy="90" r="18" fill="#F7F9FC" stroke="#E6EAF0" stroke-width="1.6">
+                <animate attributeName="fill" values="#F7F9FC;#F7F9FC;#D97706;#F7F9FC;#F7F9FC" keyTimes="0;0.6;0.75;0.85;1" dur="8s" repeatCount="indefinite"/>
               </circle>
-              <text x="230" y="88" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#5A5E6A" font-weight="700">TUZIL-</text>
-              <text x="230" y="97" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#5A5E6A" font-weight="700">MA</text>
+              <text x="230" y="88" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#475569" font-weight="700">TUZIL-</text>
+              <text x="230" y="97" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#475569" font-weight="700">MA</text>
             </g>
             <g>
-              <circle cx="50" cy="140" r="18" fill="#FBF9F4" stroke="#E8E3D6" stroke-width="1.6"/>
-              <text x="50" y="143" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#5A5E6A" font-weight="700">XATLAR</text>
+              <circle cx="50" cy="140" r="18" fill="#F7F9FC" stroke="#E6EAF0" stroke-width="1.6"/>
+              <text x="50" y="143" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#475569" font-weight="700">XATLAR</text>
             </g>
             <g>
-              <circle cx="140" cy="140" r="18" fill="#FBF9F4" stroke="#E8E3D6" stroke-width="1.6"/>
-              <text x="140" y="143" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#5A5E6A" font-weight="700">EKSPORT</text>
+              <circle cx="140" cy="140" r="18" fill="#F7F9FC" stroke="#E6EAF0" stroke-width="1.6"/>
+              <text x="140" y="143" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#475569" font-weight="700">EKSPORT</text>
             </g>
             <g>
-              <circle cx="230" cy="140" r="18" fill="#FBF9F4" stroke="#E8E3D6" stroke-width="1.6"/>
-              <text x="230" y="138" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#5A5E6A" font-weight="700">FOYD-</text>
-              <text x="230" y="147" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#5A5E6A" font-weight="700">A.</text>
+              <circle cx="230" cy="140" r="18" fill="#F7F9FC" stroke="#E6EAF0" stroke-width="1.6"/>
+              <text x="230" y="138" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#475569" font-weight="700">FOYD-</text>
+              <text x="230" y="147" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#475569" font-weight="700">A.</text>
             </g>
           </svg>
         </div>
@@ -722,22 +724,22 @@ body.menu-open{overflow:hidden}
             <line x1="56" y1="94" x2="138" y2="94" stroke="rgba(251,249,244,0.18)" stroke-width="1.2"/>
             <line x1="56" y1="116" x2="100" y2="116" stroke="rgba(251,249,244,0.3)" stroke-width="1"/>
             <!-- Animated signature stroke -->
-            <path d="M58 138 Q72 122 84 138 T 108 138 Q120 130 130 138 L 144 138" stroke="#BC6E2B" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-dasharray="120" stroke-dashoffset="120">
+            <path d="M58 138 Q72 122 84 138 T 108 138 Q120 130 130 138 L 144 138" stroke="#D97706" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-dasharray="120" stroke-dashoffset="120">
               <animate attributeName="stroke-dashoffset" values="120;120;0;0;120" keyTimes="0;0.15;0.45;0.85;1" dur="5s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1"/>
             </path>
             <!-- Arrow connecting -->
             <line x1="170" y1="90" x2="200" y2="90" stroke="rgba(251,249,244,0.3)" stroke-width="1.6" stroke-dasharray="3 3"/>
             <path d="M195 86 L201 90 L195 94" stroke="rgba(251,249,244,0.6)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
             <!-- ERI signing badge (pulses when signature completes) -->
-            <circle cx="240" cy="90" r="42" fill="#BC6E2B" opacity="0">
+            <circle cx="240" cy="90" r="42" fill="#D97706" opacity="0">
               <animate attributeName="opacity" values="0;0;0.15;0;0;0" keyTimes="0;0.4;0.5;0.7;0.85;1" dur="5s" repeatCount="indefinite"/>
               <animate attributeName="r" values="28;28;52;28;28;28" keyTimes="0;0.4;0.5;0.7;0.85;1" dur="5s" repeatCount="indefinite"/>
             </circle>
-            <circle cx="240" cy="90" r="32" fill="#BC6E2B"/>
-            <path d="M226 90 L236 100 L256 80" stroke="#FBF9F4" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-dasharray="42" stroke-dashoffset="42">
+            <circle cx="240" cy="90" r="32" fill="#D97706"/>
+            <path d="M226 90 L236 100 L256 80" stroke="#F7F9FC" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-dasharray="42" stroke-dashoffset="42">
               <animate attributeName="stroke-dashoffset" values="42;42;0;0;42" keyTimes="0;0.4;0.5;0.85;1" dur="5s" repeatCount="indefinite"/>
             </path>
-            <text x="240" y="140" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#BC6E2B" font-weight="700" letter-spacing="0.1em">ERI ИМЗО</text>
+            <text x="240" y="140" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#D97706" font-weight="700" letter-spacing="0.1em">ERI ИМЗО</text>
             <!-- Arrow to archive -->
             <line x1="280" y1="90" x2="310" y2="90" stroke="rgba(251,249,244,0.3)" stroke-width="1.6" stroke-dasharray="3 3"/>
             <!-- Archive box -->
@@ -755,58 +757,58 @@ body.menu-open{overflow:hidden}
         <div class="b-visual">
           <svg width="100%" height="180" viewBox="0 0 360 180" fill="none" preserveAspectRatio="xMidYMid meet">
             <!-- Background line -->
-            <line x1="36" y1="60" x2="324" y2="60" stroke="#E8E3D6" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="36" y1="60" x2="324" y2="60" stroke="#E6EAF0" stroke-width="2.5" stroke-linecap="round"/>
             <!-- Animated progress line (advances through stages) -->
-            <line x1="36" y1="60" x2="324" y2="60" stroke="#1F4E3F" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="288" stroke-dashoffset="288">
+            <line x1="36" y1="60" x2="324" y2="60" stroke="#0A6BE0" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="288" stroke-dashoffset="288">
               <animate attributeName="stroke-dashoffset" values="288;216;144;72;72;288" keyTimes="0;0.2;0.4;0.6;0.9;1" dur="9s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1"/>
             </line>
 
             <!-- Node 1 -->
-            <circle cx="36" cy="60" r="18" fill="#1F4E3F"/>
-            <path d="M30 60 L34 64 L44 54" stroke="#FBF9F4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-            <text x="36" y="98" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#5A5E6A" font-weight="600">Yaratish</text>
+            <circle cx="36" cy="60" r="18" fill="#0A6BE0"/>
+            <path d="M30 60 L34 64 L44 54" stroke="#F7F9FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <text x="36" y="98" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#475569" font-weight="600">Yaratish</text>
 
             <!-- Node 2 -->
-            <circle cx="108" cy="60" r="18" fill="#E8E3D6">
-              <animate attributeName="fill" values="#E8E3D6;#1F4E3F;#1F4E3F;#1F4E3F;#E8E3D6" keyTimes="0;0.2;0.6;0.9;1" dur="9s" repeatCount="indefinite"/>
+            <circle cx="108" cy="60" r="18" fill="#E6EAF0">
+              <animate attributeName="fill" values="#E6EAF0;#0A6BE0;#0A6BE0;#0A6BE0;#E6EAF0" keyTimes="0;0.2;0.6;0.9;1" dur="9s" repeatCount="indefinite"/>
             </circle>
-            <path d="M102 60 L106 64 L116 54" stroke="#FBF9F4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0">
+            <path d="M102 60 L106 64 L116 54" stroke="#F7F9FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0">
               <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.18;0.22;0.9;1" dur="9s" repeatCount="indefinite"/>
             </path>
-            <text x="108" y="98" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#5A5E6A" font-weight="600">Moliya</text>
+            <text x="108" y="98" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#475569" font-weight="600">Moliya</text>
 
             <!-- Node 3 -->
-            <circle cx="180" cy="60" r="18" fill="#E8E3D6">
-              <animate attributeName="fill" values="#E8E3D6;#E8E3D6;#1F4E3F;#1F4E3F;#E8E3D6" keyTimes="0;0.4;0.45;0.9;1" dur="9s" repeatCount="indefinite"/>
+            <circle cx="180" cy="60" r="18" fill="#E6EAF0">
+              <animate attributeName="fill" values="#E6EAF0;#E6EAF0;#0A6BE0;#0A6BE0;#E6EAF0" keyTimes="0;0.4;0.45;0.9;1" dur="9s" repeatCount="indefinite"/>
             </circle>
-            <path d="M174 60 L178 64 L188 54" stroke="#FBF9F4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0">
+            <path d="M174 60 L178 64 L188 54" stroke="#F7F9FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0">
               <animate attributeName="opacity" values="0;0;0;1;1;0" keyTimes="0;0.4;0.42;0.45;0.9;1" dur="9s" repeatCount="indefinite"/>
             </path>
-            <text x="180" y="98" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#5A5E6A" font-weight="600">Yuridik</text>
+            <text x="180" y="98" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#475569" font-weight="600">Yuridik</text>
 
             <!-- Node 4 — current, pulses while waiting -->
-            <circle cx="252" cy="60" r="26" fill="#BC6E2B" opacity="0.15">
+            <circle cx="252" cy="60" r="26" fill="#D97706" opacity="0.15">
               <animate attributeName="r" values="18;28;18" dur="2.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1"/>
               <animate attributeName="opacity" values="0.25;0;0.25" dur="2.2s" repeatCount="indefinite"/>
             </circle>
-            <circle cx="252" cy="60" r="18" fill="#BC6E2B"/>
-            <text x="252" y="64" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#FBF9F4" font-weight="800">4</text>
-            <text x="252" y="98" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#BC6E2B" font-weight="700">Direktor</text>
-            <text x="252" y="114" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#9DA0A8">ko'rib chiq.</text>
+            <circle cx="252" cy="60" r="18" fill="#D97706"/>
+            <text x="252" y="64" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#F7F9FC" font-weight="800">4</text>
+            <text x="252" y="98" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#D97706" font-weight="700">Direktor</text>
+            <text x="252" y="114" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#64748B">ko'rib chiq.</text>
 
             <!-- Node 5 — upcoming -->
-            <circle cx="324" cy="60" r="18" fill="#FBF9F4" stroke="#E8E3D6" stroke-width="2" stroke-dasharray="4 3"/>
-            <text x="324" y="64" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#9DA0A8" font-weight="700">5</text>
-            <text x="324" y="98" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#9DA0A8" font-weight="600">Arxiv</text>
+            <circle cx="324" cy="60" r="18" fill="#F7F9FC" stroke="#E6EAF0" stroke-width="2" stroke-dasharray="4 3"/>
+            <text x="324" y="64" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#64748B" font-weight="700">5</text>
+            <text x="324" y="98" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#64748B" font-weight="600">Arxiv</text>
 
             <!-- Floating comment bubble — shows "izoh" coming in -->
             <g opacity="0">
               <animate attributeName="opacity" values="0;0;0;1;1;0;0" keyTimes="0;0.5;0.55;0.65;0.8;0.85;1" dur="9s" repeatCount="indefinite"/>
               <animateTransform attributeName="transform" type="translate" values="0 10;0 10;0 10;0 0;0 0;0 -8;0 -8" keyTimes="0;0.5;0.55;0.65;0.8;0.85;1" dur="9s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1"/>
-              <rect x="200" y="138" width="104" height="28" rx="14" fill="#FBF9F4" stroke="#E8E3D6"/>
-              <path d="M214 166 L210 160 L218 160 Z" fill="#FBF9F4" stroke="#E8E3D6"/>
-              <circle cx="216" cy="152" r="3" fill="#BC6E2B"/>
-              <text x="226" y="155" font-family="Inter,sans-serif" font-size="10" fill="#1A1D24" font-weight="500">+ izoh qo'shildi</text>
+              <rect x="200" y="138" width="104" height="28" rx="14" fill="#F7F9FC" stroke="#E6EAF0"/>
+              <path d="M214 166 L210 160 L218 160 Z" fill="#F7F9FC" stroke="#E6EAF0"/>
+              <circle cx="216" cy="152" r="3" fill="#D97706"/>
+              <text x="226" y="155" font-family="Inter,sans-serif" font-size="10" fill="#0A2540" font-weight="500">+ izoh qo'shildi</text>
             </g>
           </svg>
         </div>
@@ -819,106 +821,106 @@ body.menu-open{overflow:hidden}
         <div class="b-visual">
           <svg width="100%" height="220" viewBox="0 0 280 220" fill="none" preserveAspectRatio="xMidYMid meet">
             <!-- Static base connector lines (always visible, faint) -->
-            <line x1="140" y1="38" x2="140" y2="50" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="48" y1="50" x2="232" y2="50" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="48" y1="50" x2="48" y2="62" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="140" y1="50" x2="140" y2="62" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="232" y1="50" x2="232" y2="62" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="140" y1="38" x2="140" y2="50" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="48" y1="50" x2="232" y2="50" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="48" y1="50" x2="48" y2="62" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="140" y1="50" x2="140" y2="62" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="232" y1="50" x2="232" y2="62" stroke="#E6EAF0" stroke-width="1.4"/>
 
-            <line x1="140" y1="92" x2="140" y2="104" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="78" y1="104" x2="202" y2="104" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="78" y1="104" x2="78" y2="116" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="140" y1="104" x2="140" y2="116" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="202" y1="104" x2="202" y2="116" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="140" y1="92" x2="140" y2="104" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="78" y1="104" x2="202" y2="104" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="78" y1="104" x2="78" y2="116" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="140" y1="104" x2="140" y2="116" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="202" y1="104" x2="202" y2="116" stroke="#E6EAF0" stroke-width="1.4"/>
 
-            <line x1="140" y1="146" x2="140" y2="158" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="88" y1="158" x2="192" y2="158" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="88" y1="158" x2="88" y2="170" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="140" y1="158" x2="140" y2="170" stroke="#E8E3D6" stroke-width="1.4"/>
-            <line x1="192" y1="158" x2="192" y2="170" stroke="#E8E3D6" stroke-width="1.4"/>
+            <line x1="140" y1="146" x2="140" y2="158" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="88" y1="158" x2="192" y2="158" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="88" y1="158" x2="88" y2="170" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="140" y1="158" x2="140" y2="170" stroke="#E6EAF0" stroke-width="1.4"/>
+            <line x1="192" y1="158" x2="192" y2="170" stroke="#E6EAF0" stroke-width="1.4"/>
 
             <!-- Animated active-path strokes (drill from root to leaf) -->
-            <line x1="140" y1="38" x2="140" y2="62" stroke="#1F4E3F" stroke-width="2" stroke-linecap="round" stroke-dasharray="24" stroke-dashoffset="24">
+            <line x1="140" y1="38" x2="140" y2="62" stroke="#0A6BE0" stroke-width="2" stroke-linecap="round" stroke-dasharray="24" stroke-dashoffset="24">
               <animate attributeName="stroke-dashoffset" values="24;24;0;0;24;24" keyTimes="0;0.05;0.16;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
             </line>
-            <line x1="140" y1="92" x2="140" y2="116" stroke="#1F4E3F" stroke-width="2" stroke-linecap="round" stroke-dasharray="24" stroke-dashoffset="24">
+            <line x1="140" y1="92" x2="140" y2="116" stroke="#0A6BE0" stroke-width="2" stroke-linecap="round" stroke-dasharray="24" stroke-dashoffset="24">
               <animate attributeName="stroke-dashoffset" values="24;24;24;0;0;24;24" keyTimes="0;0.18;0.30;0.42;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
             </line>
-            <line x1="140" y1="146" x2="140" y2="170" stroke="#1F4E3F" stroke-width="2" stroke-linecap="round" stroke-dasharray="24" stroke-dashoffset="24">
+            <line x1="140" y1="146" x2="140" y2="170" stroke="#0A6BE0" stroke-width="2" stroke-linecap="round" stroke-dasharray="24" stroke-dashoffset="24">
               <animate attributeName="stroke-dashoffset" values="24;24;24;24;0;0;24;24" keyTimes="0;0.42;0.50;0.55;0.65;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
             </line>
 
             <!-- L1: DEPARTAMENT (root, always green) -->
-            <rect x="100" y="10" width="80" height="28" rx="7" fill="#1F4E3F"/>
-            <text x="140" y="28" text-anchor="middle" font-family="Inter,sans-serif" font-size="9.5" fill="#FBF9F4" font-weight="800" letter-spacing="0.4">DEPARTAMENT</text>
+            <rect x="100" y="10" width="80" height="28" rx="7" fill="#0A6BE0"/>
+            <text x="140" y="28" text-anchor="middle" font-family="Inter,sans-serif" font-size="9.5" fill="#F7F9FC" font-weight="800" letter-spacing="0.4">DEPARTAMENT</text>
 
             <!-- L2: BOSHQARMA (3 nodes; center = active branch) -->
-            <rect x="14" y="62" width="68" height="30" rx="6" fill="#FBF9F4" stroke="#1F4E3F" stroke-width="1.3"/>
-            <text x="48" y="76" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" fill="#1F4E3F" font-weight="700">BOSHQARMA</text>
-            <text x="48" y="87" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#9DA0A8" font-weight="500">№1</text>
+            <rect x="14" y="62" width="68" height="30" rx="6" fill="#F7F9FC" stroke="#0A6BE0" stroke-width="1.3"/>
+            <text x="48" y="76" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" fill="#0A6BE0" font-weight="700">BOSHQARMA</text>
+            <text x="48" y="87" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#64748B" font-weight="500">№1</text>
 
-            <rect x="106" y="62" width="68" height="30" rx="6" fill="#FBF9F4" stroke="#1F4E3F" stroke-width="1.3">
-              <animate attributeName="fill" values="#FBF9F4;#FBF9F4;#1F4E3F;#1F4E3F;#FBF9F4;#FBF9F4" keyTimes="0;0.16;0.22;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+            <rect x="106" y="62" width="68" height="30" rx="6" fill="#F7F9FC" stroke="#0A6BE0" stroke-width="1.3">
+              <animate attributeName="fill" values="#F7F9FC;#F7F9FC;#0A6BE0;#0A6BE0;#F7F9FC;#F7F9FC" keyTimes="0;0.16;0.22;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
             </rect>
             <text x="140" y="76" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" font-weight="700">
-              <animate attributeName="fill" values="#1F4E3F;#1F4E3F;#FBF9F4;#FBF9F4;#1F4E3F;#1F4E3F" keyTimes="0;0.16;0.22;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              <animate attributeName="fill" values="#0A6BE0;#0A6BE0;#F7F9FC;#F7F9FC;#0A6BE0;#0A6BE0" keyTimes="0;0.16;0.22;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
               BOSHQARMA
             </text>
             <text x="140" y="87" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" font-weight="500">
-              <animate attributeName="fill" values="#9DA0A8;#9DA0A8;#FBF9F4;#FBF9F4;#9DA0A8;#9DA0A8" keyTimes="0;0.16;0.22;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              <animate attributeName="fill" values="#64748B;#64748B;#F7F9FC;#F7F9FC;#64748B;#64748B" keyTimes="0;0.16;0.22;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
               №2 · faol
             </text>
 
-            <rect x="198" y="62" width="68" height="30" rx="6" fill="#FBF9F4" stroke="#1F4E3F" stroke-width="1.3"/>
-            <text x="232" y="76" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" fill="#1F4E3F" font-weight="700">BOSHQARMA</text>
-            <text x="232" y="87" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#9DA0A8" font-weight="500">№3</text>
+            <rect x="198" y="62" width="68" height="30" rx="6" fill="#F7F9FC" stroke="#0A6BE0" stroke-width="1.3"/>
+            <text x="232" y="76" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" fill="#0A6BE0" font-weight="700">BOSHQARMA</text>
+            <text x="232" y="87" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#64748B" font-weight="500">№3</text>
 
             <!-- L3: BO'LIM (3 nodes under active BOSHQARMA; center = active branch) -->
-            <rect x="50" y="116" width="56" height="30" rx="6" fill="#E5EEEA" stroke="#3D7B66" stroke-width="0.8"/>
-            <text x="78" y="130" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" fill="#1F4E3F" font-weight="700">BO'LIM</text>
-            <text x="78" y="141" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8" font-weight="500">#1</text>
+            <rect x="50" y="116" width="56" height="30" rx="6" fill="#EAF2FE" stroke="#16A34A" stroke-width="0.8"/>
+            <text x="78" y="130" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" fill="#0A6BE0" font-weight="700">BO'LIM</text>
+            <text x="78" y="141" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.5" fill="#64748B" font-weight="500">#1</text>
 
-            <rect x="112" y="116" width="56" height="30" rx="6" fill="#E5EEEA" stroke="#3D7B66" stroke-width="0.8">
-              <animate attributeName="fill" values="#E5EEEA;#E5EEEA;#E5EEEA;#1F4E3F;#1F4E3F;#E5EEEA;#E5EEEA" keyTimes="0;0.30;0.40;0.46;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
-              <animate attributeName="stroke" values="#3D7B66;#3D7B66;#3D7B66;#1F4E3F;#1F4E3F;#3D7B66;#3D7B66" keyTimes="0;0.30;0.40;0.46;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+            <rect x="112" y="116" width="56" height="30" rx="6" fill="#EAF2FE" stroke="#16A34A" stroke-width="0.8">
+              <animate attributeName="fill" values="#EAF2FE;#EAF2FE;#EAF2FE;#0A6BE0;#0A6BE0;#EAF2FE;#EAF2FE" keyTimes="0;0.30;0.40;0.46;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              <animate attributeName="stroke" values="#16A34A;#16A34A;#16A34A;#0A6BE0;#0A6BE0;#16A34A;#16A34A" keyTimes="0;0.30;0.40;0.46;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
             </rect>
             <text x="140" y="130" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" font-weight="700">
-              <animate attributeName="fill" values="#1F4E3F;#1F4E3F;#1F4E3F;#FBF9F4;#FBF9F4;#1F4E3F;#1F4E3F" keyTimes="0;0.30;0.40;0.46;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              <animate attributeName="fill" values="#0A6BE0;#0A6BE0;#0A6BE0;#F7F9FC;#F7F9FC;#0A6BE0;#0A6BE0" keyTimes="0;0.30;0.40;0.46;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
               BO'LIM
             </text>
             <text x="140" y="141" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.5" font-weight="500">
-              <animate attributeName="fill" values="#9DA0A8;#9DA0A8;#9DA0A8;#FBF9F4;#FBF9F4;#9DA0A8;#9DA0A8" keyTimes="0;0.30;0.40;0.46;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              <animate attributeName="fill" values="#64748B;#64748B;#64748B;#F7F9FC;#F7F9FC;#64748B;#64748B" keyTimes="0;0.30;0.40;0.46;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
               #2 · faol
             </text>
 
-            <rect x="174" y="116" width="56" height="30" rx="6" fill="#E5EEEA" stroke="#3D7B66" stroke-width="0.8"/>
-            <text x="202" y="130" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" fill="#1F4E3F" font-weight="700">BO'LIM</text>
-            <text x="202" y="141" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8" font-weight="500">#3</text>
+            <rect x="174" y="116" width="56" height="30" rx="6" fill="#EAF2FE" stroke="#16A34A" stroke-width="0.8"/>
+            <text x="202" y="130" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" fill="#0A6BE0" font-weight="700">BO'LIM</text>
+            <text x="202" y="141" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.5" fill="#64748B" font-weight="500">#3</text>
 
             <!-- L4: SHO'BA (3 leaves under active BO'LIM; center = final destination) -->
-            <rect x="60" y="170" width="56" height="28" rx="6" fill="#FBF9F4" stroke="#E8E3D6" stroke-width="1"/>
-            <text x="88" y="184" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#5A5E6A" font-weight="700">SHO'BA</text>
-            <text x="88" y="194" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="#9DA0A8">12 xodim</text>
+            <rect x="60" y="170" width="56" height="28" rx="6" fill="#F7F9FC" stroke="#E6EAF0" stroke-width="1"/>
+            <text x="88" y="184" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#475569" font-weight="700">SHO'BA</text>
+            <text x="88" y="194" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="#64748B">12 xodim</text>
 
-            <rect x="112" y="170" width="56" height="28" rx="6" fill="#FBF9F4" stroke="#E8E3D6" stroke-width="1">
-              <animate attributeName="fill" values="#FBF9F4;#FBF9F4;#FBF9F4;#FBF9F4;#BC6E2B;#BC6E2B;#FBF9F4;#FBF9F4" keyTimes="0;0.46;0.55;0.62;0.68;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
-              <animate attributeName="stroke" values="#E8E3D6;#E8E3D6;#E8E3D6;#E8E3D6;#BC6E2B;#BC6E2B;#E8E3D6;#E8E3D6" keyTimes="0;0.46;0.55;0.62;0.68;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+            <rect x="112" y="170" width="56" height="28" rx="6" fill="#F7F9FC" stroke="#E6EAF0" stroke-width="1">
+              <animate attributeName="fill" values="#F7F9FC;#F7F9FC;#F7F9FC;#F7F9FC;#D97706;#D97706;#F7F9FC;#F7F9FC" keyTimes="0;0.46;0.55;0.62;0.68;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              <animate attributeName="stroke" values="#E6EAF0;#E6EAF0;#E6EAF0;#E6EAF0;#D97706;#D97706;#E6EAF0;#E6EAF0" keyTimes="0;0.46;0.55;0.62;0.68;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
             </rect>
             <text x="140" y="184" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="700">
-              <animate attributeName="fill" values="#5A5E6A;#5A5E6A;#5A5E6A;#5A5E6A;#FBF9F4;#FBF9F4;#5A5E6A;#5A5E6A" keyTimes="0;0.46;0.55;0.62;0.68;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              <animate attributeName="fill" values="#475569;#475569;#475569;#475569;#F7F9FC;#F7F9FC;#475569;#475569" keyTimes="0;0.46;0.55;0.62;0.68;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
               SHO'BA
             </text>
             <text x="140" y="194" text-anchor="middle" font-family="Inter,sans-serif" font-size="6">
-              <animate attributeName="fill" values="#9DA0A8;#9DA0A8;#9DA0A8;#9DA0A8;#FBF9F4;#FBF9F4;#9DA0A8;#9DA0A8" keyTimes="0;0.46;0.55;0.62;0.68;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
+              <animate attributeName="fill" values="#64748B;#64748B;#64748B;#64748B;#F7F9FC;#F7F9FC;#64748B;#64748B" keyTimes="0;0.46;0.55;0.62;0.68;0.86;0.94;1" dur="10s" repeatCount="indefinite"/>
               8 xodim
             </text>
 
-            <rect x="164" y="170" width="56" height="28" rx="6" fill="#FBF9F4" stroke="#E8E3D6" stroke-width="1"/>
-            <text x="192" y="184" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#5A5E6A" font-weight="700">SHO'BA</text>
-            <text x="192" y="194" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="#9DA0A8">15 xodim</text>
+            <rect x="164" y="170" width="56" height="28" rx="6" fill="#F7F9FC" stroke="#E6EAF0" stroke-width="1"/>
+            <text x="192" y="184" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#475569" font-weight="700">SHO'BA</text>
+            <text x="192" y="194" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="#64748B">15 xodim</text>
 
             <!-- Pulse ring on final destination Sho'ba (the "arrival" moment) -->
-            <circle cx="140" cy="184" r="0" fill="none" stroke="#BC6E2B" stroke-width="1.4" opacity="0">
+            <circle cx="140" cy="184" r="0" fill="none" stroke="#D97706" stroke-width="1.4" opacity="0">
               <animate attributeName="r" values="0;0;0;0;16;32;32;0" keyTimes="0;0.46;0.55;0.62;0.68;0.82;0.86;1" dur="10s" repeatCount="indefinite"/>
               <animate attributeName="opacity" values="0;0;0;0;0.6;0;0;0" keyTimes="0;0.46;0.55;0.62;0.68;0.82;0.86;1" dur="10s" repeatCount="indefinite"/>
             </circle>
@@ -934,98 +936,98 @@ body.menu-open{overflow:hidden}
           <svg width="100%" height="180" viewBox="0 0 480 180" fill="none" preserveAspectRatio="xMidYMid meet">
             <defs>
               <filter id="kanCardShadow" x="-30%" y="-30%" width="160%" height="160%">
-                <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#1A1D24" flood-opacity="0.14"/>
+                <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0A2540" flood-opacity="0.14"/>
               </filter>
             </defs>
 
             <!-- ═══ COL 1 — YANGI ═══ -->
             <g>
-              <rect x="0" y="0" width="112" height="180" rx="10" fill="#FBF9F4"/>
-              <text x="12" y="18" font-family="Inter,sans-serif" font-size="9" fill="#1A1D24" font-weight="700" letter-spacing="0.5">YANGI</text>
-              <rect x="86" y="9" width="22" height="14" rx="7" fill="#fff" stroke="#E8E3D6"/>
-              <text x="97" y="19" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#5A5E6A" font-weight="700">3</text>
+              <rect x="0" y="0" width="112" height="180" rx="10" fill="#F7F9FC"/>
+              <text x="12" y="18" font-family="Inter,sans-serif" font-size="9" fill="#0A2540" font-weight="700" letter-spacing="0.5">YANGI</text>
+              <rect x="86" y="9" width="22" height="14" rx="7" fill="#fff" stroke="#E6EAF0"/>
+              <text x="97" y="19" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#475569" font-weight="700">3</text>
               <!-- Card 1: HIGH -->
-              <rect x="10" y="32" width="92" height="44" rx="6" fill="#fff" stroke="#E8E3D6"/>
-              <rect x="16" y="38" width="36" height="10" rx="5" fill="#FFEDE0"/>
-              <text x="34" y="45" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#BC6E2B" font-weight="700">YUQORI</text>
-              <text x="16" y="58" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Q2 hisobot</text>
-              <text x="16" y="69" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">15 May</text>
-              <circle cx="92" cy="66" r="7" fill="#FFEDE0"/>
-              <text x="92" y="68.5" text-anchor="middle" font-family="Inter,sans-serif" font-size="5.5" fill="#1F4E3F" font-weight="800">A.K.</text>
+              <rect x="10" y="32" width="92" height="44" rx="6" fill="#fff" stroke="#E6EAF0"/>
+              <rect x="16" y="38" width="36" height="10" rx="5" fill="#FEF3C7"/>
+              <text x="34" y="45" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#D97706" font-weight="700">YUQORI</text>
+              <text x="16" y="58" font-family="Inter,sans-serif" font-size="8" fill="#0A2540" font-weight="600">Q2 hisobot</text>
+              <text x="16" y="69" font-family="Inter,sans-serif" font-size="6.5" fill="#64748B">15 May</text>
+              <circle cx="92" cy="66" r="7" fill="#FEF3C7"/>
+              <text x="92" y="68.5" text-anchor="middle" font-family="Inter,sans-serif" font-size="5.5" fill="#0A6BE0" font-weight="800">A.K.</text>
               <!-- Card 2: ODDIY -->
-              <rect x="10" y="82" width="92" height="38" rx="6" fill="#fff" stroke="#E8E3D6"/>
-              <rect x="16" y="88" width="36" height="10" rx="5" fill="#E5EEEA"/>
-              <text x="34" y="95" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#1F4E3F" font-weight="700">ODDIY</text>
-              <text x="16" y="108" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Yo'riqnoma</text>
-              <text x="16" y="117" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">20 May · M.T.</text>
+              <rect x="10" y="82" width="92" height="38" rx="6" fill="#fff" stroke="#E6EAF0"/>
+              <rect x="16" y="88" width="36" height="10" rx="5" fill="#EAF2FE"/>
+              <text x="34" y="95" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#0A6BE0" font-weight="700">ODDIY</text>
+              <text x="16" y="108" font-family="Inter,sans-serif" font-size="8" fill="#0A2540" font-weight="600">Yo'riqnoma</text>
+              <text x="16" y="117" font-family="Inter,sans-serif" font-size="6.5" fill="#64748B">20 May · M.T.</text>
               <!-- Card 3 ghost (where the loop's fresh card fades in) -->
-              <rect x="10" y="126" width="92" height="36" rx="6" fill="#fff" stroke="#E8E3D6" opacity="0.5"/>
-              <rect x="16" y="132" width="36" height="10" rx="5" fill="#F4E6D4" opacity="0.6"/>
-              <text x="34" y="139" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#BC6E2B" font-weight="700" opacity="0.6">O'RTA</text>
-              <text x="16" y="152" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600" opacity="0.6">Reja</text>
+              <rect x="10" y="126" width="92" height="36" rx="6" fill="#fff" stroke="#E6EAF0" opacity="0.5"/>
+              <rect x="16" y="132" width="36" height="10" rx="5" fill="#FEF3C7" opacity="0.6"/>
+              <text x="34" y="139" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#D97706" font-weight="700" opacity="0.6">O'RTA</text>
+              <text x="16" y="152" font-family="Inter,sans-serif" font-size="8" fill="#0A2540" font-weight="600" opacity="0.6">Reja</text>
             </g>
 
             <!-- ═══ COL 2 — JARAYONDA ═══ -->
             <g transform="translate(122 0)">
-              <rect x="0" y="0" width="112" height="180" rx="10" fill="#F4F1E6"/>
-              <text x="12" y="18" font-family="Inter,sans-serif" font-size="9" fill="#1A1D24" font-weight="700" letter-spacing="0.5">JARAYONDA</text>
-              <rect x="86" y="9" width="22" height="14" rx="7" fill="#fff" stroke="#E8E3D6"/>
-              <text x="97" y="19" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#1F4E3F" font-weight="700">4</text>
+              <rect x="0" y="0" width="112" height="180" rx="10" fill="#EEF2F8"/>
+              <text x="12" y="18" font-family="Inter,sans-serif" font-size="9" fill="#0A2540" font-weight="700" letter-spacing="0.5">JARAYONDA</text>
+              <rect x="86" y="9" width="22" height="14" rx="7" fill="#fff" stroke="#E6EAF0"/>
+              <text x="97" y="19" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#0A6BE0" font-weight="700">4</text>
               <!-- Card with progress bar -->
-              <rect x="10" y="32" width="92" height="50" rx="6" fill="#fff" stroke="#1F4E3F" stroke-width="1.4"/>
-              <rect x="16" y="38" width="36" height="10" rx="5" fill="#FFEDE0"/>
-              <text x="34" y="45" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#BC6E2B" font-weight="700">YUQORI</text>
-              <text x="16" y="58" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Q1 tahlil</text>
-              <rect x="16" y="62" width="80" height="3" rx="1.5" fill="#E8E3D6"/>
-              <rect x="16" y="62" width="48" height="3" rx="1.5" fill="#1F4E3F">
+              <rect x="10" y="32" width="92" height="50" rx="6" fill="#fff" stroke="#0A6BE0" stroke-width="1.4"/>
+              <rect x="16" y="38" width="36" height="10" rx="5" fill="#FEF3C7"/>
+              <text x="34" y="45" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#D97706" font-weight="700">YUQORI</text>
+              <text x="16" y="58" font-family="Inter,sans-serif" font-size="8" fill="#0A2540" font-weight="600">Q1 tahlil</text>
+              <rect x="16" y="62" width="80" height="3" rx="1.5" fill="#E6EAF0"/>
+              <rect x="16" y="62" width="48" height="3" rx="1.5" fill="#0A6BE0">
                 <animate attributeName="width" values="42;58;42" dur="6s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1"/>
               </rect>
-              <text x="16" y="74" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">60% · Z.R.</text>
+              <text x="16" y="74" font-family="Inter,sans-serif" font-size="6.5" fill="#64748B">60% · Z.R.</text>
               <!-- Card 2 -->
-              <rect x="10" y="88" width="92" height="38" rx="6" fill="#fff" stroke="#E8E3D6"/>
-              <rect x="16" y="94" width="36" height="10" rx="5" fill="#F4E6D4"/>
-              <text x="34" y="101" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#BC6E2B" font-weight="700">O'RTA</text>
-              <text x="16" y="114" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Bazani yangilash</text>
-              <text x="16" y="123" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">18 May · S.N.</text>
+              <rect x="10" y="88" width="92" height="38" rx="6" fill="#fff" stroke="#E6EAF0"/>
+              <rect x="16" y="94" width="36" height="10" rx="5" fill="#FEF3C7"/>
+              <text x="34" y="101" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#D97706" font-weight="700">O'RTA</text>
+              <text x="16" y="114" font-family="Inter,sans-serif" font-size="8" fill="#0A2540" font-weight="600">Bazani yangilash</text>
+              <text x="16" y="123" font-family="Inter,sans-serif" font-size="6.5" fill="#64748B">18 May · S.N.</text>
             </g>
 
             <!-- ═══ COL 3 — KO'RIB CHIQILMOQDA ═══ -->
             <g transform="translate(244 0)">
               <rect x="0" y="0" width="112" height="180" rx="10" fill="#EEF2F8"/>
-              <text x="12" y="18" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="700" letter-spacing="0.5">KO'RIB CHIQ.</text>
-              <rect x="86" y="9" width="22" height="14" rx="7" fill="#fff" stroke="#E8E3D6"/>
-              <text x="97" y="19" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#1F4E3F" font-weight="700">2</text>
+              <text x="12" y="18" font-family="Inter,sans-serif" font-size="8" fill="#0A2540" font-weight="700" letter-spacing="0.5">KO'RIB CHIQ.</text>
+              <rect x="86" y="9" width="22" height="14" rx="7" fill="#fff" stroke="#E6EAF0"/>
+              <text x="97" y="19" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#0A6BE0" font-weight="700">2</text>
               <!-- Card -->
-              <rect x="10" y="32" width="92" height="42" rx="6" fill="#fff" stroke="#E8E3D6"/>
-              <rect x="16" y="38" width="36" height="10" rx="5" fill="#FFEDE0"/>
-              <text x="34" y="45" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#BC6E2B" font-weight="700">YUQORI</text>
-              <text x="16" y="58" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Shartnoma</text>
-              <text x="16" y="68" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">9 May · A.K.</text>
+              <rect x="10" y="32" width="92" height="42" rx="6" fill="#fff" stroke="#E6EAF0"/>
+              <rect x="16" y="38" width="36" height="10" rx="5" fill="#FEF3C7"/>
+              <text x="34" y="45" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#D97706" font-weight="700">YUQORI</text>
+              <text x="16" y="58" font-family="Inter,sans-serif" font-size="8" fill="#0A2540" font-weight="600">Shartnoma</text>
+              <text x="16" y="68" font-family="Inter,sans-serif" font-size="6.5" fill="#64748B">9 May · A.K.</text>
             </g>
 
             <!-- ═══ COL 4 — BAJARILDI ═══ -->
             <g transform="translate(366 0)">
-              <rect x="0" y="0" width="114" height="180" rx="10" fill="#E5EEEA"/>
-              <text x="12" y="18" font-family="Inter,sans-serif" font-size="9" fill="#1A1D24" font-weight="700" letter-spacing="0.5">BAJARILDI</text>
-              <rect x="86" y="9" width="24" height="14" rx="7" fill="#1F4E3F"/>
-              <text x="98" y="19" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#FBF9F4" font-weight="700">6</text>
+              <rect x="0" y="0" width="114" height="180" rx="10" fill="#EAF2FE"/>
+              <text x="12" y="18" font-family="Inter,sans-serif" font-size="9" fill="#0A2540" font-weight="700" letter-spacing="0.5">BAJARILDI</text>
+              <rect x="86" y="9" width="24" height="14" rx="7" fill="#0A6BE0"/>
+              <text x="98" y="19" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#F7F9FC" font-weight="700">6</text>
               <!-- Card 1 done -->
-              <rect x="10" y="32" width="94" height="38" rx="6" fill="#fff" stroke="#E8E3D6"/>
-              <circle cx="21" cy="44" r="5.5" fill="#1F4E3F"/>
+              <rect x="10" y="32" width="94" height="38" rx="6" fill="#fff" stroke="#E6EAF0"/>
+              <circle cx="21" cy="44" r="5.5" fill="#0A6BE0"/>
               <path d="M17.5 44 L20 46.5 L25 41" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-              <text x="32" y="47" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Mart hisobot</text>
-              <text x="32" y="58" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">8 May · M.N.</text>
+              <text x="32" y="47" font-family="Inter,sans-serif" font-size="8" fill="#0A2540" font-weight="600">Mart hisobot</text>
+              <text x="32" y="58" font-family="Inter,sans-serif" font-size="6.5" fill="#64748B">8 May · M.N.</text>
               <!-- Card 2 done -->
-              <rect x="10" y="76" width="94" height="38" rx="6" fill="#fff" stroke="#E8E3D6"/>
-              <circle cx="21" cy="88" r="5.5" fill="#1F4E3F"/>
+              <rect x="10" y="76" width="94" height="38" rx="6" fill="#fff" stroke="#E6EAF0"/>
+              <circle cx="21" cy="88" r="5.5" fill="#0A6BE0"/>
               <path d="M17.5 88 L20 90.5 L25 85" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-              <text x="32" y="91" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">Lavozim</text>
-              <text x="32" y="102" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">7 May · D.X.</text>
+              <text x="32" y="91" font-family="Inter,sans-serif" font-size="8" fill="#0A2540" font-weight="600">Lavozim</text>
+              <text x="32" y="102" font-family="Inter,sans-serif" font-size="6.5" fill="#64748B">7 May · D.X.</text>
             </g>
 
             <!-- ═══ COLUMN ARRIVAL HIGHLIGHTS (subtle green flash when card lands) ═══ -->
             <!-- Col 2 (Jarayonda) flash — fires around keyTime 0.20-0.32 -->
-            <rect x="122" y="0" width="112" height="180" rx="10" fill="#1F4E3F" opacity="0">
+            <rect x="122" y="0" width="112" height="180" rx="10" fill="#0A6BE0" opacity="0">
               <animate attributeName="opacity"
                 values="0; 0; 0.07; 0.07; 0; 0; 0; 0; 0; 0"
                 keyTimes="0; 0.18; 0.22; 0.30; 0.34; 0.42; 0.54; 0.84; 0.92; 1"
@@ -1039,7 +1041,7 @@ body.menu-open{overflow:hidden}
                 dur="14s" repeatCount="indefinite"/>
             </rect>
             <!-- Col 4 (Bajarildi) flash — fires around keyTime 0.64-0.84 (longest dwell) -->
-            <rect x="366" y="0" width="114" height="180" rx="10" fill="#1F4E3F" opacity="0">
+            <rect x="366" y="0" width="114" height="180" rx="10" fill="#0A6BE0" opacity="0">
               <animate attributeName="opacity"
                 values="0; 0; 0; 0; 0; 0.10; 0.10; 0.10; 0; 0"
                 keyTimes="0; 0.52; 0.60; 0.62; 0.64; 0.66; 0.78; 0.84; 0.88; 1"
@@ -1048,21 +1050,21 @@ body.menu-open{overflow:hidden}
 
             <!-- ═══ DROP SLOT (dashed outline showing where card will land) ═══ -->
             <!-- In Col 2 -->
-            <rect x="132" y="32" width="92" height="36" rx="6" fill="none" stroke="#BC6E2B" stroke-width="1.2" stroke-dasharray="3 3" opacity="0">
+            <rect x="132" y="32" width="92" height="36" rx="6" fill="none" stroke="#D97706" stroke-width="1.2" stroke-dasharray="3 3" opacity="0">
               <animate attributeName="opacity"
                 values="0; 0; 0.55; 0; 0; 0; 0; 0; 0"
                 keyTimes="0; 0.10; 0.16; 0.22; 0.32; 0.54; 0.84; 0.92; 1"
                 dur="14s" repeatCount="indefinite"/>
             </rect>
             <!-- In Col 3 -->
-            <rect x="254" y="32" width="92" height="36" rx="6" fill="none" stroke="#BC6E2B" stroke-width="1.2" stroke-dasharray="3 3" opacity="0">
+            <rect x="254" y="32" width="92" height="36" rx="6" fill="none" stroke="#D97706" stroke-width="1.2" stroke-dasharray="3 3" opacity="0">
               <animate attributeName="opacity"
                 values="0; 0; 0; 0; 0.55; 0; 0; 0; 0"
                 keyTimes="0; 0.22; 0.32; 0.36; 0.40; 0.44; 0.84; 0.92; 1"
                 dur="14s" repeatCount="indefinite"/>
             </rect>
             <!-- In Col 4 -->
-            <rect x="376" y="32" width="94" height="36" rx="6" fill="none" stroke="#1F4E3F" stroke-width="1.2" stroke-dasharray="3 3" opacity="0">
+            <rect x="376" y="32" width="94" height="36" rx="6" fill="none" stroke="#0A6BE0" stroke-width="1.2" stroke-dasharray="3 3" opacity="0">
               <animate attributeName="opacity"
                 values="0; 0; 0; 0; 0; 0; 0.55; 0; 0; 0"
                 keyTimes="0; 0.42; 0.52; 0.54; 0.58; 0.60; 0.62; 0.66; 0.84; 1"
@@ -1083,16 +1085,16 @@ body.menu-open{overflow:hidden}
                 values="0; 1; 1; 1; 1; 1; 1; 1; 0; 0; 1"
                 keyTimes="0; 0.04; 0.06; 0.20; 0.32; 0.42; 0.54; 0.84; 0.88; 0.92; 1"
                 dur="14s" repeatCount="indefinite"/>
-              <rect x="0" y="0" width="92" height="36" rx="6" fill="#fff" stroke="#BC6E2B" stroke-width="1.6"/>
-              <rect x="6" y="5" width="36" height="10" rx="5" fill="#F4E6D4"/>
-              <text x="24" y="12" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#BC6E2B" font-weight="700">O'RTA</text>
+              <rect x="0" y="0" width="92" height="36" rx="6" fill="#fff" stroke="#D97706" stroke-width="1.6"/>
+              <rect x="6" y="5" width="36" height="10" rx="5" fill="#FEF3C7"/>
+              <text x="24" y="12" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#D97706" font-weight="700">O'RTA</text>
               <rect x="46" y="5" width="22" height="10" rx="5" fill="#EEF2F8"/>
               <text x="57" y="12" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.2" fill="#3D6FB5" font-weight="700">IT</text>
-              <text x="6" y="25" font-family="Inter,sans-serif" font-size="8" fill="#1A1D24" font-weight="600">IT audit</text>
-              <text x="6" y="33" font-family="Inter,sans-serif" font-size="6.5" fill="#9DA0A8">25 May · B.T.</text>
+              <text x="6" y="25" font-family="Inter,sans-serif" font-size="8" fill="#0A2540" font-weight="600">IT audit</text>
+              <text x="6" y="33" font-family="Inter,sans-serif" font-size="6.5" fill="#64748B">25 May · B.T.</text>
               <!-- Tiny avatar on the moving card -->
-              <circle cx="84" cy="9" r="5" fill="#FFEDE0"/>
-              <text x="84" y="11" text-anchor="middle" font-family="Inter,sans-serif" font-size="4.6" fill="#BC6E2B" font-weight="800">Б.Т.</text>
+              <circle cx="84" cy="9" r="5" fill="#FEF3C7"/>
+              <text x="84" y="11" text-anchor="middle" font-family="Inter,sans-serif" font-size="4.6" fill="#D97706" font-weight="800">Б.Т.</text>
             </g>
 
             <!-- ═══ CURSOR following the active card ═══ -->
@@ -1107,7 +1109,7 @@ body.menu-open{overflow:hidden}
                 values="0; 1; 1; 1; 1; 1; 1; 1; 0; 0; 1"
                 keyTimes="0; 0.04; 0.06; 0.20; 0.32; 0.42; 0.54; 0.84; 0.88; 0.92; 1"
                 dur="14s" repeatCount="indefinite"/>
-              <path d="M0 0 L0 10 L3 8 L5 12 L7 11 L4 7 L9 7 Z" fill="#1A1D24" stroke="#FBF9F4" stroke-width="0.8"/>
+              <path d="M0 0 L0 10 L3 8 L5 12 L7 11 L4 7 L9 7 Z" fill="#0A2540" stroke="#F7F9FC" stroke-width="0.8"/>
             </g>
           </svg>
         </div>
@@ -1155,49 +1157,49 @@ body.menu-open{overflow:hidden}
       <div class="reveal">
         <h3 style="font-size:28px;font-weight:700;letter-spacing:-0.025em;line-height:1.2;margin-bottom:20px;max-width:480px">Modulli arxitektura — bir-biriga to'g'ri kelganidek.</h3>
         <p style="font-size:16px;color:var(--body);line-height:1.6;max-width:480px;margin-bottom:32px">Eski bir butun monolitik tizimlar emas — har bir modul mustaqil holda ishlaydi, biroq ular bir-biri bilan tabiiy ravishda bog'lanadi. Tashkilotingiz uchun kerakli modullarni tanlang, qolganini keyinroq qo'shing.</p>
-        <a href="#demo" class="btn btn-emerald">Modullar bilan tanishish <span class="arrow">→</span></a>
+        <a href="#demo" class="btn btn-brand">Modullar bilan tanishish <span class="arrow">→</span></a>
       </div>
 
       <div class="arch-cubes reveal-stagger">
         <div class="arch-cube">
           <div class="ac-num">01</div>
           <div class="ac-name">Foydalanuvchilar</div>
-          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="7" r="3" stroke="#1A1D24" stroke-width="1.4"/><path d="M3 17c0-3 2.5-5 5-5s5 2 5 5" stroke="#1A1D24" stroke-width="1.4" stroke-linecap="round"/><circle cx="15" cy="6" r="3" fill="#BC6E2B"/></svg>
+          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="7" r="3" stroke="#0A2540" stroke-width="1.4"/><path d="M3 17c0-3 2.5-5 5-5s5 2 5 5" stroke="#0A2540" stroke-width="1.4" stroke-linecap="round"/><circle cx="15" cy="6" r="3" fill="#D97706"/></svg>
         </div>
         <div class="arch-cube">
           <div class="ac-num">02</div>
           <div class="ac-name">Hujjatlar</div>
-          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="4" y="2" width="10" height="14" rx="1.5" stroke="#1A1D24" stroke-width="1.4"/><line x1="6" y1="6" x2="12" y2="6" stroke="#1A1D24" stroke-width="1.2"/><line x1="6" y1="9" x2="12" y2="9" stroke="#1A1D24" stroke-width="1.2"/><line x1="6" y1="12" x2="9" y2="12" stroke="#1A1D24" stroke-width="1.2"/></svg>
+          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="4" y="2" width="10" height="14" rx="1.5" stroke="#0A2540" stroke-width="1.4"/><line x1="6" y1="6" x2="12" y2="6" stroke="#0A2540" stroke-width="1.2"/><line x1="6" y1="9" x2="12" y2="9" stroke="#0A2540" stroke-width="1.2"/><line x1="6" y1="12" x2="9" y2="12" stroke="#0A2540" stroke-width="1.2"/></svg>
         </div>
         <div class="arch-cube featured">
           <div class="ac-num">03</div>
           <div class="ac-name">Elektron imzo</div>
-          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 13 Q6 8 9 13 T 15 13" stroke="#FBF9F4" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="16" cy="5" r="3" fill="#BC6E2B"/></svg>
+          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 13 Q6 8 9 13 T 15 13" stroke="#F7F9FC" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="16" cy="5" r="3" fill="#D97706"/></svg>
         </div>
         <div class="arch-cube">
           <div class="ac-num">04</div>
           <div class="ac-name">Kelishuv</div>
-          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="2.5" stroke="#1A1D24" stroke-width="1.4"/><circle cx="10" cy="10" r="2.5" stroke="#1A1D24" stroke-width="1.4"/><circle cx="16" cy="10" r="2.5" fill="#1F4E3F"/><line x1="6.5" y1="10" x2="7.5" y2="10" stroke="#1A1D24" stroke-width="1.4"/><line x1="12.5" y1="10" x2="13.5" y2="10" stroke="#1A1D24" stroke-width="1.4"/></svg>
+          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="2.5" stroke="#0A2540" stroke-width="1.4"/><circle cx="10" cy="10" r="2.5" stroke="#0A2540" stroke-width="1.4"/><circle cx="16" cy="10" r="2.5" fill="#0A6BE0"/><line x1="6.5" y1="10" x2="7.5" y2="10" stroke="#0A2540" stroke-width="1.4"/><line x1="12.5" y1="10" x2="13.5" y2="10" stroke="#0A2540" stroke-width="1.4"/></svg>
         </div>
         <div class="arch-cube">
           <div class="ac-num">05</div>
           <div class="ac-name">Vazifa doskasi</div>
-          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="4" height="14" rx="1" stroke="#1A1D24" stroke-width="1.3"/><rect x="8" y="3" width="4" height="14" rx="1" stroke="#1A1D24" stroke-width="1.3"/><rect x="13" y="3" width="4" height="14" rx="1" stroke="#1A1D24" stroke-width="1.3"/><rect x="9" y="5" width="2" height="3" rx="0.5" fill="#1F4E3F"/></svg>
+          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="4" height="14" rx="1" stroke="#0A2540" stroke-width="1.3"/><rect x="8" y="3" width="4" height="14" rx="1" stroke="#0A2540" stroke-width="1.3"/><rect x="13" y="3" width="4" height="14" rx="1" stroke="#0A2540" stroke-width="1.3"/><rect x="9" y="5" width="2" height="3" rx="0.5" fill="#0A6BE0"/></svg>
         </div>
         <div class="arch-cube">
           <div class="ac-num">06</div>
           <div class="ac-name">Tashkiliy tuzilma</div>
-          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="7" y="2" width="6" height="4" rx="1" stroke="#1A1D24" stroke-width="1.3"/><line x1="10" y1="6" x2="10" y2="9" stroke="#1A1D24" stroke-width="1.3"/><line x1="5" y1="9" x2="15" y2="9" stroke="#1A1D24" stroke-width="1.3"/><line x1="5" y1="9" x2="5" y2="12" stroke="#1A1D24" stroke-width="1.3"/><line x1="15" y1="9" x2="15" y2="12" stroke="#1A1D24" stroke-width="1.3"/><rect x="2" y="12" width="6" height="4" rx="1" stroke="#1A1D24" stroke-width="1.3"/><rect x="12" y="12" width="6" height="4" rx="1" fill="#BC6E2B"/></svg>
+          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="7" y="2" width="6" height="4" rx="1" stroke="#0A2540" stroke-width="1.3"/><line x1="10" y1="6" x2="10" y2="9" stroke="#0A2540" stroke-width="1.3"/><line x1="5" y1="9" x2="15" y2="9" stroke="#0A2540" stroke-width="1.3"/><line x1="5" y1="9" x2="5" y2="12" stroke="#0A2540" stroke-width="1.3"/><line x1="15" y1="9" x2="15" y2="12" stroke="#0A2540" stroke-width="1.3"/><rect x="2" y="12" width="6" height="4" rx="1" stroke="#0A2540" stroke-width="1.3"/><rect x="12" y="12" width="6" height="4" rx="1" fill="#D97706"/></svg>
         </div>
         <div class="arch-cube">
           <div class="ac-num">07</div>
           <div class="ac-name">Eksport</div>
-          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3v9M6 8l4-4 4 4" stroke="#1A1D24" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M3 13v3a1 1 0 001 1h12a1 1 0 001-1v-3" stroke="#1A1D24" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3v9M6 8l4-4 4 4" stroke="#0A2540" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M3 13v3a1 1 0 001 1h12a1 1 0 001-1v-3" stroke="#0A2540" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
         </div>
         <div class="arch-cube">
           <div class="ac-num">08</div>
           <div class="ac-name">Xatlar</div>
-          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="5" width="14" height="10" rx="1.5" stroke="#1A1D24" stroke-width="1.4"/><path d="M3 6l7 5 7-5" stroke="#1A1D24" stroke-width="1.4" fill="none"/></svg>
+          <svg class="ac-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="5" width="14" height="10" rx="1.5" stroke="#0A2540" stroke-width="1.4"/><path d="M3 6l7 5 7-5" stroke="#0A2540" stroke-width="1.4" fill="none"/></svg>
         </div>
       </div>
     </div>
@@ -1214,44 +1216,44 @@ body.menu-open{overflow:hidden}
 
     <div class="flow-art reveal" style="transition-delay:0.2s">
       <svg class="flow-svg" viewBox="0 0 1080 240" fill="none">
-        <line x1="120" y1="100" x2="960" y2="100" stroke="#E8E3D6" stroke-width="3" stroke-linecap="round"/>
-        <line x1="120" y1="100" x2="750" y2="100" stroke="#1F4E3F" stroke-width="3" stroke-linecap="round" stroke-dasharray="630" stroke-dashoffset="630">
+        <line x1="120" y1="100" x2="960" y2="100" stroke="#E6EAF0" stroke-width="3" stroke-linecap="round"/>
+        <line x1="120" y1="100" x2="750" y2="100" stroke="#0A6BE0" stroke-width="3" stroke-linecap="round" stroke-dasharray="630" stroke-dashoffset="630">
           <animate attributeName="stroke-dashoffset" values="630;0" dur="2.4s" begin="0.3s" fill="freeze" calcMode="spline" keySplines="0.4 0 0.2 1"/>
         </line>
 
         <g>
-          <circle cx="120" cy="100" r="36" fill="#1F4E3F"/>
-          <path d="M105 100 L116 112 L138 88" stroke="#FBF9F4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          <text x="120" y="160" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#1A1D24" font-weight="700">Yaratish</text>
-          <text x="120" y="180" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#5A5E6A">Muallif · A.K.</text>
+          <circle cx="120" cy="100" r="36" fill="#0A6BE0"/>
+          <path d="M105 100 L116 112 L138 88" stroke="#F7F9FC" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <text x="120" y="160" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#0A2540" font-weight="700">Yaratish</text>
+          <text x="120" y="180" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#475569">Muallif · A.K.</text>
         </g>
         <g>
-          <circle cx="330" cy="100" r="36" fill="#1F4E3F"/>
-          <path d="M315 100 L326 112 L348 88" stroke="#FBF9F4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          <text x="330" y="160" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#1A1D24" font-weight="700">Moliya</text>
-          <text x="330" y="180" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#3D7B66">tasdiqlandi</text>
+          <circle cx="330" cy="100" r="36" fill="#0A6BE0"/>
+          <path d="M315 100 L326 112 L348 88" stroke="#F7F9FC" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <text x="330" y="160" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#0A2540" font-weight="700">Moliya</text>
+          <text x="330" y="180" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#16A34A">tasdiqlandi</text>
         </g>
         <g>
-          <circle cx="540" cy="100" r="36" fill="#1F4E3F"/>
-          <path d="M525 100 L536 112 L558 88" stroke="#FBF9F4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          <text x="540" y="160" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#1A1D24" font-weight="700">Yuridik</text>
-          <text x="540" y="180" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#3D7B66">tasdiqlandi</text>
+          <circle cx="540" cy="100" r="36" fill="#0A6BE0"/>
+          <path d="M525 100 L536 112 L558 88" stroke="#F7F9FC" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <text x="540" y="160" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#0A2540" font-weight="700">Yuridik</text>
+          <text x="540" y="180" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#16A34A">tasdiqlandi</text>
         </g>
         <g>
-          <circle cx="750" cy="100" r="48" fill="#BC6E2B" opacity="0.18">
+          <circle cx="750" cy="100" r="48" fill="#D97706" opacity="0.18">
             <animate attributeName="r" values="36;52;36" dur="2.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1"/>
             <animate attributeName="opacity" values="0.25;0;0.25" dur="2.4s" repeatCount="indefinite"/>
           </circle>
-          <circle cx="750" cy="100" r="36" fill="#BC6E2B"/>
-          <text x="750" y="106" text-anchor="middle" font-family="Inter,sans-serif" font-size="16" fill="#FBF9F4" font-weight="800">4</text>
-          <text x="750" y="160" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#1A1D24" font-weight="700">Direktor</text>
-          <text x="750" y="180" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#BC6E2B" font-weight="600">ko'rib chiqilmoqda</text>
+          <circle cx="750" cy="100" r="36" fill="#D97706"/>
+          <text x="750" y="106" text-anchor="middle" font-family="Inter,sans-serif" font-size="16" fill="#F7F9FC" font-weight="800">4</text>
+          <text x="750" y="160" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#0A2540" font-weight="700">Direktor</text>
+          <text x="750" y="180" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#D97706" font-weight="600">ko'rib chiqilmoqda</text>
         </g>
         <g>
-          <circle cx="960" cy="100" r="36" fill="#FBF9F4" stroke="#E8E3D6" stroke-width="2.5" stroke-dasharray="5 3"/>
-          <text x="960" y="106" text-anchor="middle" font-family="Inter,sans-serif" font-size="16" fill="#9DA0A8" font-weight="700">5</text>
-          <text x="960" y="160" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#1A1D24" font-weight="700">Arxiv</text>
-          <text x="960" y="180" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#9DA0A8">kutilmoqda</text>
+          <circle cx="960" cy="100" r="36" fill="#F7F9FC" stroke="#E6EAF0" stroke-width="2.5" stroke-dasharray="5 3"/>
+          <text x="960" y="106" text-anchor="middle" font-family="Inter,sans-serif" font-size="16" fill="#64748B" font-weight="700">5</text>
+          <text x="960" y="160" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#0A2540" font-weight="700">Arxiv</text>
+          <text x="960" y="180" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#64748B">kutilmoqda</text>
         </g>
       </svg>
     </div>
@@ -1285,8 +1287,8 @@ body.menu-open{overflow:hidden}
       <article class="ind-card">
         <div class="ind-icon">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <path d="M16 4l12 5v8c0 8-6 13-12 15-6-2-12-7-12-15V9l12-5z" stroke="#1F4E3F" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M11 16l3 3 7-8" stroke="#1F4E3F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M16 4l12 5v8c0 8-6 13-12 15-6-2-12-7-12-15V9l12-5z" stroke="#0A6BE0" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M11 16l3 3 7-8" stroke="#0A6BE0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
           </svg>
         </div>
         <h3>Davlat organlari</h3>
@@ -1300,13 +1302,13 @@ body.menu-open{overflow:hidden}
       </article>
 
       <article class="ind-card">
-        <div class="ind-icon" style="background:#F5E6D2">
+        <div class="ind-icon" style="background:#FEF3C7">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <rect x="4" y="10" width="24" height="18" rx="2" stroke="#BC6E2B" stroke-width="2"/>
-            <path d="M4 6l12 4 12-4" stroke="#BC6E2B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-            <path d="M16 4v8" stroke="#BC6E2B" stroke-width="2" stroke-linecap="round"/>
-            <line x1="9" y1="17" x2="14" y2="17" stroke="#BC6E2B" stroke-width="1.6"/>
-            <line x1="9" y1="21" x2="20" y2="21" stroke="#BC6E2B" stroke-width="1.6"/>
+            <rect x="4" y="10" width="24" height="18" rx="2" stroke="#D97706" stroke-width="2"/>
+            <path d="M4 6l12 4 12-4" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M16 4v8" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+            <line x1="9" y1="17" x2="14" y2="17" stroke="#D97706" stroke-width="1.6"/>
+            <line x1="9" y1="21" x2="20" y2="21" stroke="#D97706" stroke-width="1.6"/>
           </svg>
         </div>
         <h3>Banklar va moliya</h3>
@@ -1322,10 +1324,10 @@ body.menu-open{overflow:hidden}
       <article class="ind-card">
         <div class="ind-icon">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <rect x="4" y="4" width="10" height="10" rx="1.5" stroke="#1F4E3F" stroke-width="2"/>
-            <rect x="18" y="4" width="10" height="10" rx="1.5" stroke="#1F4E3F" stroke-width="2"/>
-            <rect x="4" y="18" width="10" height="10" rx="1.5" stroke="#1F4E3F" stroke-width="2"/>
-            <rect x="18" y="18" width="10" height="10" rx="1.5" fill="#1F4E3F"/>
+            <rect x="4" y="4" width="10" height="10" rx="1.5" stroke="#0A6BE0" stroke-width="2"/>
+            <rect x="18" y="4" width="10" height="10" rx="1.5" stroke="#0A6BE0" stroke-width="2"/>
+            <rect x="4" y="18" width="10" height="10" rx="1.5" stroke="#0A6BE0" stroke-width="2"/>
+            <rect x="18" y="18" width="10" height="10" rx="1.5" fill="#0A6BE0"/>
           </svg>
         </div>
         <h3>Holding kompaniyalar</h3>
@@ -1339,12 +1341,12 @@ body.menu-open{overflow:hidden}
       </article>
 
       <article class="ind-card">
-        <div class="ind-icon" style="background:#F5E6D2">
+        <div class="ind-icon" style="background:#FEF3C7">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <path d="M6 28V12l10-8 10 8v16" stroke="#BC6E2B" stroke-width="2" stroke-linejoin="round"/>
-            <line x1="6" y1="28" x2="26" y2="28" stroke="#BC6E2B" stroke-width="2" stroke-linecap="round"/>
-            <rect x="13" y="18" width="6" height="10" stroke="#BC6E2B" stroke-width="1.8"/>
-            <circle cx="16" cy="13" r="2" fill="#BC6E2B"/>
+            <path d="M6 28V12l10-8 10 8v16" stroke="#D97706" stroke-width="2" stroke-linejoin="round"/>
+            <line x1="6" y1="28" x2="26" y2="28" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+            <rect x="13" y="18" width="6" height="10" stroke="#D97706" stroke-width="1.8"/>
+            <circle cx="16" cy="13" r="2" fill="#D97706"/>
           </svg>
         </div>
         <h3>Ministrliklar va vazirliklar</h3>
@@ -1411,7 +1413,7 @@ body.menu-open{overflow:hidden}
   <div class="container">
     <div class="footer-top">
       <div class="footer-brand">
-        <div class="logo"><span class="dot"></span>DEVON</div>
+        <div class="logo"><svg width="28" height="28" viewBox="0 0 715.15 712.76" aria-hidden="true" style="flex-shrink:0;color:#0878FE"><path fill="currentColor" d="M341.05,557.1l54.54-1.34,58.28,129.84c-149.13,49.03-312.65-11.78-397.7-143.83C-31.75,405.26-14.67,227.79,94.84,110.91,205.64-7.34,383.13-34.67,524.95,46.54c138.15,79.11,208.93,244.03,161.49,403.62l-132.48-58.73c12.68-73.68-11.34-147.38-64.81-194.16-56.62-49.54-133.77-67.97-204.82-42.36-96.38,34.75-153.08,126.85-138.38,226.99,13.93,94.9,92.55,170.93,195.11,175.19Z"/><path fill="currentColor" d="M694.2,598.65l-94.4,94.3c-16.56,16.54-38.17,23.08-60.76,18.28-22.3-4.74-36.61-20.65-46.8-43.55l-75.37-169.2c-11.95-26.83-6.09-53.37,13.4-72.23,19.32-18.69,46.68-22.67,73.05-10.5l184.2,85c37.18,17.16,34.2,70.41,6.68,97.9Z"/></svg>Devon</div>
         <div class="slogan">Rivolanish intizom bilan!</div>
         <p>Tashkilotlar uchun ichki hujjat aylanishi va vazifa boshqaruvi platformasi. O'zbekiston uchun yaratilgan.</p>
         <div class="footer-social">

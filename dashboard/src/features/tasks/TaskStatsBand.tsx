@@ -34,7 +34,7 @@ function Chip({
         variant === 'muted' &&
           'bg-muted text-muted-foreground',
         variant === 'default' &&
-          'bg-cream-warm text-ink-soft',
+          'bg-surface-2 text-ink-soft',
       )}
     >
       <span className="tabular-nums font-semibold">{count}</span>

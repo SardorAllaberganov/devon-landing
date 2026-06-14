@@ -1,6 +1,7 @@
 import { Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { BrandMark } from '@/components/common/BrandMark';
 import MobileNavTrigger from './MobileNavTrigger';
 import UserMenu from './UserMenu';
 import NotificationsBell from '@/features/notifications/NotificationsBell';
@@ -25,14 +26,14 @@ export default function TopBar() {
   const personaLabel = actingKey ? t(`dashboard:pov.persona.${actingKey}`) : '';
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-cream/85 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-line bg-canvas/85 backdrop-blur">
       <div className="flex h-16 items-center gap-3 px-4 md:px-6">
         <MobileNavTrigger />
 
         {/* Compact logo on mobile/tablet (sidebar wordmark is hidden there) */}
         <div className="flex items-center gap-2 lg:hidden">
-          <span aria-hidden className="block h-2.5 w-2.5 rotate-45 bg-emerald" />
-          <span className="font-black text-sm tracking-[0.16em] text-ink">DEVON</span>
+          <BrandMark className="size-6 text-brand" />
+          <span className="font-display text-base font-extrabold tracking-tight text-ink">Devon</span>
         </div>
 
         {/* Search — hidden on mobile portrait, visible from sm+ */}
@@ -52,7 +53,7 @@ export default function TopBar() {
 
         <div className="ml-auto flex min-w-0 items-center gap-1.5">
           {actingKey && (
-            <span className="flex min-w-0 items-center gap-1 rounded-full border border-cinnamon/30 bg-cinnamon-soft py-1 pl-2.5 pr-1 text-xs font-medium text-cinnamon">
+            <span className="flex min-w-0 items-center gap-1 rounded-full border border-warning/30 bg-warning-soft py-1 pl-2.5 pr-1 text-xs font-medium text-warning">
               {/* Full sentence from sm+; persona label only at 360px */}
               <span className="hidden truncate sm:inline">
                 {t('dashboard:pov.chip', { persona: personaLabel })}
@@ -62,7 +63,7 @@ export default function TopBar() {
                 type="button"
                 onClick={() => void resetPov()}
                 aria-label={t('dashboard:pov.chip-reset')}
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-cinnamon/15"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-warning/15"
               >
                 <X className="h-3.5 w-3.5" />
               </button>

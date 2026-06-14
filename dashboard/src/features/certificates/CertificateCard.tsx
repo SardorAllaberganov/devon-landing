@@ -40,7 +40,7 @@ export default function CertificateCard({ cert, employee, selected, onSelect, on
       onClick={onClick}
       className={cn(
         'cursor-pointer p-4 transition-shadow hover:shadow-sm',
-        selected && 'ring-2 ring-emerald ring-offset-1',
+        selected && 'ring-2 ring-primary ring-offset-1',
       )}
     >
       <div className="flex items-start gap-3">
@@ -54,7 +54,7 @@ export default function CertificateCard({ cert, employee, selected, onSelect, on
           </div>
         )}
         <Avatar className="h-9 w-9 shrink-0">
-          <AvatarFallback className="bg-emerald-soft text-xs font-semibold text-emerald-deep">
+          <AvatarFallback className="bg-brand-soft text-xs font-semibold text-primary-deep">
             {employee ? initials(employee.fullNameGenerated) : '?'}
           </AvatarFallback>
         </Avatar>
@@ -70,7 +70,7 @@ export default function CertificateCard({ cert, employee, selected, onSelect, on
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <StatusBadge status={cert.status} />
             {expiringSoon && (
-              <span className="inline-flex items-center gap-1 text-xs text-cinnamon">
+              <span className="inline-flex items-center gap-1 text-xs text-warning">
                 <AlertCircle className="h-3 w-3" />
                 {t('dashboard:certificates.card.expiring-soon')}
               </span>

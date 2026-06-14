@@ -79,7 +79,7 @@ export default function UnitDetailsSheet({
                 {t(`common:unit-types.${unit.type}`)} · {unit.code}
               </SheetDescription>
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <Badge variant="outline" className="border-line bg-cream">
+                <Badge variant="outline" className="border-line bg-canvas">
                   {t(`common:unit-types.${unit.type}`)}
                 </Badge>
                 <StatusBadge status={unit.status === 'ACTIVE' ? 'ACTIVE' : 'ARCHIVED'} />
@@ -135,7 +135,7 @@ export default function UnitDetailsSheet({
                         <button
                           type="button"
                           onClick={() => onOpenUnit(c)}
-                          className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left hover:bg-cream-warm"
+                          className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left hover:bg-surface-2"
                         >
                           <span className="text-sm">{c.nameUz}</span>
                           <ChevronRight className="h-4 w-4 text-muted-foreground" />

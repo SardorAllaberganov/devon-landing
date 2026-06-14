@@ -106,7 +106,7 @@ export default function ApprovalsQueuePage() {
             return (
               <section key={group.kind} className="space-y-2">
                 <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
-                  <group.icon className="h-4 w-4 text-emerald" aria-hidden />
+                  <group.icon className="h-4 w-4 text-primary" aria-hidden />
                   {t(group.titleKey)}
                   <span className="tabular-nums text-muted-foreground">({rows.length})</span>
                 </h2>
@@ -121,7 +121,7 @@ export default function ApprovalsQueuePage() {
                       <li key={`${item.kind}-${doc.uuid}`}>
                         <Link
                           to={`/documents/${doc.uuid}`}
-                          className="group flex min-h-16 items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3 transition-colors hover:border-emerald/40 hover:bg-cream-warm/30"
+                          className="group flex min-h-16 items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3 transition-colors hover:border-primary/40 hover:bg-surface-2/30"
                         >
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium text-ink">

@@ -102,7 +102,7 @@ export default function PasswordChangeForm({ lastChangedAt, mustChange }: Props)
       </div>
 
       {mustChange && (
-        <div className="rounded-lg border border-cinnamon/30 bg-cinnamon/10 px-4 py-3 text-sm text-ink">
+        <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-ink">
           {t('dashboard:profile.password.must-change-banner')}
         </div>
       )}
@@ -176,8 +176,8 @@ export default function PasswordChangeForm({ lastChangedAt, mustChange }: Props)
                 className={cn(
                   'h-1.5 flex-1',
                   strength <= 1 && '[&>div]:bg-destructive',
-                  strength === 2 && '[&>div]:bg-cinnamon',
-                  strength >= 3 && '[&>div]:bg-emerald',
+                  strength === 2 && '[&>div]:bg-warning',
+                  strength >= 3 && '[&>div]:bg-primary',
                 )}
               />
               <span className="text-xs tabular-nums text-muted-foreground">

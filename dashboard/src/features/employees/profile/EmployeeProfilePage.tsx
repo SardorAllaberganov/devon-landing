@@ -21,14 +21,14 @@ import ProfileUnitsTab from './ProfileUnitsTab';
 // so each tab sizes to its content; the active indicator uses the same
 // `group-data-horizontal/tabs:` prefix as the primitive so tw-merge cleanly
 // replaces the primitive's `after:bottom-[-5px]` with our flush variant.
-// Active emphasis: label + icon shift to emerald (matching the underline) and
+// Active emphasis: label + icon shift to primary (matching the underline) and
 // the weight bumps from medium to semibold so the active tab visually anchors.
 const TAB_TRIGGER_CN =
   'h-auto flex-none rounded-none px-3 py-2.5 text-sm ' +
-  'data-active:text-emerald data-active:font-semibold ' +
+  'data-active:text-primary data-active:font-semibold ' +
   'group-data-horizontal/tabs:after:-bottom-px ' +
   'group-data-horizontal/tabs:after:h-0.5 ' +
-  'group-data-horizontal/tabs:after:bg-emerald';
+  'group-data-horizontal/tabs:after:bg-primary';
 
 function initials(name: string): string {
   return name
@@ -87,10 +87,10 @@ export default function EmployeeProfilePage() {
         </Link>
       </Button>
 
-      <section className="rounded-xl border border-line bg-cream-deep p-5 md:p-7">
+      <section className="rounded-xl border border-line bg-surface-2 p-5 md:p-7">
         <div className="flex flex-col gap-5 md:flex-row md:items-center">
           <Avatar className="h-20 w-20 shrink-0 md:h-24 md:w-24">
-            <AvatarFallback className="bg-emerald text-cream text-xl font-bold">
+            <AvatarFallback className="bg-primary text-canvas text-xl font-bold">
               {initials(emp.fullNameGenerated)}
             </AvatarFallback>
           </Avatar>

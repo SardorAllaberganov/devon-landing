@@ -31,3 +31,6 @@ dashboard/.eslintcache
 Thumbs.db
 .cache/
 .tmp/
+
+# Brainstorming visual companion
+.superpowers/

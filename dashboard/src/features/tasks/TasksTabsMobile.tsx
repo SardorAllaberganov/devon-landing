@@ -18,10 +18,10 @@ const COLUMNS: Array<{ key: TaskStatus; labelKey: string }> = [
 // Underline-tab trigger className — same recipe as CertificatesTabsMobile.
 const TAB_TRIGGER_CN =
   'h-auto flex-none rounded-none px-3 py-2.5 text-sm ' +
-  'data-active:text-emerald data-active:font-semibold ' +
+  'data-active:text-primary data-active:font-semibold ' +
   'group-data-horizontal/tabs:after:-bottom-px ' +
   'group-data-horizontal/tabs:after:h-0.5 ' +
-  'group-data-horizontal/tabs:after:bg-emerald';
+  'group-data-horizontal/tabs:after:bg-primary';
 
 interface Props {
   tasks: TaskEntity[];
@@ -100,7 +100,7 @@ export default function TasksTabsMobile({ tasks, box, actingUuid, onChanged }: P
         {COLUMNS.map((col) => (
           <TabsTrigger key={col.key} value={col.key} className={TAB_TRIGGER_CN}>
             {t(col.labelKey)}
-            <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-cream-deep px-1.5 text-[10px] font-semibold tabular-nums text-ink">
+            <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-2 px-1.5 text-[10px] font-semibold tabular-nums text-ink">
               {countOf(col.key)}
             </span>
           </TabsTrigger>
@@ -110,7 +110,7 @@ export default function TasksTabsMobile({ tasks, box, actingUuid, onChanged }: P
       {COLUMNS.map((col) => (
         <TabsContent key={col.key} value={col.key} className="space-y-2">
           {col.key === tab && rows.length === 0 && (
-            <p className="rounded-lg border border-dashed border-line bg-cream-warm/40 py-8 text-center text-sm text-muted-foreground">
+            <p className="rounded-lg border border-dashed border-line bg-surface-2/40 py-8 text-center text-sm text-muted-foreground">
               {t('dashboard:tasks.empty')}
             </p>
           )}

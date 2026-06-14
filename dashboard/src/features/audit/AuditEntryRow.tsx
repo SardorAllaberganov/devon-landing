@@ -33,7 +33,7 @@ function DiffBlock({
   const { t } = useTranslation(['dashboard']);
   if (!changes || Object.keys(changes).length === 0) return null;
   return (
-    <dl className="mt-2 space-y-1 rounded-md bg-cream-warm/40 px-3 py-2 text-xs">
+    <dl className="mt-2 space-y-1 rounded-md bg-surface-2/40 px-3 py-2 text-xs">
       {Object.entries(changes).map(([key, change]) => {
         const labelKey = `dashboard:audit.diff.${key}`;
         const label = t(labelKey, { defaultValue: key });
@@ -64,7 +64,7 @@ export default function AuditEntryRow({ entry, unitsByUuid, variant }: Props) {
     return (
       <li className="rounded-lg border border-line bg-surface p-4">
         <div className="flex items-start gap-3">
-          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-cream-warm text-emerald">
+          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-surface-2 text-primary">
             <Icon className="h-4 w-4" />
           </span>
           <div className="min-w-0 flex-1">
@@ -93,7 +93,7 @@ export default function AuditEntryRow({ entry, unitsByUuid, variant }: Props) {
       <td className="px-4 py-3 text-sm text-ink">{entry.actorName}</td>
       <td className="px-4 py-3">
         <span className="inline-flex items-center gap-2 text-sm text-ink">
-          <Icon className="h-4 w-4 text-emerald" />
+          <Icon className="h-4 w-4 text-primary" />
           {t(`dashboard:audit.actions.${entry.action}`)}
         </span>
       </td>

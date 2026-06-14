@@ -60,7 +60,7 @@ export default function CertificateDetailsSheet({
             <SheetHeader className="border-b border-line p-6">
               <div className="flex items-start gap-3">
                 <Avatar className="h-10 w-10 shrink-0">
-                  <AvatarFallback className="bg-emerald-soft text-sm font-semibold text-emerald-deep">
+                  <AvatarFallback className="bg-brand-soft text-sm font-semibold text-primary-deep">
                     {initials(employee?.fullNameGenerated ?? cert.subjectCommonName)}
                   </AvatarFallback>
                 </Avatar>
@@ -131,7 +131,7 @@ export default function CertificateDetailsSheet({
                   <Row
                     label={t('dashboard:certificates.details.revocation-reason')}
                     value={
-                      <span className="text-cinnamon">
+                      <span className="text-warning">
                         {cert.revocationReason === 'EMPLOYEE_TERMINATED'
                           ? t('dashboard:audit.actions.UPDATE')
                           : t(`dashboard:certificates.revoke.reasons.${cert.revocationReason}`)}
@@ -165,7 +165,7 @@ export default function CertificateDetailsSheet({
                     <Button
                       onClick={() => onRevoke(cert)}
                       variant="outline"
-                      className="w-full justify-center border-cinnamon/40 text-cinnamon hover:bg-cinnamon-soft/40 hover:text-cinnamon"
+                      className="w-full justify-center border-warning/40 text-warning hover:bg-warning-soft/40 hover:text-warning"
                     >
                       <ShieldOff className="mr-2 h-4 w-4" />
                       {t('dashboard:certificates.actions.revoke')}

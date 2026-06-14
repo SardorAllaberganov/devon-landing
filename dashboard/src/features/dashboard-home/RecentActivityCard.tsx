@@ -48,7 +48,7 @@ export default function RecentActivityCard() {
               const Icon = ACTION_ICON[r.action];
               return (
                 <li key={r.uuid} className="flex items-start gap-3 py-3">
-                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-cream-warm text-emerald">
+                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-surface-2 text-primary">
                     <Icon className="h-3.5 w-3.5" />
                   </span>
                   <div className="min-w-0 flex-1">

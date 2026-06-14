@@ -28,7 +28,7 @@ export default function DocumentsTable({ rows, templateNames, employeeNames }: P
   return (
     <div className="overflow-hidden rounded-lg border border-line bg-surface">
       <Table>
-        <TableHeader className="bg-cream-warm/40">
+        <TableHeader className="bg-surface-2/40">
           <TableRow>
             <TableHead>{t('dashboard:documents.registry.col-number')}</TableHead>
             <TableHead>{t('dashboard:documents.registry.col-title')}</TableHead>
@@ -42,7 +42,7 @@ export default function DocumentsTable({ rows, templateNames, employeeNames }: P
           {rows.map((doc) => (
             <TableRow
               key={doc.uuid}
-              className="cursor-pointer hover:bg-cream-warm/30"
+              className="cursor-pointer hover:bg-surface-2/30"
               onClick={() => navigate(`/documents/${doc.uuid}`)}
             >
               <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">

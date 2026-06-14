@@ -243,7 +243,7 @@ export default function RegisterLetterForm({ formId, actorUuid, onSubmittingChan
         />
         {scan ? (
           <div className="flex items-center gap-3 rounded-lg border border-line bg-surface px-3 py-2.5">
-            <FileText className="h-4 w-4 shrink-0 text-emerald" />
+            <FileText className="h-4 w-4 shrink-0 text-primary" />
             <span className="min-w-0 flex-1 truncate text-sm text-ink">
               {scan.fileName}{' '}
               <span className="text-muted-foreground">({formatBytes(scan.fileSize)})</span>

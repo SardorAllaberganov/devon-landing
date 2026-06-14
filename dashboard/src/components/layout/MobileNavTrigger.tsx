@@ -26,7 +26,7 @@ export default function MobileNavTrigger() {
       <SheetContent
         side="left"
         showCloseButton={false}
-        className="w-72 max-w-[85vw] border-0 bg-cream-deep p-0 shadow-xl"
+        className="w-72 max-w-[85vw] border-0 bg-surface p-0 shadow-xl"
       >
         <Sidebar onNavigate={() => setMobileNavOpen(false)} />
       </SheetContent>

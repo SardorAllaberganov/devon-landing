@@ -156,7 +156,7 @@ export default function DocumentDetailPage() {
       </Button>
 
       {/* Hero band — employee-profile pattern */}
-      <section className="rounded-xl border border-line bg-cream-deep p-5 print:hidden md:p-7">
+      <section className="rounded-xl border border-line bg-surface-2 p-5 print:hidden md:p-7">
         <p className="font-mono text-xs tabular-nums text-muted-foreground">{doc.number}</p>
         <h1 className="mt-1 text-xl font-bold leading-tight tracking-tight text-ink md:text-2xl">
           {doc.title}
@@ -166,7 +166,7 @@ export default function DocumentDetailPage() {
           {doc.confidentiality === 'MAXFIY' && (
             <Badge
               variant="outline"
-              className="gap-1.5 border-transparent bg-cinnamon-soft font-medium text-cinnamon"
+              className="gap-1.5 border-transparent bg-warning-soft font-medium text-warning"
             >
               <EyeOff className="h-3 w-3" aria-hidden />
               {t('dashboard:documents.detail.badge-maxfiy')}
@@ -232,7 +232,7 @@ export default function DocumentDetailPage() {
                 return (
                   <li key={v.employeeUuid} className="flex items-center gap-2.5">
                     <Avatar className="h-7 w-7 shrink-0">
-                      <AvatarFallback className="bg-emerald text-cream text-[10px] font-bold">
+                      <AvatarFallback className="bg-primary text-canvas text-[10px] font-bold">
                         {emp ? initials(emp.fullNameGenerated) : '?'}
                       </AvatarFallback>
                     </Avatar>

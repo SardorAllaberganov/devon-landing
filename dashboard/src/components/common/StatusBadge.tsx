@@ -59,27 +59,27 @@ interface Style {
 }
 
 const STYLES: Record<StatusKind, Style> = {
-  ACTIVE: { cls: 'bg-emerald-soft text-emerald-deep', icon: Check, key: 'common:status.active' },
+  ACTIVE: { cls: 'bg-success-soft text-success-fg', icon: Check, key: 'common:status.active' },
   ARCHIVED: { cls: 'bg-muted text-muted-foreground', icon: Archive, key: 'common:status.archived' },
-  DRAFT: { cls: 'bg-cream-warm text-cinnamon', icon: Clock, key: 'common:status.draft' },
+  DRAFT: { cls: 'bg-muted text-muted-foreground', icon: Clock, key: 'common:status.draft' },
   PENDING_APPROVAL: {
-    cls: 'bg-cinnamon-soft text-cinnamon',
+    cls: 'bg-warning-soft text-warning-fg',
     icon: Clock,
     key: 'common:status.pending',
   },
   APPROVED: {
-    cls: 'bg-emerald-soft text-emerald-deep',
+    cls: 'bg-success-soft text-success-fg',
     icon: Check,
     key: 'common:status.approved',
   },
-  REJECTED: { cls: 'bg-destructive/10 text-destructive', icon: X, key: 'common:status.rejected' },
+  REJECTED: { cls: 'bg-error-soft text-error-fg', icon: X, key: 'common:status.rejected' },
   EXPIRED: {
-    cls: 'bg-muted text-muted-foreground',
+    cls: 'bg-error-soft text-error-fg',
     icon: AlertCircle,
     key: 'common:status.expired',
   },
   REVOKED: {
-    cls: 'bg-destructive/10 text-destructive',
+    cls: 'bg-error-soft text-error-fg',
     icon: Lock,
     key: 'common:status.revoked',
   },
@@ -89,23 +89,23 @@ const STYLES: Record<StatusKind, Style> = {
     key: 'common:status.suspended',
   },
   TERMINATED: {
-    cls: 'bg-muted text-muted-foreground',
+    cls: 'bg-error-soft text-error-fg',
     icon: Archive,
     key: 'common:status.terminated',
   },
   ON_LEAVE: {
-    cls: 'bg-cinnamon-soft text-cinnamon',
+    cls: 'bg-warning-soft text-warning-fg',
     icon: Clock,
     key: 'common:status.on-leave',
   },
   // Document statuses (M2, BP-4 canon).
   IN_REVIEW: {
-    cls: 'bg-cinnamon-soft text-cinnamon',
+    cls: 'bg-warning-soft text-warning-fg',
     icon: Hourglass,
     key: 'common:status.in-review',
   },
   SIGNED: {
-    cls: 'bg-emerald-soft text-emerald-deep',
+    cls: 'bg-brand-soft text-primary-deep',
     icon: PenLine,
     key: 'common:status.signed',
   },
@@ -116,42 +116,42 @@ const STYLES: Record<StatusKind, Style> = {
   },
   // Letter statuses (M2 step 20, BP-3 canon). CLOSED above is shared.
   REGISTERED: {
-    cls: 'bg-cream-warm text-cinnamon',
+    cls: 'bg-warning-soft text-warning-fg',
     icon: Inbox,
     key: 'common:status.registered',
   },
   ROUTED: {
-    cls: 'bg-cinnamon-soft text-cinnamon',
+    cls: 'bg-warning-soft text-warning-fg',
     icon: Forward,
     key: 'common:status.routed',
   },
   ASSIGNED: {
-    cls: 'bg-cinnamon-soft text-cinnamon',
+    cls: 'bg-warning-soft text-warning-fg',
     icon: UserRound,
     key: 'common:status.assigned',
   },
   IN_PROGRESS: {
-    cls: 'bg-cinnamon-soft text-cinnamon',
+    cls: 'bg-warning-soft text-warning-fg',
     icon: Play,
     key: 'common:status.in-progress',
   },
   EXECUTED: {
-    cls: 'bg-cinnamon-soft text-cinnamon',
+    cls: 'bg-warning-soft text-warning-fg',
     icon: CheckCheck,
     key: 'common:status.executed',
   },
   ON_SIGNATURE: {
-    cls: 'bg-cinnamon-soft text-cinnamon',
+    cls: 'bg-warning-soft text-warning-fg',
     icon: PenLine,
     key: 'common:status.on-signature',
   },
   RESPONDED: {
-    cls: 'bg-emerald-soft text-emerald-deep',
+    cls: 'bg-brand-soft text-primary-deep',
     icon: MailCheck,
     key: 'common:status.responded',
   },
   DISPATCHED: {
-    cls: 'bg-emerald-soft text-emerald-deep',
+    cls: 'bg-brand-soft text-primary-deep',
     icon: SendHorizontal,
     key: 'common:status.dispatched',
   },
@@ -163,11 +163,11 @@ const STYLES: Record<StatusKind, Style> = {
   // Task statuses.
   NEW: { cls: 'bg-muted text-muted-foreground', icon: Circle, key: 'common:status.new' },
   UNDER_REVIEW: {
-    cls: 'bg-cinnamon-soft text-cinnamon',
+    cls: 'bg-warning-soft text-warning-fg',
     icon: Eye,
     key: 'common:status.under-review',
   },
-  DONE: { cls: 'bg-emerald-soft text-emerald-deep', icon: CheckCheck, key: 'common:status.done' },
+  DONE: { cls: 'bg-success-soft text-success-fg', icon: CheckCheck, key: 'common:status.done' },
 };
 
 interface Props {

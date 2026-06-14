@@ -8,6 +8,29 @@ Demo credentials: `admin@devon.uz` / `Demo2026!`
 
 ---
 
+## Brand restyle QA — 2026-06-14 (blue/navy + Craftwork Grotesk)
+
+Full rebrand of dashboard + landing to the new identity. See [`docs/adr/0001-brand-restyle.md`](../docs/adr/0001-brand-restyle.md).
+
+**Automated (done):**
+- Dashboard: `tsc` clean · `npm run build` clean (~196 KB JS gzip, < 500 KB target held) · lint at tolerated baseline (no new errors).
+- Old-brand audit → **0**: `grep -rnw "emerald|cinnamon|cream"` + `Fraunces|font-serif|googleapis|gstatic|1F4E3F|BC6E2B` across `dashboard/src` + `dashboard/index.html`.
+- Landing audit → **0**: old hexes (`1F4E3F`/`173A30`/`BC6E2B`/`FBF9F4`/`F2EDDF`/`3D7B66`), `Fraunces`, `googleapis`, `var(--cream|--emerald|--cinnamon|--signal)`, `font-style:italic`, all-caps `DEVON`. Full hex scan = all cool (blue/navy/slate + amber-warning + green-success).
+- Fonts self-hosted (woff2 from app origin); Google Fonts `<link>` removed from both surfaces.
+- Contrast (spec §8): body `#475569` 7.5:1 ✓, muted `#64748B` 4.8:1 ✓, interactive `#0A6BE0` 5:1 ✓; badge `*-fg` trio (`#15803D`/`#B45309`/`#B91C1C`) all ≥4.5:1 on their soft tints ✓; brand `#0878FE` used only for focus/large/decorative.
+
+**Observational sweep — TBD by human operator:**
+- [ ] Six viewports (360 / 390 / 768 / 1024 / 1280 / 1920) on dashboard **and** landing — no clipping/overflow.
+- [ ] Font-load/FOUT check — Network panel shows woff2 from the app origin, **zero** `fonts.googleapis.com`/`gstatic` calls.
+- [ ] Landing section rotation reads cohesive (canvas → white → brand-soft → navy); no clashing section.
+- [ ] Inline SVG illustrations (hero MacBook, document list, Kanban, org-tree, ERI phone) recolored correctly — no stray green/amber/cream.
+- [ ] **Decision:** landing hero CTA "Demoga kirish" is currently navy (`.btn-primary`); confirm navy vs. blue (`.btn-brand`).
+- [ ] Dashboard: login + sidebar/topbar wordmark + favicon render; print isolation (A4 doc preview) still works; focus rings visible (brand blue).
+- [ ] Landing mobile hamburger (<820px) still works; device-mockup animations intact.
+- [ ] Lighthouse (mobile + desktop) on a couple of dashboard routes + landing — fill scores below.
+
+---
+
 ## Known limitations (demo-acceptable per master §17)
 
 These are intentional simplifications for the demo build, not bugs.

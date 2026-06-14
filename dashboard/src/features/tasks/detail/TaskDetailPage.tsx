@@ -21,7 +21,7 @@ import TaskCommentThread from './TaskCommentThread';
 
 const PRIORITY_CLS: Record<TaskPriority, string> = {
   HIGH: 'bg-destructive/10 text-destructive border-transparent',
-  MEDIUM: 'bg-cinnamon-soft text-cinnamon border-transparent',
+  MEDIUM: 'bg-warning-soft text-warning border-transparent',
   STANDARD: 'bg-muted text-muted-foreground border-transparent',
 };
 
@@ -97,7 +97,7 @@ export default function TaskDetailPage() {
       </Button>
 
       {/* Hero band */}
-      <section className="rounded-xl border border-line bg-cream-deep p-5 md:p-7">
+      <section className="rounded-xl border border-line bg-surface-2 p-5 md:p-7">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-mono text-xs tabular-nums text-muted-foreground">
             {detail.number}
@@ -190,7 +190,7 @@ export default function TaskDetailPage() {
                 {/* Attached file chip */}
                 {detail.deliverable.file && (
                   <div className="flex items-center gap-3 rounded-lg border border-line bg-background/60 px-3 py-2.5">
-                    <FileText className="h-4 w-4 shrink-0 text-emerald" aria-hidden />
+                    <FileText className="h-4 w-4 shrink-0 text-primary" aria-hidden />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm text-ink">
                         {detail.deliverable.file.fileName}{' '}
@@ -206,7 +206,7 @@ export default function TaskDetailPage() {
                 {detail.deliverable.documentUuid && (
                   <Link
                     to={`/documents/${detail.deliverable.documentUuid}`}
-                    className="flex items-center gap-2 rounded-lg border border-line bg-background/60 px-3 py-2.5 text-sm text-emerald hover:bg-cream-warm/30"
+                    className="flex items-center gap-2 rounded-lg border border-line bg-background/60 px-3 py-2.5 text-sm text-primary hover:bg-surface-2/30"
                   >
                     <Link2 className="h-4 w-4 shrink-0" aria-hidden />
                     {detail.deliverableDocumentNumber
@@ -299,7 +299,7 @@ export default function TaskDetailPage() {
               {detail.attachedDocumentNumber ? (
                 <Link
                   to={`/documents/${detail.attachedDocumentUuid}`}
-                  className="flex items-center gap-2 rounded-lg border border-line bg-background/60 px-3 py-2.5 text-sm text-emerald hover:bg-cream-warm/30"
+                  className="flex items-center gap-2 rounded-lg border border-line bg-background/60 px-3 py-2.5 text-sm text-primary hover:bg-surface-2/30"
                 >
                   <Link2 className="h-4 w-4 shrink-0" aria-hidden />
                   <span className="min-w-0">

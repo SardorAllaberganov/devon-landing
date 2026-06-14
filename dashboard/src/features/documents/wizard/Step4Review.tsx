@@ -104,7 +104,7 @@ export default function Step4Review() {
           <ol className="space-y-1.5">
             {data.participantUuids.map((uuid, i) => (
               <li key={uuid} className="flex items-center gap-2 text-sm text-ink">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-[10px] font-semibold tabular-nums text-emerald-deep">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-soft text-[10px] font-semibold tabular-nums text-primary-deep">
                   {i + 1}
                 </span>
                 {namesByUuid.get(uuid) ?? '—'}
