@@ -4,6 +4,28 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-06-14 — `/doc_sync` checkpoint (post user-manual authoring)
+
+Ran `/doc_sync` after authoring `docs/user-manual-uz.md`. The doc cascade had already been performed inline with the manual build, so this pass was a **verification sweep confirming sync**, plus one small addition:
+
+- **Template-mismatch reasoning** (as in every prior checkpoint): Devon has no `docs/product_states.md` / `docs/models.md` / `docs/product_requirements_document.md` / `docs/mermaid_schemas/` — its equivalents are `README.md`, `docs/product-specification.md`, `docs/business-processes.md`, `docs/use-cases.md`, `docs/glossary.md` (+ `docs/bpmn/` PNGs). All were checked.
+- **No module/surface status flip; no schema / state / error-code / route / flow change** — the change was purely new *derived* end-user documentation. So `README.md` module statuses, `docs/product-specification.md`, `docs/business-processes.md`, `docs/use-cases.md`, and the `docs/bpmn/` charts all stand untouched.
+- **`README.md`** already references `docs/user-manual-uz.md` (Documentation table + Support section) and those links now resolve — no edit needed.
+- **`AI_CONTEXT.md`** — the user-manual open-question gap + the "Next" remaining-work list were flipped to resolved in the inline cascade; this pass additionally added a **canonical-documents table row** for the now-existing `docs/user-manual-uz.md`.
+- `SEED_VERSION` unchanged (`'12'`); no code touched. Working tree uncommitted, awaiting `/commit`.
+
+**Files touched (this checkpoint):** `ai_context/AI_CONTEXT.md` (canonical-docs row), `ai_context/HISTORY.md` (this entry).
+
+---
+
+## 2026-06-14 — Uzbek user manual authored (`docs/user-manual-uz.md`)
+
+Wrote the end-user manual in Uzbek — the README-referenced `docs/user-manual-uz.md`, previously missing and flagged load-bearing now that the dashboard demo is live. Ran the full brainstorm → spec → plan → subagent-driven build pipeline (design spec: `docs/superpowers/specs/2026-06-14-user-manual-uz-design.md`; plan: `docs/superpowers/plans/2026-06-14-user-manual-uz.md`). **Framing:** hybrid — a real product manual covering only built/clickable features across all 8 modules, plus a bounded "Demo rejimi" chapter for demo-only affordances (login creds `admin@devon.uz`/`Demo2026!`, the POV switcher, Reset demo). **Structure:** 10 module/task chapters (Boshlash · Foydalanuvchilar va profil · Tashkiliy tuzilma · Hujjatlarni boshqarish · Kelishuv jarayoni · ERI · Vazifalar va topshiriqlar · Kiruvchi va chiquvchi xatlar · Audit va xavfsizlik · Demo rejimi) + Ilova; each how-to is a "Qadamlar" step list with Eslatma/Maslahat/Diqqat callouts. Every on-screen label cited was sourced from `dashboard/src/i18n/locales/uz.json` (real labels only — no invented controls); every demo-simulated integration (ERI imzolash, e-pochta, arxiv/zaxira, PFX) carries a 🟡 *Simulyatsiya* marker matching `docs/use-cases.md` "Demo coverage". UC-19 (nightly backup) excluded — no user surface, belongs in the ops runbook. Screenshots are operator-captured placeholders under `docs/images/user-manual/`. Built per-chapter via fresh subagents with controller spec/quality review between chapters; one recurring fix caught and corrected (internal UC-ids/route paths must not appear in reader-facing prose). **Verification:** no-Cyrillic / no-tech-stack / no-legacy-name / no-placeholder greps all clean; all TOC + cross-ref anchors + glossary links resolve; the "18 yosh" hire-age claim confirmed against `employee.schema.ts`. Uzbek only; RU/EN follow per the v1.1 roadmap. Working tree uncommitted, awaiting `/commit`.
+
+**Files touched:** `docs/user-manual-uz.md` (new), `docs/superpowers/specs/2026-06-14-user-manual-uz-design.md` (new), `docs/superpowers/plans/2026-06-14-user-manual-uz.md` (new), `ai_context/AI_CONTEXT.md` (gap resolved + "Next" list updated), `ai_context/HISTORY.md` (this entry).
+
+---
+
 ## 2026-06-14 — `/doc_sync` checkpoint (post create-flow page conversion)
 
 Ran `/doc_sync` after the modal→page conversion below. The cascade was performed inline with the build, so this pass was a **verification sweep that confirmed sync** and found **no residual drift**:
