@@ -156,8 +156,8 @@ export default function Step1Type() {
                   className={cn(
                     'min-h-16 rounded-lg border p-4 text-left transition-colors',
                     data.templateUuid === tpl.uuid
-                      ? 'border-emerald bg-emerald-soft/40 ring-1 ring-emerald'
-                      : 'border-line bg-surface hover:bg-cream-warm/30',
+                      ? 'border-primary bg-brand-soft/40 ring-1 ring-primary'
+                      : 'border-line bg-surface hover:bg-surface-2/30',
                     locked && data.templateUuid !== tpl.uuid && 'opacity-50',
                     locked && 'cursor-not-allowed hover:bg-surface',
                   )}
@@ -200,7 +200,7 @@ export default function Step1Type() {
           />
           {data.fileMeta ? (
             <div className="flex items-center gap-3 rounded-lg border border-line bg-surface px-3 py-2.5">
-              <FileText className="h-4 w-4 shrink-0 text-emerald" />
+              <FileText className="h-4 w-4 shrink-0 text-primary" />
               <span className="min-w-0 flex-1 truncate text-sm text-ink">
                 {data.fileMeta.fileName}{' '}
                 <span className="text-muted-foreground">
@@ -262,8 +262,8 @@ function SourceCard({ icon: Icon, selected, disabled, label, hint, onSelect }: S
       className={cn(
         'flex min-h-22 items-start gap-3 rounded-lg border p-4 text-left transition-colors',
         selected
-          ? 'border-emerald bg-emerald-soft/40 ring-1 ring-emerald'
-          : 'border-line bg-surface hover:bg-cream-warm/30',
+          ? 'border-primary bg-brand-soft/40 ring-1 ring-primary'
+          : 'border-line bg-surface hover:bg-surface-2/30',
         disabled && !selected && 'opacity-50',
         disabled && 'cursor-not-allowed hover:bg-surface',
       )}
@@ -271,7 +271,7 @@ function SourceCard({ icon: Icon, selected, disabled, label, hint, onSelect }: S
       <span
         className={cn(
           'flex h-10 w-10 shrink-0 items-center justify-center rounded-md',
-          selected ? 'bg-emerald text-cream' : 'bg-cream-deep text-emerald',
+          selected ? 'bg-primary text-canvas' : 'bg-surface-2 text-primary',
         )}
       >
         <Icon className="h-5 w-5" />

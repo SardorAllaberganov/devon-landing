@@ -79,7 +79,7 @@ export default function DispatchDialog({ open, onOpenChange, letter, actorUuid, 
       }
     >
       <div className="space-y-4">
-        <dl className="space-y-2.5 rounded-lg border border-line bg-cream-warm/30 p-3 text-sm">
+        <dl className="space-y-2.5 rounded-lg border border-line bg-surface-2/30 p-3 text-sm">
           <div className="flex items-baseline justify-between gap-3">
             <dt className="shrink-0 text-xs text-muted-foreground">
               {t('dashboard:letters.detail.dispatch.outgoing-number')}
@@ -100,7 +100,7 @@ export default function DispatchDialog({ open, onOpenChange, letter, actorUuid, 
 
         {letter.responseFileMeta && (
           <div className="flex items-center gap-3 rounded-lg border border-line bg-surface px-3 py-2.5">
-            <FileText className="h-4 w-4 shrink-0 text-emerald" />
+            <FileText className="h-4 w-4 shrink-0 text-primary" />
             <span className="min-w-0 flex-1 truncate text-sm text-ink">
               {letter.responseFileMeta.fileName}{' '}
               <span className="text-muted-foreground">

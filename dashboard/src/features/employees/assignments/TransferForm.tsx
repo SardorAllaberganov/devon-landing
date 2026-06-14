@@ -216,7 +216,7 @@ export default function TransferForm({ employee, formId, onReadyChange, onSubmit
       className="space-y-6"
       noValidate
     >
-      <section className="rounded-lg border border-line bg-cream-warm/40 p-4 text-sm">
+      <section className="rounded-lg border border-line bg-surface-2/40 p-4 text-sm">
         <p className="text-body">
           <span className="text-muted-foreground">
             {t('dashboard:employees.transfer.current-label', {
@@ -303,7 +303,7 @@ export default function TransferForm({ employee, formId, onReadyChange, onSubmit
             <span
               className={cn(
                 'font-mono text-sm tabular-nums',
-                overCap ? 'text-destructive' : 'text-emerald-deep',
+                overCap ? 'text-destructive' : 'text-primary-deep',
               )}
             >
               {t('dashboard:employees.transfer.workload-pct', { pct: workloadPercent })}
@@ -363,7 +363,7 @@ export default function TransferForm({ employee, formId, onReadyChange, onSubmit
               className={cn(
                 'flex cursor-pointer items-center gap-2 rounded-lg border border-line bg-surface px-3 py-2.5 text-sm transition-colors',
                 assignmentType === kind &&
-                  'border-emerald bg-emerald-soft text-emerald-deep',
+                  'border-primary bg-brand-soft text-primary-deep',
               )}
             >
               <RadioGroupItem value={kind} id={`type-${kind}`} />
@@ -372,7 +372,7 @@ export default function TransferForm({ employee, formId, onReadyChange, onSubmit
           ))}
         </RadioGroup>
         {assignmentType === 'PRIMARY' && existingActivePrimary && !closeOld && (
-          <p className="text-xs text-cinnamon">
+          <p className="text-xs text-warning">
             {t('dashboard:employees.transfer.primary-demote-note')}
           </p>
         )}

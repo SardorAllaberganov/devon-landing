@@ -201,7 +201,7 @@ export default function Step3Work() {
               htmlFor={`et-${et}`}
               className={cn(
                 'flex cursor-pointer items-center gap-2 rounded-lg border border-line bg-surface px-3 py-2.5 text-sm transition-colors',
-                employmentType === et && 'border-emerald bg-emerald-soft text-emerald-deep',
+                employmentType === et && 'border-primary bg-brand-soft text-primary-deep',
               )}
             >
               <RadioGroupItem value={et} id={`et-${et}`} />

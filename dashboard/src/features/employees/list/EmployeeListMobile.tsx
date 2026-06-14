@@ -35,10 +35,10 @@ export default function EmployeeListMobile({ rows, unitsByUuid, positionsById }:
             aria-label={t('dashboard:employees.list.open-profile', {
               name: emp.fullNameGenerated,
             })}
-            className="flex min-h-[64px] w-full items-center gap-3 rounded-lg border border-line bg-surface p-3 text-left transition-colors hover:bg-cream-warm/30"
+            className="flex min-h-[64px] w-full items-center gap-3 rounded-lg border border-line bg-surface p-3 text-left transition-colors hover:bg-surface-2/30"
           >
             <Avatar className="h-10 w-10 shrink-0">
-              <AvatarFallback className="bg-emerald-soft text-sm font-semibold text-emerald-deep">
+              <AvatarFallback className="bg-brand-soft text-sm font-semibold text-primary-deep">
                 {initials(emp.fullNameGenerated)}
               </AvatarFallback>
             </Avatar>

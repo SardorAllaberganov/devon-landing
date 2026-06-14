@@ -14,7 +14,7 @@ export interface SignatureStamp {
 
 interface Props {
   document: DocumentEntity;
-  /** Rendered as the emerald stamp block once the document is SIGNED. */
+  /** Rendered as the primary stamp block once the document is SIGNED. */
   stamp: SignatureStamp | null;
 }
 
@@ -32,7 +32,7 @@ export default function A4Preview({ document: doc, stamp }: Props) {
     return (
       <section className="rounded-xl border border-line bg-surface p-5 md:p-6">
         <div className="flex items-center gap-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-emerald-soft text-emerald">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-primary">
             <FileText className="h-6 w-6" />
           </span>
           <div className="min-w-0">
@@ -70,7 +70,7 @@ export default function A4Preview({ document: doc, stamp }: Props) {
           <span>{formatDate(doc.createdAt)}</span>
         </div>
 
-        <h2 className="mt-6 text-center font-serif text-base font-semibold text-ink md:text-lg">
+        <h2 className="mt-6 text-center font-display text-base font-semibold text-ink md:text-lg">
           {doc.title}
         </h2>
 
@@ -79,7 +79,7 @@ export default function A4Preview({ document: doc, stamp }: Props) {
         </p>
 
         {stamp && (
-          <div className="mt-8 rounded-md border-2 border-emerald p-3 text-emerald-deep">
+          <div className="mt-8 rounded-md border-2 border-primary p-3 text-primary-deep">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide">
               <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden />
               {t('dashboard:documents.detail.preview.stamp-line')}

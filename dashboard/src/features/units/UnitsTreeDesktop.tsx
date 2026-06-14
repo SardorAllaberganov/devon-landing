@@ -154,8 +154,8 @@ function Node({
     <div>
       <div
         className={cn(
-          'flex items-center gap-2 border-b border-line/60 px-3 py-2.5 transition-colors last:border-b-0 hover:bg-cream-warm',
-          isHit && 'bg-cinnamon-soft/40',
+          'flex items-center gap-2 border-b border-line/60 px-3 py-2.5 transition-colors last:border-b-0 hover:bg-surface-2',
+          isHit && 'bg-warning-soft/40',
         )}
         style={{ paddingLeft: 12 + depth * 20 }}
       >
@@ -164,7 +164,7 @@ function Node({
             type="button"
             onClick={() => setOpenByUser(!open)}
             aria-label={open ? t('common:actions.close') : t('common:actions.show-more')}
-            className="-ml-1 rounded p-1 hover:bg-cream-deep"
+            className="-ml-1 rounded p-1 hover:bg-surface-2"
           >
             <ChevronRight
               className={cn('h-4 w-4 transition-transform', open && 'rotate-90')}
@@ -183,7 +183,7 @@ function Node({
             <span className="truncate text-sm font-medium text-ink">{unit.nameUz}</span>
             <Badge
               variant="outline"
-              className="border-line bg-cream text-[10px] font-medium"
+              className="border-line bg-canvas text-[10px] font-medium"
             >
               {t(`common:unit-types.${unit.type}`)}
             </Badge>

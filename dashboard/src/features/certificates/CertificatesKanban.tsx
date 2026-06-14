@@ -42,9 +42,9 @@ const COLUMNS: Array<{
   headerBg: string;
   headerText: string;
 }> = [
-  { key: 'PENDING_APPROVAL', headerBg: 'bg-cinnamon-soft', headerText: 'text-cinnamon' },
-  { key: 'ACTIVE', headerBg: 'bg-emerald-soft', headerText: 'text-emerald-deep' },
-  { key: 'EXPIRED', headerBg: 'bg-cream-deep', headerText: 'text-ink-soft' },
+  { key: 'PENDING_APPROVAL', headerBg: 'bg-warning-soft', headerText: 'text-warning' },
+  { key: 'ACTIVE', headerBg: 'bg-brand-soft', headerText: 'text-primary-deep' },
+  { key: 'EXPIRED', headerBg: 'bg-surface-2', headerText: 'text-ink-soft' },
   { key: 'REVOKED', headerBg: 'bg-destructive/10', headerText: 'text-destructive' },
 ];
 
@@ -247,8 +247,8 @@ function DroppableColumn({
   const dropHint =
     draggingFrom && draggingFrom !== status
       ? allowed
-        ? 'ring-2 ring-emerald ring-offset-2 ring-offset-cream'
-        : 'ring-2 ring-destructive/40 ring-offset-2 ring-offset-cream opacity-60'
+        ? 'ring-2 ring-primary ring-offset-2 ring-offset-canvas'
+        : 'ring-2 ring-destructive/40 ring-offset-2 ring-offset-canvas opacity-60'
       : '';
   const isOverAndAllowed = isOver && allowed;
 
@@ -281,16 +281,16 @@ function DroppableColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        'flex min-h-120 flex-col rounded-xl border border-line bg-cream-deep/40 p-3 transition-shadow',
+        'flex min-h-120 flex-col rounded-xl border border-line bg-surface-2/40 p-3 transition-shadow',
         dropHint,
-        isOverAndAllowed && 'bg-emerald-soft/40',
+        isOverAndAllowed && 'bg-brand-soft/40',
       )}
     >
       <div className={`mb-3 flex items-center justify-between rounded-md px-3 py-2 ${headerBg}`}>
         <span className={`text-xs font-semibold uppercase tracking-wider ${headerText}`}>
           {label}
         </span>
-        <Badge variant="outline" className="border-line bg-cream tabular-nums">
+        <Badge variant="outline" className="border-line bg-canvas tabular-nums">
           {rows.length}
         </Badge>
       </div>

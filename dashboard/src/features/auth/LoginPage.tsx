@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
+import { BrandMark } from '@/components/common/BrandMark';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,11 +42,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
       {/* Brand pane — hidden on mobile, visible md+ */}
-      <aside className="hidden md:flex md:w-3/5 lg:w-2/3 bg-cream-deep relative overflow-hidden">
+      <aside className="hidden md:flex md:w-3/5 lg:w-2/3 bg-brand-soft relative overflow-hidden">
         {/* Decorative compass-radial backdrop */}
         <svg
           aria-hidden
-          className="pointer-events-none absolute -right-32 -bottom-32 h-[640px] w-[640px] text-emerald/[0.07]"
+          className="pointer-events-none absolute -right-32 -bottom-32 h-[640px] w-[640px] text-brand/[0.07]"
           viewBox="0 0 400 400"
           fill="none"
           stroke="currentColor"
@@ -71,7 +72,7 @@ export default function LoginPage() {
         </svg>
 
         {/* Top-right tiny corner mark */}
-        <div className="pointer-events-none absolute top-10 right-10 flex items-center gap-2 text-cinnamon/80">
+        <div className="pointer-events-none absolute top-10 right-10 flex items-center gap-2 text-ink-soft/60">
           <span aria-hidden className="block h-1.5 w-1.5 rotate-45 bg-current" />
           <span className="text-[10px] font-semibold uppercase tracking-[0.22em]">
             {t('dashboard:login.brand-eyebrow')}
@@ -81,14 +82,14 @@ export default function LoginPage() {
         {/* Centred content stack */}
         <div className="relative m-auto w-full max-w-xl px-12 py-16">
           <div className="mb-14 flex items-center gap-3">
-            <span aria-hidden className="block h-3 w-3 rotate-45 bg-emerald" />
-            <span className="font-black text-xl tracking-[0.16em] text-ink">DEVON</span>
+            <BrandMark className="size-7 text-brand" />
+            <span className="font-display text-xl font-extrabold tracking-tight text-ink">Devon</span>
           </div>
 
           <h2 className="mb-8 text-5xl font-extrabold tracking-tight leading-[1.05] text-ink">
             {t('dashboard:login.brand-headline-line-1')}
             <br />
-            <span className="font-serif font-medium text-emerald">
+            <span className="font-display font-medium text-brand">
               {t('dashboard:login.brand-headline-accent')}
             </span>{' '}
             {t('dashboard:login.brand-headline-line-2')}
@@ -100,8 +101,8 @@ export default function LoginPage() {
 
         {/* Slogan at bottom */}
         <div className="absolute bottom-10 left-12 flex items-center gap-3">
-          <span aria-hidden className="block h-2 w-2 rotate-45 bg-emerald" />
-          <span className="font-serif text-xl font-medium text-cinnamon">
+          <span aria-hidden className="block h-2 w-2 rotate-45 bg-brand" />
+          <span className="font-display text-xl font-medium text-primary">
             {t('dashboard:sidebar.footer-slogan')}
           </span>
         </div>
@@ -112,8 +113,8 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Mobile-only header */}
           <div className="md:hidden mb-8 flex items-center gap-3 justify-center">
-            <span className="block w-3 h-3 rotate-45 bg-emerald"></span>
-            <span className="font-black text-xl tracking-[0.16em] text-ink">DEVON</span>
+            <BrandMark className="size-7 text-brand" />
+            <span className="font-display text-xl font-extrabold tracking-tight text-ink">Devon</span>
           </div>
 
           <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">
@@ -143,7 +144,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">{t('dashboard:login.password-label')}</Label>
-                <Link to="#" className="text-xs text-emerald hover:text-emerald-deep">
+                <Link to="#" className="text-xs text-primary hover:text-primary-deep">
                   {t('dashboard:login.forgot-password')}
                 </Link>
               </div>
@@ -207,8 +208,8 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-8 p-4 rounded-lg bg-cream-warm border border-line">
-            <p className="text-xs font-semibold tracking-wider uppercase text-cinnamon mb-1">
+          <div className="mt-8 p-4 rounded-lg bg-surface-2 border border-line">
+            <p className="text-xs font-semibold tracking-wider uppercase text-primary mb-1">
               {t('dashboard:login.demo-hint-title')}
             </p>
             <p className="text-sm text-body font-mono">{t('dashboard:login.demo-hint-body')}</p>

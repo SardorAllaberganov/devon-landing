@@ -162,7 +162,7 @@ export default function Step2Contact() {
             {emailCheck === 'checking' && (
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             )}
-            {emailCheck === 'unique' && <Check className="h-4 w-4 text-emerald" />}
+            {emailCheck === 'unique' && <Check className="h-4 w-4 text-primary" />}
             {emailCheck === 'taken' && <X className="h-4 w-4 text-destructive" />}
           </div>
         </div>

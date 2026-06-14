@@ -33,15 +33,15 @@ export default function WizardStepper({ steps, current, ariaLabelKey }: Props) {
             aria-current={i === current ? 'step' : undefined}
             className={cn(
               'flex h-8 shrink-0 items-center gap-2 rounded-full border px-3 text-xs font-medium',
-              i < current && 'border-emerald/30 bg-emerald-soft text-emerald-deep',
-              i === current && 'border-emerald bg-emerald text-cream',
-              i > current && 'border-line bg-cream-deep text-muted-foreground',
+              i < current && 'border-primary/30 bg-brand-soft text-primary-deep',
+              i === current && 'border-primary bg-primary text-canvas',
+              i > current && 'border-line bg-surface-2 text-muted-foreground',
             )}
           >
             <span
               className={cn(
                 'flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums',
-                i === current ? 'bg-cream/25' : 'bg-cream/0',
+                i === current ? 'bg-canvas/25' : 'bg-canvas/0',
               )}
             >
               {i < current ? <Check className="h-3 w-3" /> : i + 1}
@@ -62,9 +62,9 @@ export default function WizardStepper({ steps, current, ariaLabelKey }: Props) {
             <span
               className={cn(
                 'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors',
-                i < current && 'bg-emerald-soft text-emerald-deep',
-                i === current && 'bg-emerald text-cream',
-                i > current && 'bg-cream-deep text-muted-foreground',
+                i < current && 'bg-brand-soft text-primary-deep',
+                i === current && 'bg-primary text-canvas',
+                i > current && 'bg-surface-2 text-muted-foreground',
               )}
             >
               {i < current ? <Check className="h-4 w-4" /> : i + 1}

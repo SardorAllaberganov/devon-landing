@@ -146,7 +146,7 @@ export default function Step4Login() {
         <Input
           id="login"
           readOnly={!editLogin}
-          className={cn(!editLogin && 'bg-cream-warm/40')}
+          className={cn(!editLogin && 'bg-surface-2/40')}
           {...form.register('login')}
         />
         {errors.login?.message && (
@@ -213,8 +213,8 @@ export default function Step4Login() {
             className={cn(
               'h-1.5',
               strength <= 1 && '[&>div]:bg-destructive',
-              strength === 2 && '[&>div]:bg-cinnamon',
-              strength >= 3 && '[&>div]:bg-emerald',
+              strength === 2 && '[&>div]:bg-warning',
+              strength >= 3 && '[&>div]:bg-primary',
             )}
           />
           <p className="text-xs text-muted-foreground">
@@ -229,7 +229,7 @@ export default function Step4Login() {
         )}
       </div>
 
-      <fieldset className="space-y-3 rounded-lg border border-line bg-cream-warm/30 p-4">
+      <fieldset className="space-y-3 rounded-lg border border-line bg-surface-2/30 p-4">
         <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {t('dashboard:employees.wizard.notify.title')}
         </legend>

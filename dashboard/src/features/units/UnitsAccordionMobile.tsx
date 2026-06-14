@@ -70,7 +70,7 @@ export default function UnitsAccordionMobile({ units, employees, onOpen, onAddCh
             value={root.uuid}
             className="overflow-hidden rounded-lg border border-line bg-surface data-[state=open]:shadow-sm"
           >
-            <AccordionTrigger className="px-4 py-3 hover:bg-cream-warm">
+            <AccordionTrigger className="px-4 py-3 hover:bg-surface-2">
               <div className="min-w-0 flex-1 text-left">
                 <p className="truncate text-sm font-semibold text-ink">{root.nameUz}</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
@@ -85,14 +85,14 @@ export default function UnitsAccordionMobile({ units, employees, onOpen, onAddCh
                   key={child.uuid}
                   type="button"
                   onClick={() => onOpen(child)}
-                  className="flex w-full items-center justify-between gap-2 rounded-md px-3 py-2.5 text-left hover:bg-cream-warm"
+                  className="flex w-full items-center justify-between gap-2 rounded-md px-3 py-2.5 text-left hover:bg-surface-2"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm text-ink">{child.nameUz}</p>
                     <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Badge
                         variant="outline"
-                        className="border-line bg-cream text-[10px]"
+                        className="border-line bg-canvas text-[10px]"
                       >
                         {t(`common:unit-types.${child.type}`)}
                       </Badge>
@@ -109,7 +109,7 @@ export default function UnitsAccordionMobile({ units, employees, onOpen, onAddCh
                 variant="ghost"
                 size="sm"
                 onClick={() => onAddChild(root)}
-                className="mt-2 w-full justify-start text-emerald"
+                className="mt-2 w-full justify-start text-primary"
               >
                 <Plus className="mr-2 h-4 w-4" /> {t('dashboard:units.tree.add-child')}
               </Button>

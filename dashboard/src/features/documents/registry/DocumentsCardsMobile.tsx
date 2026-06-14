@@ -26,7 +26,7 @@ export default function DocumentsCardsMobile({ rows, templateNames, employeeName
             type="button"
             onClick={() => navigate(`/documents/${doc.uuid}`)}
             aria-label={doc.title}
-            className="flex min-h-16 w-full items-center gap-3 rounded-lg border border-line bg-surface p-3 text-left transition-colors hover:bg-cream-warm/30"
+            className="flex min-h-16 w-full items-center gap-3 rounded-lg border border-line bg-surface p-3 text-left transition-colors hover:bg-surface-2/30"
           >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">

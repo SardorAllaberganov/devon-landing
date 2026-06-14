@@ -31,10 +31,10 @@ type RegistryTab = 'mine' | 'inbox' | 'review' | 'archive';
 
 const TAB_TRIGGER_CN =
   'h-auto flex-none rounded-none px-3 py-2.5 text-sm ' +
-  'data-active:text-emerald data-active:font-semibold ' +
+  'data-active:text-primary data-active:font-semibold ' +
   'group-data-horizontal/tabs:after:-bottom-px ' +
   'group-data-horizontal/tabs:after:h-0.5 ' +
-  'group-data-horizontal/tabs:after:bg-emerald';
+  'group-data-horizontal/tabs:after:bg-primary';
 
 const TABS: { value: RegistryTab; icon: typeof FileText; key: string }[] = [
   { value: 'mine', icon: FileText, key: 'dashboard:documents.registry.tabs.mine' },

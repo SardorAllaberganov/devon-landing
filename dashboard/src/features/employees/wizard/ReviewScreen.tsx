@@ -83,7 +83,7 @@ export default function ReviewScreen() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-emerald/20 bg-emerald-soft/40 p-4 text-sm text-emerald-deep">
+      <div className="rounded-lg border border-primary/20 bg-brand-soft/40 p-4 text-sm text-primary-deep">
         {t('dashboard:employees.wizard.review.intro', { name: fullName })}
       </div>
 

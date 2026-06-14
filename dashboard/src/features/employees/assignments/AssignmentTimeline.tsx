@@ -36,7 +36,7 @@ export default function AssignmentTimeline({ assignments, units, positions }: Pr
           <li key={a.uuid} className="relative">
             <span
               className={`absolute top-1.5 -left-[31px] h-3 w-3 rounded-full ${
-                active ? 'bg-emerald ring-4 ring-emerald-soft' : 'bg-muted-foreground'
+                active ? 'bg-primary ring-4 ring-brand-soft' : 'bg-muted-foreground'
               }`}
               aria-hidden
             />
@@ -48,11 +48,11 @@ export default function AssignmentTimeline({ assignments, units, positions }: Pr
                 </p>
                 <div className="flex flex-wrap items-center gap-1.5">
                   {a.isPrimary && (
-                    <Badge className="border-transparent bg-emerald-soft text-emerald-deep">
+                    <Badge className="border-transparent bg-brand-soft text-primary-deep">
                       {t('dashboard:employees.profile.units.primary')}
                     </Badge>
                   )}
-                  <Badge variant="outline" className="border-line bg-cream">
+                  <Badge variant="outline" className="border-line bg-canvas">
                     {t(`dashboard:employees.profile.units.types.${a.type}`)}
                   </Badge>
                 </div>
@@ -61,7 +61,7 @@ export default function AssignmentTimeline({ assignments, units, positions }: Pr
               {unit ? (
                 <Link
                   to={`/units?focus=${unit.uuid}`}
-                  className="group inline-flex items-center gap-1 text-sm font-semibold text-ink hover:text-emerald"
+                  className="group inline-flex items-center gap-1 text-sm font-semibold text-ink hover:text-primary"
                 >
                   {unit.nameUz}
                   <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />

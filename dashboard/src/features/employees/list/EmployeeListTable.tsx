@@ -39,7 +39,7 @@ export default function EmployeeListTable({ rows, unitsByUuid, positionsById }: 
   return (
     <div className="overflow-hidden rounded-lg border border-line bg-surface">
       <Table>
-        <TableHeader className="bg-cream-warm/40">
+        <TableHeader className="bg-surface-2/40">
           <TableRow>
             <TableHead>{t('dashboard:employees.list.col-fio')}</TableHead>
             <TableHead>{t('dashboard:employees.list.col-unit')}</TableHead>
@@ -52,13 +52,13 @@ export default function EmployeeListTable({ rows, unitsByUuid, positionsById }: 
           {rows.map((emp) => (
             <TableRow
               key={emp.uuid}
-              className="cursor-pointer hover:bg-cream-warm/30"
+              className="cursor-pointer hover:bg-surface-2/30"
               onClick={() => navigate(`/employees/${emp.uuid}`)}
             >
               <TableCell>
                 <div className="flex min-w-0 items-center gap-3">
                   <Avatar className="h-9 w-9 shrink-0">
-                    <AvatarFallback className="bg-emerald-soft text-xs font-semibold text-emerald-deep">
+                    <AvatarFallback className="bg-brand-soft text-xs font-semibold text-primary-deep">
                       {initials(emp.fullNameGenerated)}
                     </AvatarFallback>
                   </Avatar>

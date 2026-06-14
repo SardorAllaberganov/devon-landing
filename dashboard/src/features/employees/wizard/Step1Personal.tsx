@@ -174,7 +174,7 @@ export default function Step1Personal() {
               {pinflCheck === 'checking' && (
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               )}
-              {pinflCheck === 'unique' && <Check className="h-4 w-4 text-emerald" />}
+              {pinflCheck === 'unique' && <Check className="h-4 w-4 text-primary" />}
               {pinflCheck === 'taken' && <X className="h-4 w-4 text-destructive" />}
             </div>
           </div>

@@ -117,7 +117,7 @@ export default function NotificationsBell() {
       {unreadCount > 0 && (
         <span
           aria-hidden
-          className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-cinnamon px-1 text-[10px] font-bold leading-none text-white"
+          className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-warning px-1 text-[10px] font-bold leading-none text-white"
         >
           {unreadCount > 9 ? '9+' : unreadCount}
         </span>
@@ -134,7 +134,7 @@ export default function NotificationsBell() {
         <Button
           variant="ghost"
           size="sm"
-          className="-mr-2 h-8 text-xs text-emerald hover:text-emerald"
+          className="-mr-2 h-8 text-xs text-primary hover:text-primary"
           onClick={() => void onMarkAll()}
         >
           {t('dashboard:notifications.mark-all')}

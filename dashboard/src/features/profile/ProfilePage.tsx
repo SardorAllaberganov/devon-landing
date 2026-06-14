@@ -32,10 +32,10 @@ import ProfileEditRequestForm from './ProfileEditRequestForm';
 
 const TAB_TRIGGER_CN =
   'h-auto flex-none rounded-none px-3 py-2.5 text-sm ' +
-  'data-active:text-emerald data-active:font-semibold ' +
+  'data-active:text-primary data-active:font-semibold ' +
   'group-data-horizontal/tabs:after:-bottom-px ' +
   'group-data-horizontal/tabs:after:h-0.5 ' +
-  'group-data-horizontal/tabs:after:bg-emerald';
+  'group-data-horizontal/tabs:after:bg-primary';
 
 function initials(name: string): string {
   return name
@@ -149,10 +149,10 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-5 md:space-y-6">
-      <section className="rounded-xl border border-line bg-cream-deep p-5 md:p-7">
+      <section className="rounded-xl border border-line bg-surface-2 p-5 md:p-7">
         <div className="flex flex-col gap-5 md:flex-row md:items-center">
           <Avatar className="h-20 w-20 shrink-0 md:h-24 md:w-24">
-            <AvatarFallback className="bg-emerald text-cream text-xl font-bold">
+            <AvatarFallback className="bg-primary text-canvas text-xl font-bold">
               {initials(employee.fullNameGenerated)}
             </AvatarFallback>
           </Avatar>
@@ -261,7 +261,7 @@ function ProfileRequestsTab({ requests }: { requests: ProfileChangeRequest[] }) 
   if (requests.length === 0) {
     return (
       <div className="pt-4">
-        <div className="rounded-lg border border-dashed border-line bg-cream-warm/40 px-6 py-10 text-center">
+        <div className="rounded-lg border border-dashed border-line bg-surface-2/40 px-6 py-10 text-center">
           <ClipboardList className="mx-auto h-8 w-8 text-muted-foreground" />
           <p className="mt-3 text-sm font-medium text-ink">
             {t('dashboard:profile.requests.empty-title')}

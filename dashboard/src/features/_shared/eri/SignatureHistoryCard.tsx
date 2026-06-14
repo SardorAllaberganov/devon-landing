@@ -47,7 +47,7 @@ export default function SignatureHistoryCard({ signatures, employees, certSerial
           {signatures.map((sig) => (
             <li key={sig.uuid} className="rounded-lg border border-line bg-background/60 p-3">
               <div className="flex items-start gap-2.5">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-emerald-soft text-emerald">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-brand-soft text-primary">
                   <PenLine className="h-4 w-4" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -59,7 +59,7 @@ export default function SignatureHistoryCard({ signatures, employees, certSerial
                   </p>
                   <Link
                     to="/certificates"
-                    className="mt-0.5 block truncate font-mono text-xs text-emerald hover:underline"
+                    className="mt-0.5 block truncate font-mono text-xs text-primary hover:underline"
                   >
                     {certSerials.get(sig.certificateUuid) ?? sig.certificateUuid}
                   </Link>
@@ -67,7 +67,7 @@ export default function SignatureHistoryCard({ signatures, employees, certSerial
               </div>
               <div className="mt-2.5">
                 {verified.has(sig.uuid) ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-soft px-2 py-1 text-xs font-medium text-emerald-deep">
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-brand-soft px-2 py-1 text-xs font-medium text-primary-deep">
                     <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
                     {t('dashboard:documents.detail.signatures.verify-ok')}
                   </span>

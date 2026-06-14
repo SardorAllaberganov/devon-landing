@@ -143,7 +143,7 @@ export default function Step3Approvers() {
                       key={uuid}
                       className="flex items-center gap-3 rounded-lg border border-line bg-surface px-3 py-2.5"
                     >
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-xs font-semibold tabular-nums text-emerald-deep">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-semibold tabular-nums text-primary-deep">
                         {i + 1}
                       </span>
                       <div className="min-w-0 flex-1">

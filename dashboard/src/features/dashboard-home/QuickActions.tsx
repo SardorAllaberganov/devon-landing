@@ -65,9 +65,9 @@ export default function QuickActions() {
           <Link
             key={it.to}
             to={it.to}
-            className="group flex flex-col items-center gap-2 rounded-md p-4 text-center transition-colors hover:bg-cream-warm"
+            className="group flex flex-col items-center gap-2 rounded-md p-4 text-center transition-colors hover:bg-surface-2"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-cream-deep text-emerald transition-colors group-hover:bg-emerald group-hover:text-cream">
+            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-surface-2 text-primary transition-colors group-hover:bg-primary group-hover:text-canvas">
               <it.icon className="h-5 w-5" />
             </span>
             <span className="text-xs font-medium leading-tight text-ink md:text-sm">

@@ -141,7 +141,7 @@ export default function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-9 gap-2 px-1.5">
           <Avatar className="h-7 w-7">
-            <AvatarFallback className="bg-emerald text-xs font-semibold text-cream">
+            <AvatarFallback className="bg-primary text-xs font-semibold text-canvas">
               {initials(user.fullName)}
             </AvatarFallback>
           </Avatar>

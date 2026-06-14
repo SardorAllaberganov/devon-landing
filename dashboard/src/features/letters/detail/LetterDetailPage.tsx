@@ -182,9 +182,9 @@ export default function LetterDetailPage() {
       </Button>
 
       {/* Hero band */}
-      <section className="rounded-xl border border-line bg-cream-deep p-5 md:p-7">
+      <section className="rounded-xl border border-line bg-surface-2 p-5 md:p-7">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline" className="gap-1.5 border-line bg-cream">
+          <Badge variant="outline" className="gap-1.5 border-line bg-canvas">
             {incoming ? <Inbox className="h-3 w-3" aria-hidden /> : <Send className="h-3 w-3" aria-hidden />}
             {t(incoming ? 'dashboard:letters.registry.tab-incoming' : 'dashboard:letters.registry.tab-outgoing')}
           </Badge>
@@ -277,7 +277,7 @@ export default function LetterDetailPage() {
               {letter.responseDocumentUuid && (
                 <Link
                   to={`/documents/${letter.responseDocumentUuid}`}
-                  className="flex items-center gap-2 rounded-lg border border-line bg-background/60 px-3 py-2.5 text-sm text-emerald hover:bg-cream-warm/30"
+                  className="flex items-center gap-2 rounded-lg border border-line bg-background/60 px-3 py-2.5 text-sm text-primary hover:bg-surface-2/30"
                 >
                   <Link2 className="h-4 w-4 shrink-0" aria-hidden />
                   {t('dashboard:letters.detail.attachments.response-document')}
@@ -346,9 +346,9 @@ export default function LetterDetailPage() {
               </h2>
               <Link
                 to={`/letters/${linked.uuid}`}
-                className="flex items-center justify-between gap-3 rounded-lg border border-line bg-background/60 px-3 py-2.5 hover:bg-cream-warm/30"
+                className="flex items-center justify-between gap-3 rounded-lg border border-line bg-background/60 px-3 py-2.5 hover:bg-surface-2/30"
               >
-                <span className="font-mono text-xs tabular-nums text-emerald">{linked.number}</span>
+                <span className="font-mono text-xs tabular-nums text-primary">{linked.number}</span>
                 <StatusBadge status={linked.status} />
               </Link>
             </section>
@@ -389,7 +389,7 @@ function MetaRow({ label, value }: { label: string; value: string }) {
 function FileChip({ label, name, size }: { label: string; name: string; size: number }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border border-line bg-background/60 px-3 py-2.5">
-      <FileText className="h-4 w-4 shrink-0 text-emerald" aria-hidden />
+      <FileText className="h-4 w-4 shrink-0 text-primary" aria-hidden />
       <span className="min-w-0 flex-1">
         <span className="block text-xs text-muted-foreground">{label}</span>
         <span className="block truncate text-sm text-ink">

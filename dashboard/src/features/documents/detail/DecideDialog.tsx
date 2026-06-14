@@ -118,7 +118,7 @@ export default function DecideDialog({
             <Label
               key={d}
               htmlFor={`decision-${d}`}
-              className="flex cursor-pointer items-start gap-3 rounded-lg border border-line bg-surface p-3 has-[[data-state=checked]]:border-emerald has-[[data-state=checked]]:bg-emerald-soft/30"
+              className="flex cursor-pointer items-start gap-3 rounded-lg border border-line bg-surface p-3 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-brand-soft/30"
             >
               <RadioGroupItem id={`decision-${d}`} value={d} className="mt-0.5" />
               <span className="min-w-0">

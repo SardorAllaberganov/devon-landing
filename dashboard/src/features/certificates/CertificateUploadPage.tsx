@@ -348,7 +348,7 @@ export default function CertificateUploadPage() {
                       {t('dashboard:certificates.upload.errors.pinfl-mismatch')}
                     </p>
                   )}
-                  <dl className="grid grid-cols-1 gap-3 rounded-lg border border-line bg-cream-warm/30 p-4 text-sm md:grid-cols-2">
+                  <dl className="grid grid-cols-1 gap-3 rounded-lg border border-line bg-surface-2/30 p-4 text-sm md:grid-cols-2">
                     <DLRow label={t('dashboard:certificates.details.owner')}>
                       {employee?.fullNameGenerated}
                     </DLRow>
@@ -414,7 +414,7 @@ export default function CertificateUploadPage() {
                   </label>
 
                   {submitting && (
-                    <p className="inline-flex items-center gap-2 text-xs text-emerald-deep">
+                    <p className="inline-flex items-center gap-2 text-xs text-primary-deep">
                       <ShieldCheck className="h-3.5 w-3.5 animate-pulse" />
                       {t('dashboard:certificates.upload.challenge-info')}
                     </p>
@@ -443,7 +443,7 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
   return (
     <li className="space-y-3">
       <div className="flex items-center gap-2">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald text-xs font-bold text-cream">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-canvas">
           {n}
         </span>
         <h3 className="text-base font-semibold text-ink">{title}</h3>

@@ -10,9 +10,9 @@ type CommentKind = TaskComment['kind'];
 
 /** Badge colour per comment kind. */
 const KIND_CLS: Record<CommentKind, string> = {
-  CLARIFICATION_REQUEST: 'bg-cinnamon-soft text-cinnamon border-transparent',
-  CLARIFICATION_REPLY: 'bg-emerald-soft text-emerald-deep border-transparent',
-  RETURN_FEEDBACK: 'bg-cinnamon-soft text-cinnamon border-transparent',
+  CLARIFICATION_REQUEST: 'bg-warning-soft text-warning border-transparent',
+  CLARIFICATION_REPLY: 'bg-brand-soft text-primary-deep border-transparent',
+  RETURN_FEEDBACK: 'bg-warning-soft text-warning border-transparent',
   REJECT_REASON: 'bg-destructive/10 text-destructive border-transparent',
   NOTE: 'bg-muted text-muted-foreground border-transparent',
 };
@@ -48,7 +48,7 @@ export default function TaskCommentThread({ comments, authors }: Props) {
               className={cn(
                 'absolute top-2 -left-[27px] h-3 w-3 rounded-full',
                 c.kind === 'CLARIFICATION_REPLY'
-                  ? 'bg-emerald'
+                  ? 'bg-primary'
                   : c.kind === 'REJECT_REASON'
                     ? 'bg-destructive'
                     : 'border-2 border-line bg-surface',

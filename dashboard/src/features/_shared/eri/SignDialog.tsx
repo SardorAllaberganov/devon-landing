@@ -166,7 +166,7 @@ export default function SignDialog({
     >
       {phase === 'signing' ? (
         <div className="flex flex-col items-center gap-4 py-10 text-center">
-          <ShieldCheck className="h-12 w-12 animate-pulse text-emerald" aria-hidden />
+          <ShieldCheck className="h-12 w-12 animate-pulse text-primary" aria-hidden />
           <p className="text-sm font-medium text-ink">
             {t('dashboard:documents.detail.sign.signing')}
           </p>
@@ -176,7 +176,7 @@ export default function SignDialog({
         </div>
       ) : phase === 'done' ? (
         <div className="flex flex-col items-center gap-3 py-8 text-center">
-          <CheckCircle2 className="h-12 w-12 text-emerald" aria-hidden />
+          <CheckCircle2 className="h-12 w-12 text-primary" aria-hidden />
           <p className="text-sm font-semibold text-ink">{t(successKey)}</p>
           <p className="font-mono text-xs break-all text-muted-foreground">{signedSerial}</p>
         </div>
@@ -206,7 +206,7 @@ export default function SignDialog({
               <Label
                 key={cert.uuid}
                 htmlFor={`cert-${cert.uuid}`}
-                className="flex cursor-pointer items-start gap-3 rounded-lg border border-line bg-surface p-3 has-[[data-state=checked]]:border-emerald has-[[data-state=checked]]:bg-emerald-soft/30"
+                className="flex cursor-pointer items-start gap-3 rounded-lg border border-line bg-surface p-3 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-brand-soft/30"
               >
                 <RadioGroupItem id={`cert-${cert.uuid}`} value={cert.uuid} className="mt-0.5" />
                 <span className="min-w-0">

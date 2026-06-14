@@ -245,7 +245,7 @@ export default function AuditLogPage() {
           {/* Desktop table */}
           <div className="hidden overflow-hidden rounded-lg border border-line bg-surface lg:block">
             <Table>
-              <TableHeader className="bg-cream-warm/40">
+              <TableHeader className="bg-surface-2/40">
                 <TableRow>
                   <TableHead>{t('dashboard:audit.col.time')}</TableHead>
                   <TableHead>{t('dashboard:audit.col.actor')}</TableHead>

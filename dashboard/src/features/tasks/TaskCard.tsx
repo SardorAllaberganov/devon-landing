@@ -29,7 +29,7 @@ function initials(name: string): string {
 
 const PRIORITY_CLS: Record<TaskPriority, string> = {
   HIGH: 'bg-destructive/10 text-destructive border-transparent',
-  MEDIUM: 'bg-cinnamon-soft text-cinnamon border-transparent',
+  MEDIUM: 'bg-warning-soft text-warning border-transparent',
   STANDARD: 'bg-muted text-muted-foreground border-transparent',
 };
 
@@ -88,7 +88,7 @@ export default function TaskCard({ task, box, counterpartName }: Props) {
         {/* Counterpart avatar + name */}
         <div className="flex items-center gap-2">
           <Avatar className="h-6 w-6 shrink-0">
-            <AvatarFallback className="bg-emerald-soft text-[10px] font-semibold text-emerald-deep">
+            <AvatarFallback className="bg-brand-soft text-[10px] font-semibold text-primary-deep">
               {counterpartName ? initials(counterpartName) : <User className="h-3 w-3" />}
             </AvatarFallback>
           </Avatar>

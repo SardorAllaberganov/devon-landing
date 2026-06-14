@@ -133,7 +133,7 @@ export default function DocumentFilters({ filters, onChange }: Props) {
               <Filter className="mr-2 h-4 w-4" />
               {t('common:actions.filter')}
               {activeCount > 0 && (
-                <span className="ml-2 rounded-full bg-emerald px-1.5 text-[10px] font-semibold tabular-nums text-cream">
+                <span className="ml-2 rounded-full bg-primary px-1.5 text-[10px] font-semibold tabular-nums text-canvas">
                   {activeCount}
                 </span>
               )}

@@ -90,11 +90,11 @@ export default function NotificationsList({ notifications, onRowClick }: Props) 
               type="button"
               onClick={() => onRowClick(n)}
               className={cn(
-                'flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-cream-warm/60',
-                !n.isRead && 'bg-cream-warm/40',
+                'flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-2/60',
+                !n.isRead && 'bg-surface-2/40',
               )}
             >
-              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-cream-warm text-emerald">
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-surface-2 text-primary">
                 <Icon className="h-4 w-4" />
               </span>
               <span className="min-w-0 flex-1">
@@ -113,7 +113,7 @@ export default function NotificationsList({ notifications, onRowClick }: Props) 
               {!n.isRead && (
                 <span
                   aria-hidden
-                  className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald"
+                  className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary"
                 />
               )}
             </button>

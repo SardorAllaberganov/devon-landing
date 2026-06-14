@@ -33,7 +33,7 @@ const ctxString = (entry: AuditEntry | undefined, key: string): string | undefin
 
 /**
  * BP-3 routing/execution timeline — the AssignmentTimeline / ApprovalSheetCard
- * vertical-rail pattern. Past = filled emerald dot, current = emerald ring,
+ * vertical-rail pattern. Past = filled primary dot, current = primary ring,
  * future = hollow. Actor + date come from each station's audit row, falling
  * back to the resolved names on LetterDetail when a seeded row predates its
  * trail (per the step-21 note: show the station without actor detail rather
@@ -117,9 +117,9 @@ export default function LetterTimeline({ detail, audit }: Props) {
                 className={cn(
                   'absolute top-1.5 -left-[27px] h-3 w-3 rounded-full',
                   s.state === 'current'
-                    ? 'border-2 border-emerald bg-surface ring-4 ring-emerald-soft'
+                    ? 'border-2 border-primary bg-surface ring-4 ring-brand-soft'
                     : s.state === 'past'
-                      ? 'bg-emerald'
+                      ? 'bg-primary'
                       : 'border-2 border-line bg-surface',
                 )}
                 aria-hidden
@@ -133,7 +133,7 @@ export default function LetterTimeline({ detail, audit }: Props) {
                 <p className="font-medium">
                   {t(LABEL_KEY[s.key])}
                   {s.state === 'current' && (
-                    <span className="ml-2 text-xs font-medium text-emerald">
+                    <span className="ml-2 text-xs font-medium text-primary">
                       {t('dashboard:letters.detail.timeline.current')}
                     </span>
                   )}
