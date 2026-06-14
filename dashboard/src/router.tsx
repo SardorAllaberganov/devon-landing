@@ -1,34 +1,44 @@
-import type { ReactElement } from 'react';
+import { lazy, Suspense, type ReactElement } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
-import LoginPage from '@/features/auth/LoginPage';
 import { RequireAuth } from '@/features/auth/RequireAuth';
 import AppShell from '@/components/layout/AppShell';
-import AuditLogPage from '@/features/audit/AuditLogPage';
-import DashboardHome from '@/features/dashboard-home/DashboardHome';
-import CertificatesPage from '@/features/certificates/CertificatesPage';
-import CertificateUploadPage from '@/features/certificates/CertificateUploadPage';
-import ApprovalsQueuePage from '@/features/documents/ApprovalsQueuePage';
-import DocumentDetailPage from '@/features/documents/detail/DocumentDetailPage';
-import DocumentsPage from '@/features/documents/DocumentsPage';
-import DocumentWizardPage from '@/features/documents/wizard/DocumentWizardPage';
-import EmployeeListPage from '@/features/employees/list/EmployeeListPage';
-import EmployeeWizardPage from '@/features/employees/wizard/EmployeeWizardPage';
-import EmployeeProfilePage from '@/features/employees/profile/EmployeeProfilePage';
-import EmployeeTransferPage from '@/features/employees/assignments/EmployeeTransferPage';
-import LettersPage from '@/features/letters/LettersPage';
-import RegisterLetterPage from '@/features/letters/RegisterLetterPage';
-import LetterDetailPage from '@/features/letters/detail/LetterDetailPage';
-import ProfilePage from '@/features/profile/ProfilePage';
-import TasksPage from '@/features/tasks/TasksPage';
-import CreateTaskPage from '@/features/tasks/CreateTaskPage';
-import TaskDetailPage from '@/features/tasks/detail/TaskDetailPage';
-import UnitsPage from '@/features/units/UnitsPage';
+import { RouteFallback, FullPageFallback } from '@/components/common/RouteFallback';
 
+// Route components are lazy-loaded so each page ships as its own chunk — the
+// dashboard home no longer pays for the wizards, kanban boards, and detail
+// pages on first paint. AppShell + RequireAuth stay eager so the shell chrome
+// renders immediately and only the page content suspends.
+const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
+const AuditLogPage = lazy(() => import('@/features/audit/AuditLogPage'));
+const DashboardHome = lazy(() => import('@/features/dashboard-home/DashboardHome'));
+const CertificatesPage = lazy(() => import('@/features/certificates/CertificatesPage'));
+const CertificateUploadPage = lazy(() => import('@/features/certificates/CertificateUploadPage'));
+const ApprovalsQueuePage = lazy(() => import('@/features/documents/ApprovalsQueuePage'));
+const DocumentDetailPage = lazy(() => import('@/features/documents/detail/DocumentDetailPage'));
+const DocumentsPage = lazy(() => import('@/features/documents/DocumentsPage'));
+const DocumentWizardPage = lazy(() => import('@/features/documents/wizard/DocumentWizardPage'));
+const EmployeeListPage = lazy(() => import('@/features/employees/list/EmployeeListPage'));
+const EmployeeWizardPage = lazy(() => import('@/features/employees/wizard/EmployeeWizardPage'));
+const EmployeeProfilePage = lazy(() => import('@/features/employees/profile/EmployeeProfilePage'));
+const EmployeeTransferPage = lazy(() => import('@/features/employees/assignments/EmployeeTransferPage'));
+const LettersPage = lazy(() => import('@/features/letters/LettersPage'));
+const RegisterLetterPage = lazy(() => import('@/features/letters/RegisterLetterPage'));
+const LetterDetailPage = lazy(() => import('@/features/letters/detail/LetterDetailPage'));
+const ProfilePage = lazy(() => import('@/features/profile/ProfilePage'));
+const TasksPage = lazy(() => import('@/features/tasks/TasksPage'));
+const CreateTaskPage = lazy(() => import('@/features/tasks/CreateTaskPage'));
+const TaskDetailPage = lazy(() => import('@/features/tasks/detail/TaskDetailPage'));
+const UnitsPage = lazy(() => import('@/features/units/UnitsPage'));
+
+// In-shell route: sidebar + topbar render immediately; only the lazy page
+// content suspends, showing a skeleton in the content area.
 function Protected({ children }: { children: ReactElement }) {
   return (
     <RequireAuth>
-      <AppShell>{children}</AppShell>
+      <AppShell>
+        <Suspense fallback={<RouteFallback />}>{children}</Suspense>
+      </AppShell>
     </RequireAuth>
   );
 }
@@ -36,14 +46,27 @@ function Protected({ children }: { children: ReactElement }) {
 // The employee creation wizard renders its own chrome (top bar + stepper +
 // sticky footer) and goes full-screen on mobile. Wrapping it in AppShell
 // would double the topbar + waste vertical room. Auth gate still required.
+// The lazy page suspends behind a centered spinner rather than the in-shell
+// skeleton.
 function ProtectedNoShell({ children }: { children: ReactElement }) {
-  return <RequireAuth>{children}</RequireAuth>;
+  return (
+    <RequireAuth>
+      <Suspense fallback={<FullPageFallback />}>{children}</Suspense>
+    </RequireAuth>
+  );
 }
 
 export default function Router() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/login"
+        element={
+          <Suspense fallback={<FullPageFallback />}>
+            <LoginPage />
+          </Suspense>
+        }
+      />
 
       <Route
         path="/"
