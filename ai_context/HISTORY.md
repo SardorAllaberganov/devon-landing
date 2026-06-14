@@ -4,6 +4,50 @@ Reverse-chronological checkpoint log of significant work done with AI assistance
 
 ---
 
+## 2026-06-14 — `/doc_sync` checkpoint (post create-flow page conversion)
+
+Ran `/doc_sync` after the modal→page conversion below. The cascade was performed inline with the build, so this pass was a **verification sweep that confirmed sync** and found **no residual drift**:
+
+- **Template-mismatch reasoning** (as in every prior checkpoint): Devon has no `docs/product_states.md` / `docs/models.md` / `docs/product_requirements_document.md` / `docs/mermaid_schemas/` — its equivalents are `README.md`, `docs/product-specification.md`, `docs/business-processes.md`, `docs/use-cases.md`, `docs/glossary.md` (+ `docs/bpmn/` PNGs). All were checked.
+- **No surface/foundation row flipped status** — the create flows were already ✅ Full (UC-07, UC-13); only their interaction pattern changed (modal → full-page route). Routes *did* change, and the route-bearing doc (`docs/use-cases.md` UC-07 → `/tasks/new`, UC-13 → `/letters/new`) was updated in the inline cascade. Verified the new routes resolve to real `router.tsx` paths.
+- **No schema / state / error-code / audit-action / role change** → no model-doc equivalent to sync (backend untouched, no `SEED_VERSION` bump).
+- **No flow / state-machine change** → BP-2/BP-3 and the `docs/bpmn/` charts stand untouched (the conversion changes *where* the create form renders, not the business process).
+- **No product / persona / feature / NFR change** → `README.md` (product-overview only, no route/dialog mentions) and `docs/product-specification.md` stand. The product-spec's one "signing dialog" mention (§ in-platform signing) is the ERI sign **action**, which intentionally stays a modal — accurate, untouched.
+- **No stale references** to `RegisterLetterDialog` / `CreateTaskDialog` / `?register=1` / `?create=1` anywhere in code or living docs; the only remaining mentions are the intentional historical/"former-name" notes in `AI_CONTEXT.md` + `HISTORY.md` + `QA_NOTES.md`.
+
+`SEED_VERSION` consistent (`'12'`, seed.ts ↔ AI_CONTEXT); build-state count consistent (2972 modules, seed/build ↔ AI_CONTEXT). Working tree uncommitted, awaiting `/commit`.
+
+**Files touched (this checkpoint):** `ai_context/HISTORY.md` (this entry).
+
+---
+
+## 2026-06-14 — Create-flow modals → full pages (letters + tasks)
+
+Converted the two **create** dialogs into full-page routes for consistency with the existing wizard/transfer flows (`/employees/new`, `/documents/new`, `/certificates/upload`, `/employees/:uuid/transfer`). Action/confirm dialogs (route/assign/execute/dispatch, document decide/sign, certificate approve/reject/revoke, task review/submit) intentionally **stay modals** — small confirm-with-input steps where a modal is the right call. Started via `/start_task`; tracked with TodoWrite; no commit (working tree left for `/commit`).
+
+**What changed:**
+
+- **`RegisterLetterDialog` → `/letters/new`** — new `RegisterLetterPage` (chrome) + extracted `RegisterLetterForm` (fields + zod + submit). **Devonxona-gated route**: a non-Devonxona acting persona `<Navigate>`s back to `/letters` (the backend still throws `not-devonxona`).
+- **`CreateTaskDialog` → `/tasks/new`** — new `CreateTaskPage` (chrome) + extracted `CreateTaskForm` (fields + assignee-subtree loading + on-leave warning + past-deadline confirm + submit). **Manager-gated route**: a non-manager acting persona `<Navigate>`s back to `/tasks` (the backend still enforces scope).
+- **Pattern** — both pages mirror `EmployeeTransferPage`: mobile X-topbar, desktop back-link header + title/subtitle, centered `md:max-w-3xl` card, sticky `pb-safe` footer with an external-submit `<Button form={FORM_ID}>`. Each form owns navigate-on-success (`navigate('/letters'|'/tasks', { replace: true })`) + the success toast, and reports `isSubmitting` to its page via `onSubmittingChange` — the same split `TransferForm` established.
+- **Triggers re-pointed** — `LettersPage` Devonxona CTA → `navigate('/letters/new')`; `TasksPage` manager CTA → `navigate('/tasks/new')`; both home `QuickActions` tiles re-pointed (`/letters/new`, `/tasks/new`). The `?register=1` / `?create=1` deep-link params and their `LettersPage` / `TasksPage` effects were removed (`LettersPage` keeps `?overdue=1`).
+- **i18n** — added `dashboard:letters.register.back` and `dashboard:tasks.create.{subtitle,back}` (UZ; RU/EN fall back per v1.1). The letters page subtitle reuses the existing `letters.register.description` rather than orphaning it.
+- **Deleted** — `features/letters/RegisterLetterDialog.tsx`, `features/tasks/CreateTaskDialog.tsx`.
+
+**Verification:** build clean (`tsc -b && vite build`, **2972 modules**, ≪ 500 KB gzip); lint **56 problems vs 57 baseline** (git-stash compared — removed 1 error from the deleted `?create=1` effect, added 0; the "unused eslint-disable directive" warnings are pre-existing); **38/38** static i18n keys in the new files resolve; dev sweep `/letters/new` + `/tasks/new` → 200 with clean on-demand module transforms and no dev-log errors; no stale refs to the deleted dialogs or old deep-links. **Backend untouched** → audit + notifications fire exactly as before; **no `SEED_VERSION` bump**. Observational click-through (mobile/desktop submit→toast→list, cancel discard, guard-redirect for a wrong persona, keyboard-only) handed to the operator in `QA_NOTES.md`.
+
+**Files touched:**
+- `dashboard/src/features/letters/RegisterLetterForm.tsx` (new), `dashboard/src/features/letters/RegisterLetterPage.tsx` (new)
+- `dashboard/src/features/tasks/CreateTaskForm.tsx` (new), `dashboard/src/features/tasks/CreateTaskPage.tsx` (new)
+- `dashboard/src/features/letters/RegisterLetterDialog.tsx` (deleted), `dashboard/src/features/tasks/CreateTaskDialog.tsx` (deleted)
+- `dashboard/src/router.tsx` (`/letters/new` + `/tasks/new` under `ProtectedNoShell`, before the `:uuid` siblings)
+- `dashboard/src/features/letters/LettersPage.tsx`, `dashboard/src/features/tasks/TasksPage.tsx` (drop dialog import/state/deep-link effect; CTA → navigate)
+- `dashboard/src/features/dashboard-home/QuickActions.tsx` (re-point both tiles)
+- `dashboard/src/i18n/locales/uz.json` (3 new page-chrome keys)
+- `docs/use-cases.md` (UC-07 + UC-13 route references), `dashboard/QA_NOTES.md` (conversion note + observational sweep), `ai_context/AI_CONTEXT.md` (post-M3 note + build-state count), `ai_context/HISTORY.md` (this entry)
+
+---
+
 ## 2026-06-14 — `/doc_sync` checkpoint (post M3 task delegation)
 
 Ran `/doc_sync` after the M3 build below. The full doc cascade was performed inline with the build; the explicit `/doc_sync` invocation was then a **verification sweep** that confirmed sync and **corrected residual drift** in the M3 work entry's "Files touched" list — it had carried hallucinated component names (`KanbanBoard`/`KanbanColumn`/`TaskActionBar`/`CommentThread`/`ManagerStatsBand`/"task utils") that don't match the actual tree (`TasksKanban`/`TasksTabsMobile`/`TaskFilters`/`TaskStatsBand` + `detail/{TaskActions,TaskCommentThread,SubmitDeliverableDialog,ReviewDialog,ClarificationDialog,EditTaskDialog,ExtendDeadlineDialog}`), plus a wrong type name (`Task` → `TaskEntity`, and `TaskValidationCode` lives in `errors.ts` not `domain.ts`). Both corrected. Verified consistent: `SEED_VERSION '12'` (seed.ts ↔ AI_CONTEXT), 2970-module build state, no hallucinated filenames anywhere in `ai_context/`/`docs/`/`QA_NOTES.md`.
