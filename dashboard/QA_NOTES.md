@@ -199,6 +199,20 @@ These need DevTools / a real browser / a phone, and the **POV switcher** (user m
 
 ---
 
+## Create-flow modal → page conversion — 2026-06-14
+
+The two **create** dialogs were converted to full-page routes for consistency with the existing wizard/transfer flows (`/employees/new`, `/documents/new`, `/certificates/upload`, `/employees/:uuid/transfer`). Action/confirm dialogs (route/assign/execute/dispatch, decide/sign, approve/reject/revoke, task review) stay as modals.
+
+- `RegisterLetterDialog` → **`/letters/new`** (new `RegisterLetterPage` + extracted `RegisterLetterForm`). Devonxona-gated route — non-Devonxona personas `<Navigate>` back to `/letters`; backend still enforces `not-devonxona`.
+- `CreateTaskDialog` → **`/tasks/new`** (new `CreateTaskPage` + extracted `CreateTaskForm`). Manager-gated route — non-managers `<Navigate>` back to `/tasks`; backend still enforces scope.
+- Triggers re-pointed: the Devonxona "Xat ro'yxatga olish" CTA + home quick action → `/letters/new`; the manager "Topshiriq berish" CTA + home quick action → `/tasks/new`. The `?register=1` / `?create=1` deep-link params (and their `LettersPage` / `TasksPage` effects) were removed.
+- Chrome mirrors `EmployeeTransferPage`: mobile X-topbar, desktop back-link header, centered `md:max-w-3xl` card, sticky `pb-safe` footer with an external-submit `<Button form={…}>`. No dirty-confirm on close (matches the transfer page; the wizards' dirty-confirm is for multi-step flows).
+- **Automated verification:** build clean (2972 modules); lint 56 problems vs 57 baseline (−1 error, no new findings); all 38 static i18n keys resolve; dev sweep `/letters/new` + `/tasks/new` → 200 with clean module transforms. **Backend untouched** → audit + notifications fire exactly as before; no `SEED_VERSION` bump.
+
+**Pending observational (human operator):** click-through both create flows on mobile (360 px) + desktop — submit → toast with assigned number → land back on the list with the new row; cancel/X discards; direct-URL guard redirect for a non-eligible persona (switch POV, paste `/letters/new` or `/tasks/new`); keyboard-only completion; sticky footer above the iOS safe area.
+
+---
+
 ## Cross-references
 
 - Build prompt: [`docs/dashboard-prompts/15-final-qa.md`](../docs/dashboard-prompts/15-final-qa.md) · [`docs/dashboard-prompts/22-m2-home-qa.md`](../docs/dashboard-prompts/22-m2-home-qa.md)

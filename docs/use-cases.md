@@ -46,13 +46,13 @@ Which use cases are walkable in the interactive demo at `…/dashboard/`, and wh
 | UC-04 Route document for approval | `/documents/new` (kelishuv varaqasi) → `/documents/:uuid` | ✅ Full (sequential chain; rework loop via `?edit=`) |
 | UC-05 Sign document with ERI | `/documents/:uuid` | 🟡 Simulated (1.5 s mocked E-IMZO handshake; no real plugin) |
 | UC-06 Participate in an approval chain | `/approvals` → `/documents/:uuid` | ✅ Full (decision / signature / acceptance queues, per persona) |
-| UC-07 Assign a task | `/tasks` (Kanban "Topshiriq berish" action + `CreateTaskDialog`) | ✅ Full (`TOP-2026/NNNN`; scope guard enforced) |
+| UC-07 Assign a task | `/tasks/new` (full-page form, opened from the Kanban "Topshiriq berish" action; manager-gated route) | ✅ Full (`TOP-2026/NNNN`; scope guard enforced) |
 | UC-08 Submit task deliverable | `/tasks/:uuid` (assignee action bar → submit deliverable dialog) | ✅ Full (moves task to Ko'rib chiqilmoqda) |
 | UC-09 Review task deliverable | `/tasks/:uuid` (assigner action bar → Accept / Accept-with-note / Return / Reject) | ✅ Full (all four review variants; reason required for Return/Reject) |
 | UC-10 Monitor department dashboard | `/` (home), `/tasks` (manager stats band) | 🟡 Partial (persona-aware stat cards + pending-approvals alert + pending-tasks alert + manager stats band with counts/overdue/load; no charts/reporting yet) |
 | UC-11 Export document to PDF/Word | `/documents/:uuid` | 🟡 Partial (browser print-to-PDF of the A4 preview; no Word export) |
 | UC-12 Email a document | `/documents/:uuid` | 🟡 Simulated ("Yuborildi (demo)" toast; no real send) |
-| UC-13 Register an inbound letter | `/letters` (Devonxona persona) | ✅ Full (`K-2026/NNNN`) |
+| UC-13 Register an inbound letter | `/letters/new` (full-page form, Devonxona-gated route) | ✅ Full (`K-2026/NNNN`) |
 | UC-14 Respond to an inbound letter | `/letters/:uuid` | ✅ Full (route → assign → execute → accept → optional ERI) |
 | UC-15 Dispatch an outbound letter | `/letters/:uuid` (Devonxona) | ✅ Full (creates linked `CH-2026/NNNN` outbound) |
 | UC-16 Manage organizational structure | `/units` | ✅ Full (4-level tree CRUD) |
